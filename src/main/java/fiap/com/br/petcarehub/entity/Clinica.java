@@ -34,7 +34,7 @@ public class Clinica {
     private String endereco;
 
     @Column(name = "ATIVO")
-    private Boolean ativo;
+    private Character ativo;
 
     @OneToMany(mappedBy = "clinica")
     private List<Pet> pets;

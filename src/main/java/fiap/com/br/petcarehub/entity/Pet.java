@@ -1,8 +1,11 @@
 package fiap.com.br.petcarehub.entity;
 
+import fiap.com.br.petcarehub.enums.EspeciePet;
+import fiap.com.br.petcarehub.enums.SexoPet;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -41,10 +44,10 @@ public class Pet {
     private LocalDate dataNascimento;
 
     @Column(name = "PESO_KG")
-    private Double pesoKg;
+    private BigDecimal pesoKg;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "SEXO")
+    @Column(name = "SEXO", columnDefinition = "CHAR(1)")
     private SexoPet sexo;
 
     @Column(name = "CONDICOES_CRONICAS", length = 500)
@@ -54,7 +57,7 @@ public class Pet {
     private LocalDate dataCadastro;
 
     @Column(name = "ATIVO")
-    private Boolean ativo;
+    private Character ativo;
 
     @OneToMany(mappedBy = "pet")
     private List<Consulta> consultas;

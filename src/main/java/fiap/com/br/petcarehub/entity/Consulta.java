@@ -4,6 +4,7 @@ import fiap.com.br.petcarehub.enums.TipoConsulta;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -31,7 +32,7 @@ public class Consulta {
     private LocalDate dataConsulta;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "TIPO")
+    @Column(name = "TIPO_CONSULTA")
     private TipoConsulta tipo;
 
     @Column(name = "DESCRICAO", length = 1000)
@@ -41,10 +42,10 @@ public class Consulta {
     private String diagnostico;
 
     @Column(name = "VALOR")
-    private Double valor;
+    private BigDecimal valor;
 
     @Column(name = "RETORNO_RECOMENDADO")
-    private Boolean retornoRecomendado;
+    private Character retornoRecomendado;
 
     @Column(name = "DATA_RETORNO")
     private LocalDate dataRetorno;

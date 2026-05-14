@@ -35,7 +35,7 @@ public class Responsavel {
     private LocalDate dataCadastro;
 
     @Column(name = "ATIVO")
-    private Boolean ativo;
+    private Character ativo;
 
     @OneToMany(mappedBy = "responsavel")
     private List<Pet> pets;
