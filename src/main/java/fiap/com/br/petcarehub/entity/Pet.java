@@ -4,6 +4,7 @@ import fiap.com.br.petcarehub.enums.EspeciePet;
 import fiap.com.br.petcarehub.enums.SexoPet;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,7 +19,15 @@ import java.util.List;
 public class Pet {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "seq_pet"
+    )
+    @SequenceGenerator(
+            name = "seq_pet",
+            sequenceName = "SEQ_PET",
+            allocationSize = 1
+    )
     @Column(name = "ID_PET")
     private Long id;
 
@@ -53,6 +62,7 @@ public class Pet {
     @Column(name = "CONDICOES_CRONICAS", length = 500)
     private String condicoesCronicas;
 
+    @CreationTimestamp
     @Column(name = "DATA_CADASTRO")
     private LocalDate dataCadastro;
 

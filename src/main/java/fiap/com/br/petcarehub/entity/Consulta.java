@@ -16,7 +16,15 @@ import java.time.LocalDate;
 public class Consulta {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "seq_consulta"
+    )
+    @SequenceGenerator(
+            name = "seq_consulta",
+            sequenceName = "SEQ_CONSULTA",
+            allocationSize = 1
+    )
     @Column(name = "ID_CONSULTA")
     private Long id;
 

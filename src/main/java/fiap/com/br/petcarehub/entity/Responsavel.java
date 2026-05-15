@@ -2,6 +2,7 @@ package fiap.com.br.petcarehub.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -15,7 +16,15 @@ import java.util.List;
 public class Responsavel {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(
+            strategy = GenerationType.SEQUENCE,
+            generator = "seq_responsavel"
+    )
+    @SequenceGenerator(
+            name = "seq_responsavel",
+            sequenceName = "SEQ_RESPONSAVEL",
+            allocationSize = 1
+    )
     @Column(name = "ID_RESPONSAVEL")
     private Long id;
 
@@ -31,6 +40,7 @@ public class Responsavel {
     @Column(name = "CPF", nullable = false, unique = true, length = 14)
     private String cpf;
 
+    @CreationTimestamp
     @Column(name = "DATA_CADASTRO")
     private LocalDate dataCadastro;
 
