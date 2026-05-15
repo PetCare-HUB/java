@@ -1,8 +1,5 @@
 package fiap.com.br.petcarehub.controller;
 
-import fiap.com.br.petcarehub.dto.ClinicaResumoDTO;
-import fiap.com.br.petcarehub.dto.PetResponseDTO;
-import fiap.com.br.petcarehub.dto.ResponsavelResumoDTO;
 import fiap.com.br.petcarehub.entity.Pet;
 import fiap.com.br.petcarehub.service.PetService;
 import org.springframework.http.HttpStatus;
@@ -21,56 +18,32 @@ public class PetController {
     }
 
     @GetMapping
-    public List<PetResponseDTO> findAll() {
-        return service.findAll()
-                .stream()
-                .map(this::toDTO)
-                .toList();
+    public List<Pet> findAll() {
+        return service.findAll();
     }
 
     @GetMapping("/{id}")
-    public PetResponseDTO findById(@PathVariable Long id) {
-        return toDTO(service.findById(id));
+    public Pet findById(@PathVariable Long id) {
+        return service.findById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public PetResponseDTO add(@RequestBody Pet pet) {
-        return toDTO(service.add(pet));
+    public Pet add(@RequestBody Pet pet) {
+        return service.add(pet);
     }
 
     @PutMapping("/{id}")
-    public PetResponseDTO update(
+    public Pet update(
             @PathVariable Long id,
             @RequestBody Pet pet
     ) {
-        return toDTO(service.update(id, pet));
+        return service.update(id, pet);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         service.delete(id);
-    }
-
-    private PetResponseDTO toDTO(Pet pet) {
-
-        return new PetResponseDTO(
-
-                pet.getId(),
-                pet.getNome(),
-                pet.getEspecie().name(),
-                pet.getPesoKg(),
-
-                new ResponsavelResumoDTO(
-                        pet.getResponsavel().getId(),
-                        pet.getResponsavel().getNome()
-                ),
-
-                new ClinicaResumoDTO(
-                        pet.getClinica().getId(),
-                        pet.getClinica().getNome()
-                )
-        );
     }
 }
