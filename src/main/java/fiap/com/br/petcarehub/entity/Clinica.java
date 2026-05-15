@@ -1,5 +1,6 @@
 package fiap.com.br.petcarehub.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -44,9 +45,11 @@ public class Clinica {
     @Column(name = "ATIVO")
     private Character ativo;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "clinica")
     private List<Pet> pets;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "clinica")
     private List<Consulta> consultas;
 }

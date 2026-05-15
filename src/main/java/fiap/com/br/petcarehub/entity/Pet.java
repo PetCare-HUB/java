@@ -31,6 +31,7 @@ public class Pet {
     @Column(name = "ID_PET")
     private Long id;
 
+
     @ManyToOne
     @JoinColumn(name = "ID_RESPONSAVEL", nullable = false)
     private Responsavel responsavel;

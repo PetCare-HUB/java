@@ -1,5 +1,6 @@
 package fiap.com.br.petcarehub.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -47,6 +48,7 @@ public class Responsavel {
     @Column(name = "ATIVO")
     private Character ativo;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "responsavel")
     private List<Pet> pets;
 }
