@@ -46,10 +46,16 @@ public class Clinica {
     private Character ativo;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "clinica")
+    @OneToMany(
+            mappedBy = "clinica",
+            cascade = CascadeType.ALL
+    )
     private List<Pet> pets;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "clinica")
+    @OneToMany(
+            mappedBy = "clinica",
+            cascade = CascadeType.ALL
+    )
     private List<Consulta> consultas;
 }
