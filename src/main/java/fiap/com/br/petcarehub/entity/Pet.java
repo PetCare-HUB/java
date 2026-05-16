@@ -1,5 +1,6 @@
 package fiap.com.br.petcarehub.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fiap.com.br.petcarehub.enums.EspeciePet;
 import fiap.com.br.petcarehub.enums.SexoPet;
 import jakarta.persistence.*;
@@ -70,6 +71,8 @@ public class Pet {
     @Column(name = "ATIVO")
     private Character ativo;
 
-    @OneToMany(mappedBy = "pet")
+    @JsonIgnore
+    @OneToMany(mappedBy = "pet",
+            cascade = CascadeType.ALL)
     private List<Consulta> consultas;
 }

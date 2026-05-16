@@ -49,6 +49,7 @@ public class Responsavel {
     private Character ativo;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "responsavel")
+    @OneToMany(mappedBy = "responsavel",
+            cascade = CascadeType.ALL)
     private List<Pet> pets;
 }
