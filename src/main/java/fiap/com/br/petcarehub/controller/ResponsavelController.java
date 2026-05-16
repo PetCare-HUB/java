@@ -2,7 +2,12 @@ package fiap.com.br.petcarehub.controller;
 
 import fiap.com.br.petcarehub.entity.Responsavel;
 import fiap.com.br.petcarehub.service.ResponsavelService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +25,13 @@ public class ResponsavelController {
     @GetMapping
     public List<Responsavel> findAll() {
         return service.findAll();
+    }
+
+    @GetMapping("/paginado")
+    public ResponseEntity<Page<Responsavel>> listarPaginado(
+            @PageableDefault(size = 5, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(service.getAllProdutosPaginado(pageable));
     }
 
     @GetMapping("/{id}")
