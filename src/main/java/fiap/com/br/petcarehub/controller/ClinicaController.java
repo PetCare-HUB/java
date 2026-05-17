@@ -44,7 +44,7 @@ public class ClinicaController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Clinica add(@RequestBody Clinica clinica) {
+    public Clinica add(@RequestBody @Valid Clinica clinica) {
         return service.add(clinica);
     }
 
