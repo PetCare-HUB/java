@@ -29,7 +29,7 @@ public class ClinicaService {
         return repository.findAll();
     }
 
-    public Page<Clinica> getAllProdutosPaginado(Pageable pageable) {
+    public Page<Clinica> getAllPaginado(Pageable pageable) {
         return repository.findAll(pageable);
     }
 

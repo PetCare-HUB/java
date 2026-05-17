@@ -1,8 +1,8 @@
 package fiap.com.br.petcarehub.controller;
 
+import fiap.com.br.petcarehub.dto.PageResponse;
 import fiap.com.br.petcarehub.entity.Clinica;
 import fiap.com.br.petcarehub.service.ClinicaService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -28,10 +28,12 @@ public class ClinicaController {
     }
 
     @GetMapping("/paginado")
-    public ResponseEntity<Page<Clinica>> listarPaginado(
+    public ResponseEntity<PageResponse<Clinica>> listarPaginado(
             @PageableDefault(size = 5, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        return ResponseEntity.ok(service.getAllProdutosPaginado(pageable));
+        return ResponseEntity.ok(
+                new PageResponse<>(service.getAllPaginado(pageable))
+        );
     }
 
     @GetMapping("/{id}")
