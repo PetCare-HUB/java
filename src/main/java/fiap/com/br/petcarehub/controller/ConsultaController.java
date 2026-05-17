@@ -3,6 +3,7 @@ package fiap.com.br.petcarehub.controller;
 import fiap.com.br.petcarehub.dto.PageResponse;
 import fiap.com.br.petcarehub.entity.Consulta;
 import fiap.com.br.petcarehub.service.ConsultaService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -43,14 +44,14 @@ public class ConsultaController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Consulta add(@RequestBody Consulta consulta) {
+    public Consulta add(@RequestBody @Valid Consulta consulta) {
         return service.add(consulta);
     }
 
     @PutMapping("/{id}")
     public Consulta update(
             @PathVariable Long id,
-            @RequestBody Consulta consulta
+            @RequestBody @Valid Consulta consulta
     ) {
         return service.update(id, consulta);
     }

@@ -2,6 +2,7 @@ package fiap.com.br.petcarehub.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.util.List;
@@ -28,15 +29,22 @@ public class Clinica {
     private Long id;
 
     @Column(name = "NOME", nullable = false, length = 100)
+    @NotBlank
+    @Size(max = 40)
     private String nome;
 
     @Column(name = "CNPJ", nullable = false, unique = true, length = 18)
+    @NotBlank
+    @Size(max = 14)
     private String cnpj;
 
     @Column(name = "EMAIL", length = 100)
+    @Email
+    @Size(max = 100)
     private String email;
 
     @Column(name = "TELEFONE", length = 20)
+    @Size(max = 12)
     private String telefone;
 
     @Column(name = "ENDERECO", length = 255)

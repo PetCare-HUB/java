@@ -2,6 +2,7 @@ package fiap.com.br.petcarehub.service;
 
 import fiap.com.br.petcarehub.entity.Clinica;
 import fiap.com.br.petcarehub.repository.ClinicaRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,11 +12,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class ClinicaService {
 
-    @Autowired
-    private ClinicaRepository repository;
+    private final ClinicaRepository repository;
+
     private Clinica findClinicaById(Long id) {
         return repository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(

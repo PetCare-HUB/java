@@ -3,6 +3,7 @@ package fiap.com.br.petcarehub.controller;
 import fiap.com.br.petcarehub.dto.PageResponse;
 import fiap.com.br.petcarehub.entity.Clinica;
 import fiap.com.br.petcarehub.service.ClinicaService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -50,7 +51,7 @@ public class ClinicaController {
     @PutMapping("/{id}")
     public Clinica update(
             @PathVariable Long id,
-            @RequestBody Clinica clinica
+            @RequestBody @Valid Clinica clinica
     ) {
         return service.update(id, clinica);
     }
