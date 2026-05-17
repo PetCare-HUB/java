@@ -1,6 +1,9 @@
 package fiap.com.br.petcarehub.service;
 
 import fiap.com.br.petcarehub.entity.Pet;
+import fiap.com.br.petcarehub.enums.EspeciePet;
+import fiap.com.br.petcarehub.enums.SexoPet;
+import fiap.com.br.petcarehub.projection.PetSummary;
 import fiap.com.br.petcarehub.repository.PetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -30,7 +33,7 @@ public class PetService {
         return repository.findAll();
     }
 
-    public Page<Pet> getAllProdutosPaginado(Pageable pageable) {
+    public Page<Pet> getAllPaginado(Pageable pageable) {
         return repository.findAll(pageable);
     }
 
@@ -51,5 +54,22 @@ public class PetService {
         findPetById(id);
         newPet.setId(id);
         return repository.save(newPet);
+    }
+
+    public Page<PetSummary> getByNome(String nome, Pageable pageable) {
+        return repository.findByNomeContainingIgnoreCase(nome, pageable);
+    }
+
+    public Page<PetSummary> getByEspecie(EspeciePet especie, Pageable pageable) {
+        return repository.findByEspecie(especie, pageable);
+    }
+
+
+    public Page<PetSummary> getByRaca(String raca, Pageable pageable) {
+        return repository.findByRacaContaining(raca, pageable);
+    }
+
+    public Page<PetSummary> getBySexo(SexoPet sexo, Pageable pageable) {
+        return repository.findBySexo(sexo, pageable);
     }
 }

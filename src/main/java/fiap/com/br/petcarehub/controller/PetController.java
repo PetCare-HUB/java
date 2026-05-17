@@ -1,8 +1,11 @@
 package fiap.com.br.petcarehub.controller;
 
+import fiap.com.br.petcarehub.dto.PageResponse;
 import fiap.com.br.petcarehub.entity.Pet;
+import fiap.com.br.petcarehub.enums.EspeciePet;
+import fiap.com.br.petcarehub.enums.SexoPet;
+import fiap.com.br.petcarehub.projection.PetSummary;
 import fiap.com.br.petcarehub.service.PetService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -28,10 +31,12 @@ public class PetController {
     }
 
     @GetMapping("/paginado")
-    public ResponseEntity<Page<Pet>> listarPaginado(
+    public ResponseEntity<PageResponse<Pet>> listarPaginado(
             @PageableDefault(size = 5, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        return ResponseEntity.ok(service.getAllProdutosPaginado(pageable));
+        return ResponseEntity.ok(
+                new PageResponse<>(service.getAllPaginado(pageable))
+        );
     }
 
 
@@ -58,5 +63,50 @@ public class PetController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         service.delete(id);
+    }
+
+    @GetMapping("/nome")
+    public PageResponse<PetSummary> buscarPorNome(
+            @RequestParam String nome,
+            Pageable pageable
+    ) {
+
+        return new PageResponse<>(
+                service.getByNome(nome, pageable)
+        );
+    }
+
+    @GetMapping("/especie")
+    public PageResponse<PetSummary> buscarPorEspecie(
+            @RequestParam EspeciePet especie,
+            Pageable pageable
+    ) {
+
+        return new PageResponse<>(
+                service.getByEspecie(especie, pageable)
+        );
+    }
+
+
+    @GetMapping("/raca")
+    public PageResponse<PetSummary> buscarPorRaca(
+            @RequestParam String raca,
+            Pageable pageable
+    ) {
+
+        return new PageResponse<>(
+                service.getByRaca(raca, pageable)
+        );
+    }
+
+    @GetMapping("/sexo")
+    public PageResponse<PetSummary> buscarPorSexo(
+            @RequestParam SexoPet sexo,
+            Pageable pageable
+    ) {
+
+        return new PageResponse<>(
+                service.getBySexo(sexo, pageable)
+        );
     }
 }
