@@ -5,7 +5,10 @@ import fiap.com.br.petcarehub.enums.EspeciePet;
 import fiap.com.br.petcarehub.enums.SexoPet;
 import fiap.com.br.petcarehub.projection.PetSummary;
 import fiap.com.br.petcarehub.repository.PetRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -14,13 +17,14 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class PetService {
 
-    @Autowired
-    private PetRepository repository;
+    private final PetRepository repository;
 
-    private Pet findPetById(Long id) {
+    @Cacheable(value = "pets", key = "#id")
+    public Pet findPetById(Long id) {
         return repository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -36,7 +40,7 @@ public class PetService {
     public Page<Pet> getAllPaginado(Pageable pageable) {
         return repository.findAll(pageable);
     }
-
+    @CacheEvict(value = "pets", allEntries = true)
     public Pet add(Pet pet) {
         return repository.save(pet);
     }
@@ -45,11 +49,13 @@ public class PetService {
         return findPetById(id);
     }
 
+    @CacheEvict(value = "pets", key = "#id")
     public void delete(Long id) {
         findPetById(id);
         repository.deleteById(id);
     }
 
+    @CacheEvict(value = "pets", key = "#id")
     public Pet update(Long id, Pet newPet) {
         findPetById(id);
         newPet.setId(id);
