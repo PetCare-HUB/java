@@ -30,7 +30,7 @@ public class ConsultaService {
         return repository.findAll();
     }
 
-    public Page<Consulta> getAllProdutosPaginado(Pageable pageable) {
+    public Page<Consulta> getAllPaginado(Pageable pageable) {
         return repository.findAll(pageable);
     }
 
