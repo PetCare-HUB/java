@@ -1,8 +1,9 @@
 package fiap.com.br.petcarehub.controller;
 
+import fiap.com.br.petcarehub.dto.PageResponse;
 import fiap.com.br.petcarehub.entity.Responsavel;
+import fiap.com.br.petcarehub.projection.ResponsavelSummary;
 import fiap.com.br.petcarehub.service.ResponsavelService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -28,10 +29,12 @@ public class ResponsavelController {
     }
 
     @GetMapping("/paginado")
-    public ResponseEntity<Page<Responsavel>> listarPaginado(
+    public ResponseEntity<PageResponse<Responsavel>> listarPaginado(
             @PageableDefault(size = 5, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-        return ResponseEntity.ok(service.getAllProdutosPaginado(pageable));
+        return ResponseEntity.ok(
+                new PageResponse<>(service.getAllPaginado(pageable))
+        );
     }
 
     @GetMapping("/{id}")
@@ -57,5 +60,57 @@ public class ResponsavelController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         service.delete(id);
+    }
+
+
+    @GetMapping("nome")
+    public PageResponse<ResponsavelSummary> buscarPorNome(
+            @RequestParam String nome,
+            Pageable pageable) {
+        return new PageResponse<>(
+                service.getByNome(
+                        nome,
+                        pageable
+                )
+        );
+    }
+
+    @GetMapping("/email")
+    public PageResponse<ResponsavelSummary> buscarPorEmail(
+
+            @RequestParam String email,
+            Pageable pageable
+    ) {
+
+        return new PageResponse<>(
+                service.getByEmail(
+                        email,
+                        pageable
+                )
+        );
+    }
+
+    @GetMapping("cpf")
+    public PageResponse<ResponsavelSummary> buscarPorCpf(
+            @RequestParam String cpf,
+            Pageable pageable) {
+        return new PageResponse<>(
+                service.getByCpf(
+                        cpf,
+                        pageable
+                )
+        );
+    }
+
+    @GetMapping("/telefone")
+    public PageResponse<ResponsavelSummary> buscarPorTelefone(
+            @RequestParam String telefone,
+            Pageable pageable) {
+        return new PageResponse<>(
+                service.getByTelefone(
+                        telefone,
+                        pageable
+                )
+        );
     }
 }

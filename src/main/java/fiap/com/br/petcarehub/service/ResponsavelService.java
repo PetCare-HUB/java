@@ -1,6 +1,7 @@
 package fiap.com.br.petcarehub.service;
 
 import fiap.com.br.petcarehub.entity.Responsavel;
+import fiap.com.br.petcarehub.projection.ResponsavelSummary;
 import fiap.com.br.petcarehub.repository.ResponsavelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -30,7 +31,7 @@ public class ResponsavelService {
         return repository.findAll();
     }
 
-    public Page<Responsavel> getAllProdutosPaginado(Pageable pageable) {
+    public Page<Responsavel> getAllPaginado(Pageable pageable) {
         return repository.findAll(pageable);
     }
 
@@ -51,5 +52,21 @@ public class ResponsavelService {
         findResponsavelById(id);
         newResponsavel.setId(id);
         return repository.save(newResponsavel);
+    }
+    public Page<ResponsavelSummary> getByNome(String nome, Pageable pageable) {
+        return repository.findByNomeContaining(nome, pageable);
+    }
+
+    public Page<ResponsavelSummary> getByEmail(String email, Pageable pageable) {
+        return repository.findByEmailContaining(email, pageable);
+    }
+
+    public Page<ResponsavelSummary> getByCpf(String cpf, Pageable pageable) {
+        return repository.findByCpf(cpf, pageable);
+    }
+
+    public Page<ResponsavelSummary> getByTelefone(String telefone, Pageable pageable) {
+        return repository.findByTelefoneContaining(telefone, pageable
+        );
     }
 }
