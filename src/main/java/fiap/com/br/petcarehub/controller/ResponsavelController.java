@@ -4,6 +4,7 @@ import fiap.com.br.petcarehub.dto.PageResponse;
 import fiap.com.br.petcarehub.entity.Responsavel;
 import fiap.com.br.petcarehub.projection.ResponsavelSummary;
 import fiap.com.br.petcarehub.service.ResponsavelService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -44,14 +45,14 @@ public class ResponsavelController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Responsavel add(@RequestBody Responsavel responsavel) {
+    public Responsavel add(@RequestBody @Valid Responsavel responsavel) {
         return service.add(responsavel);
     }
 
     @PutMapping("/{id}")
     public Responsavel update(
             @PathVariable Long id,
-            @RequestBody Responsavel responsavel
+            @RequestBody @Valid Responsavel responsavel
     ) {
         return service.update(id, responsavel);
     }

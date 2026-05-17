@@ -6,6 +6,7 @@ import fiap.com.br.petcarehub.enums.EspeciePet;
 import fiap.com.br.petcarehub.enums.SexoPet;
 import fiap.com.br.petcarehub.projection.PetSummary;
 import fiap.com.br.petcarehub.service.PetService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -47,14 +48,14 @@ public class PetController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Pet add(@RequestBody Pet pet) {
+    public Pet add(@RequestBody @Valid Pet pet) {
         return service.add(pet);
     }
 
     @PutMapping("/{id}")
     public Pet update(
             @PathVariable Long id,
-            @RequestBody Pet pet
+            @RequestBody @Valid Pet pet
     ) {
         return service.update(id, pet);
     }

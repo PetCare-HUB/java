@@ -2,6 +2,7 @@ package fiap.com.br.petcarehub.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -30,15 +31,23 @@ public class Responsavel {
     private Long id;
 
     @Column(name = "NOME", nullable = false, length = 100)
+    @NotBlank
+    @Size(max = 50)
     private String nome;
 
     @Column(name = "EMAIL", nullable = false, unique = true, length = 100)
+    @NotBlank
+    @Email
+    @Size(max = 100)
     private String email;
 
     @Column(name = "TELEFONE", length = 20)
+    @Size(max = 11)
     private String telefone;
 
     @Column(name = "CPF", nullable = false, unique = true, length = 14)
+    @NotBlank
+    @Size(max = 11)
     private String cpf;
 
     @CreationTimestamp

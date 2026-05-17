@@ -3,6 +3,7 @@ package fiap.com.br.petcarehub.service;
 import fiap.com.br.petcarehub.entity.Responsavel;
 import fiap.com.br.petcarehub.projection.ResponsavelSummary;
 import fiap.com.br.petcarehub.repository.ResponsavelRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,11 +13,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 public class ResponsavelService {
 
-    @Autowired
-    private ResponsavelRepository repository;
+    private final ResponsavelRepository repository;
 
     private Responsavel findResponsavelById(Long id) {
         return repository.findById(id).orElseThrow(
