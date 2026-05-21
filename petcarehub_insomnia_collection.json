@@ -1,0 +1,627 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-05-20T12:47:45.983844Z",
+  "__export_source": "ChatGPT QA Generator",
+  "resources": [
+    {
+      "_id": "wrk_petcarehub",
+      "_type": "workspace",
+      "name": "PetCareHub API QA Collection",
+      "description": "Coleção gerada automaticamente a partir do código Spring Boot."
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "parentId": "wrk_petcarehub",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8080",
+        "token": "",
+        "port": "8080"
+      }
+    },
+    {
+      "_id": "env_local",
+      "_type": "environment",
+      "parentId": "env_base",
+      "name": "Local",
+      "data": {
+        "base_url": "http://localhost:8080"
+      }
+    },
+    {
+      "_id": "env_dev",
+      "_type": "environment",
+      "parentId": "env_base",
+      "name": "Dev",
+      "data": {
+        "base_url": "https://dev.petcarehub.local"
+      }
+    },
+    {
+      "_id": "env_prod",
+      "_type": "environment",
+      "parentId": "env_base",
+      "name": "Production",
+      "data": {
+        "base_url": "https://api.petcarehub.com"
+      }
+    },
+    {
+      "_id": "fld_clinicas",
+      "_type": "request_group",
+      "parentId": "wrk_petcarehub",
+      "name": "Clinicas"
+    },
+    {
+      "_id": "fld_pets",
+      "_type": "request_group",
+      "parentId": "wrk_petcarehub",
+      "name": "Pets"
+    },
+    {
+      "_id": "fld_resp",
+      "_type": "request_group",
+      "parentId": "wrk_petcarehub",
+      "name": "Responsaveis"
+    },
+    {
+      "_id": "fld_consultas",
+      "_type": "request_group",
+      "parentId": "wrk_petcarehub",
+      "name": "Consultas"
+    },
+    {
+      "_id": "req_clinica_list",
+      "_type": "request",
+      "parentId": "fld_clinicas",
+      "name": "List Clinicas",
+      "method": "GET",
+      "url": "{{ _.base_url }}/clinicas",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_clinica_page",
+      "_type": "request",
+      "parentId": "fld_clinicas",
+      "name": "List Clinicas Paginado",
+      "method": "GET",
+      "url": "{{ _.base_url }}/clinicas/paginado?page=0&size=5&sort=nome,asc",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_clinica_get",
+      "_type": "request",
+      "parentId": "fld_clinicas",
+      "name": "Get Clinica By ID",
+      "method": "GET",
+      "url": "{{ _.base_url }}/clinicas/1",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_clinica_create",
+      "_type": "request",
+      "parentId": "fld_clinicas",
+      "name": "Create Clinica",
+      "method": "POST",
+      "url": "{{ _.base_url }}/clinicas",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Clinica PetCare\",\n  \"cnpj\": \"12345678000199\",\n  \"email\": \"contato@petcare.com\",\n  \"telefone\": \"11999999999\",\n  \"endereco\": \"Rua das Flores, 100\",\n  \"ativo\": \"S\"\n}"
+      },
+      "parameters": []
+    },
+    {
+      "_id": "req_clinica_update",
+      "_type": "request",
+      "parentId": "fld_clinicas",
+      "name": "Update Clinica",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/clinicas/1",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Clinica PetCare Atualizada\",\n  \"cnpj\": \"12345678000199\",\n  \"email\": \"novo@petcare.com\",\n  \"telefone\": \"11988888888\",\n  \"endereco\": \"Av Paulista, 500\",\n  \"ativo\": \"S\"\n}"
+      },
+      "parameters": []
+    },
+    {
+      "_id": "req_clinica_delete",
+      "_type": "request",
+      "parentId": "fld_clinicas",
+      "name": "Delete Clinica",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/clinicas/1",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_resp_list",
+      "_type": "request",
+      "parentId": "fld_resp",
+      "name": "List Responsaveis",
+      "method": "GET",
+      "url": "{{ _.base_url }}/responsaveis",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_resp_get",
+      "_type": "request",
+      "parentId": "fld_resp",
+      "name": "Get Responsavel By ID",
+      "method": "GET",
+      "url": "{{ _.base_url }}/responsaveis/1",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_resp_create",
+      "_type": "request",
+      "parentId": "fld_resp",
+      "name": "Create Responsavel",
+      "method": "POST",
+      "url": "{{ _.base_url }}/responsaveis",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Alexander Mamani\",\n  \"email\": \"alexander@email.com\",\n  \"telefone\": \"11977777777\",\n  \"cpf\": \"12345678901\",\n  \"ativo\": \"S\"\n}"
+      },
+      "parameters": []
+    },
+    {
+      "_id": "req_resp_update",
+      "_type": "request",
+      "parentId": "fld_resp",
+      "name": "Update Responsavel",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/responsaveis/1",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Alexander Atualizado\",\n  \"email\": \"alexander2@email.com\",\n  \"telefone\": \"11977777777\",\n  \"cpf\": \"12345678901\",\n  \"ativo\": \"S\"\n}"
+      },
+      "parameters": []
+    },
+    {
+      "_id": "req_resp_delete",
+      "_type": "request",
+      "parentId": "fld_resp",
+      "name": "Delete Responsavel",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/responsaveis/1",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_resp_nome",
+      "_type": "request",
+      "parentId": "fld_resp",
+      "name": "Buscar Responsavel Por Nome",
+      "method": "GET",
+      "url": "{{ _.base_url }}/responsaveis/nome?nome=alex",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_resp_email",
+      "_type": "request",
+      "parentId": "fld_resp",
+      "name": "Buscar Responsavel Por Email",
+      "method": "GET",
+      "url": "{{ _.base_url }}/responsaveis/email?email=alexander@email.com",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_resp_cpf",
+      "_type": "request",
+      "parentId": "fld_resp",
+      "name": "Buscar Responsavel Por CPF",
+      "method": "GET",
+      "url": "{{ _.base_url }}/responsaveis/cpf?cpf=12345678901",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_resp_tel",
+      "_type": "request",
+      "parentId": "fld_resp",
+      "name": "Buscar Responsavel Por Telefone",
+      "method": "GET",
+      "url": "{{ _.base_url }}/responsaveis/telefone?telefone=11977777777",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_pet_list",
+      "_type": "request",
+      "parentId": "fld_pets",
+      "name": "List Pets",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_pet_page",
+      "_type": "request",
+      "parentId": "fld_pets",
+      "name": "List Pets Paginado",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets/paginado?page=0&size=5",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_pet_get",
+      "_type": "request",
+      "parentId": "fld_pets",
+      "name": "Get Pet By ID",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets/1",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_pet_create",
+      "_type": "request",
+      "parentId": "fld_pets",
+      "name": "Create Pet",
+      "method": "POST",
+      "url": "{{ _.base_url }}/pets",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"responsavel\": {\n    \"id\": 1\n  },\n  \"clinica\": {\n    \"id\": 1\n  },\n  \"nome\": \"Rex\",\n  \"especie\": \"CACHORRO\",\n  \"raca\": \"Labrador\",\n  \"dataNascimento\": \"2020-05-10\",\n  \"pesoKg\": 12.5,\n  \"sexo\": \"MACHO\",\n  \"condicoesCronicas\": \"Nenhuma\",\n  \"ativo\": \"S\"\n}"
+      },
+      "parameters": []
+    },
+    {
+      "_id": "req_pet_update",
+      "_type": "request",
+      "parentId": "fld_pets",
+      "name": "Update Pet",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/pets/1",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"responsavel\": {\n    \"id\": 1\n  },\n  \"clinica\": {\n    \"id\": 1\n  },\n  \"nome\": \"Rex Atualizado\",\n  \"especie\": \"CACHORRO\",\n  \"raca\": \"Golden\",\n  \"dataNascimento\": \"2020-05-10\",\n  \"pesoKg\": 13.0,\n  \"sexo\": \"MACHO\",\n  \"condicoesCronicas\": \"Alergia\",\n  \"ativo\": \"S\"\n}"
+      },
+      "parameters": []
+    },
+    {
+      "_id": "req_pet_delete",
+      "_type": "request",
+      "parentId": "fld_pets",
+      "name": "Delete Pet",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/pets/1",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_pet_nome",
+      "_type": "request",
+      "parentId": "fld_pets",
+      "name": "Buscar Pet Por Nome",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets/nome?nome=rex",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_pet_especie",
+      "_type": "request",
+      "parentId": "fld_pets",
+      "name": "Buscar Pet Por Especie",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets/especie?especie=CACHORRO",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_pet_raca",
+      "_type": "request",
+      "parentId": "fld_pets",
+      "name": "Buscar Pet Por Raca",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets/raca?raca=labrador",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_pet_sexo",
+      "_type": "request",
+      "parentId": "fld_pets",
+      "name": "Buscar Pet Por Sexo",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets/sexo?sexo=MACHO",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_consulta_list",
+      "_type": "request",
+      "parentId": "fld_consultas",
+      "name": "List Consultas",
+      "method": "GET",
+      "url": "{{ _.base_url }}/consultas",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_consulta_page",
+      "_type": "request",
+      "parentId": "fld_consultas",
+      "name": "List Consultas Paginado",
+      "method": "GET",
+      "url": "{{ _.base_url }}/consultas/paginado?page=0&size=5",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_consulta_get",
+      "_type": "request",
+      "parentId": "fld_consultas",
+      "name": "Get Consulta By ID",
+      "method": "GET",
+      "url": "{{ _.base_url }}/consultas/1",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    },
+    {
+      "_id": "req_consulta_create",
+      "_type": "request",
+      "parentId": "fld_consultas",
+      "name": "Create Consulta",
+      "method": "POST",
+      "url": "{{ _.base_url }}/consultas",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"pet\": {\n    \"id\": 1\n  },\n  \"clinica\": {\n    \"id\": 1\n  },\n  \"dataConsulta\": \"2026-05-20\",\n  \"tipo\": \"ROTINA\",\n  \"descricao\": \"Consulta de rotina\",\n  \"diagnostico\": \"Saud\\u00e1vel\",\n  \"valor\": 120.5,\n  \"retornoRecomendado\": \"N\",\n  \"dataRetorno\": \"2026-06-20\"\n}"
+      },
+      "parameters": []
+    },
+    {
+      "_id": "req_consulta_update",
+      "_type": "request",
+      "parentId": "fld_consultas",
+      "name": "Update Consulta",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/consultas/1",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"pet\": {\n    \"id\": 1\n  },\n  \"clinica\": {\n    \"id\": 1\n  },\n  \"dataConsulta\": \"2026-05-21\",\n  \"tipo\": \"EMERGENCIA\",\n  \"descricao\": \"Atualiza\\u00e7\\u00e3o consulta\",\n  \"diagnostico\": \"Em observa\\u00e7\\u00e3o\",\n  \"valor\": 200.0,\n  \"retornoRecomendado\": \"S\",\n  \"dataRetorno\": \"2026-05-28\"\n}"
+      },
+      "parameters": []
+    },
+    {
+      "_id": "req_consulta_delete",
+      "_type": "request",
+      "parentId": "fld_consultas",
+      "name": "Delete Consulta",
+      "method": "DELETE",
+      "url": "{{ _.base_url }}/consultas/1",
+      "description": "",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {},
+      "parameters": []
+    }
+  ]
+}
