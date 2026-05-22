@@ -1,0 +1,12 @@
+package fiap.com.br.petcarehub.enums;
+
+public enum TipoAlerta {
+    BATERIA_COLEIRA_BAIXA,
+    RACAO_BAIXA,
+    BAIXA_ALIMENTACAO,
+    AMBIENTE_RUIM,
+    TEMPERATURA_FORA_DA_FAIXA,
+    UMIDADE_FORA_DA_FAIXA,
+    SCORE_CRITICO,
+    CONSULTA_ATRASADA
+}

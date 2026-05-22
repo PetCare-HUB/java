@@ -1,0 +1,23 @@
+digraph G {
+  rankdir=LR;
+  node [shape=box, style="rounded,filled", fillcolor="#f4f7fb", color="#315a7d", fontname="Arial"];
+  edge [color="#315a7d", fontname="Arial"];
+
+  IoT [label="IoT / Wokwi\nColeira + Comedouro + Ambiente"];
+  Mobile [label="App Mobile\nTutor"];
+  DotNet [label="API .NET\nDashboard Clínica"];
+  Controller [label="Controllers REST\nSpring Boot"];
+  Service [label="Services\nRegras, Score, Alertas"];
+  Repository [label="Repositories\nSpring Data JPA"];
+  DB [label="Banco\nH2 Local / Oracle"];
+  Swagger [label="Swagger / OpenAPI"];
+
+  IoT -> Controller [label="POST /leituras"];
+  Mobile -> Controller [label="REST"];
+  DotNet -> Controller [label="REST / dados processados"];
+  Swagger -> Controller [label="teste/documentação"];
+  Controller -> Service;
+  Service -> Repository;
+  Repository -> DB;
+  Service -> Controller [label="DTO Response"];
+}

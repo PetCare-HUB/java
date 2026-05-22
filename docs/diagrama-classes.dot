@@ -1,0 +1,27 @@
+digraph Classes {
+  rankdir=TB;
+  node [shape=record, fontname="Arial", style="filled", fillcolor="#f8fbff", color="#315a7d"];
+  edge [color="#315a7d", arrowhead="vee", fontname="Arial"];
+
+  Responsavel [label="{Responsavel|id\lnome\lemail\lcpf\ltelefone\l}"];
+  Clinica [label="{Clinica|id\lnome\lcnpj\lendereco\l}"];
+  Pet [label="{Pet|id\lnome\lespecie\lraca\lscoreAtual\l}"];
+  Consulta [label="{Consulta|id\ldataConsulta\ltipo\lvalor\l}"];
+  AlertaSaude [label="{AlertaSaude|id\ltipo\lnivel\lresolvido\l}"];
+  ScoreSaude [label="{ScoreSaude|id\lscore\lcategoria\ldataCalculo\l}"];
+  LeituraColeira [label="{LeituraColeira|id\lstatusAtividade\lnivelBateria\l}"];
+  LeituraComedouro [label="{LeituraComedouro|id\lnivelRacaoPct\lpesoConsumidoG\l}"];
+  LeituraAmbiente [label="{LeituraAmbiente|id\ltemperatura\lumidade\lqualidadeAr\l}"];
+  EventoPreventivo [label="{EventoPreventivo|id\ltipo\ldataPrevista\lrealizado\l}"];
+  ProtocoloPreventivo [label="{ProtocoloPreventivo|id\lespecie\ltipo\lnome\l}"];
+
+  Responsavel -> Pet [label="1:N"];
+  Clinica -> Pet [label="1:N"];
+  Pet -> Consulta [label="1:N"];
+  Pet -> AlertaSaude [label="1:N"];
+  Pet -> ScoreSaude [label="1:N"];
+  Pet -> LeituraColeira [label="1:N"];
+  Pet -> LeituraComedouro [label="1:N"];
+  Pet -> LeituraAmbiente [label="1:N"];
+  Pet -> EventoPreventivo [label="1:N"];
+}

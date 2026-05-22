@@ -1,0 +1,502 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-05-22T00:00:00.000Z",
+  "__export_source": "chatgpt",
+  "resources": [
+    {
+      "_id": "wrk_27557ed90b93",
+      "_type": "workspace",
+      "name": "PetCare Hub Java API",
+      "description": "Collection para testar API Java do Challenge CLYVO VET"
+    },
+    {
+      "_id": "env_7ac476ce70d6",
+      "_type": "environment",
+      "parentId": "wrk_27557ed90b93",
+      "name": "Base Environment",
+      "data": {
+        "base_url": "http://localhost:8080"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "base_url"
+        ]
+      },
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 1
+    },
+    {
+      "_id": "fld_75f902c8bb48",
+      "_type": "request_group",
+      "parentId": "wrk_27557ed90b93",
+      "name": "PetCare Hub Java",
+      "metaSortKey": -1
+    },
+    {
+      "_id": "req_8c011f5745f0",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Swagger UI",
+      "method": "GET",
+      "url": "{{ _.base_url }}/swagger-ui.html",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486935
+    },
+    {
+      "_id": "req_997b67e9c776",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Listar responsáveis",
+      "method": "GET",
+      "url": "{{ _.base_url }}/responsaveis?page=0&size=10&sort=nome,asc",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486935
+    },
+    {
+      "_id": "req_444450e8d94b",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Criar responsável",
+      "method": "POST",
+      "url": "{{ _.base_url }}/responsaveis",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Carlos Tutor\",\n  \"email\": \"carlos.tutor@example.com\",\n  \"telefone\": \"11999998888\",\n  \"cpf\": \"11122233344\"\n}"
+      },
+      "metaSortKey": 1779421486935
+    },
+    {
+      "_id": "req_977a57926300",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Buscar responsável por nome",
+      "method": "GET",
+      "url": "{{ _.base_url }}/responsaveis/nome?nome=Kelson",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486935
+    },
+    {
+      "_id": "req_76afd548d2a1",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Listar clínicas",
+      "method": "GET",
+      "url": "{{ _.base_url }}/clinicas?page=0&size=10&sort=nome,asc",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486935
+    },
+    {
+      "_id": "req_6ec3dd77ccc7",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Criar clínica",
+      "method": "POST",
+      "url": "{{ _.base_url }}/clinicas",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"PetCare Clínica Sul\",\n  \"cnpj\": \"22.333.444/0001-55\",\n  \"endereco\": \"Rua das Flores, 100\",\n  \"telefone\": \"1144445555\"\n}"
+      },
+      "metaSortKey": 1779421486935
+    },
+    {
+      "_id": "req_9a66d996d58d",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Pets em risco da clínica",
+      "method": "GET",
+      "url": "{{ _.base_url }}/clinicas/1/pets-em-risco?nivel=vermelho&page=0&size=10",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486935
+    },
+    {
+      "_id": "req_6eb684dfad2e",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Listar pets",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets?page=0&size=10&sort=nome,asc",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486935
+    },
+    {
+      "_id": "req_1bf453da1df3",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Criar pet",
+      "method": "POST",
+      "url": "{{ _.base_url }}/pets",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Thor\",\n  \"especie\": \"CAO\",\n  \"raca\": \"Labrador\",\n  \"dataNascimento\": \"2020-04-15\",\n  \"pesoKg\": 31.4,\n  \"sexo\": \"M\",\n  \"condicoesCronicas\": \"Controle de peso\",\n  \"ativo\": true,\n  \"responsavelId\": 1,\n  \"clinicaId\": 1\n}"
+      },
+      "metaSortKey": 1779421486935
+    },
+    {
+      "_id": "req_f469227d8cdc",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Buscar pet por filtros",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets/busca?especie=CAO&raca=Golden&clinicaId=1&scoreMin=0&scoreMax=100&page=0&size=10&sort=scoreAtual,asc",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486935
+    },
+    {
+      "_id": "req_9e5b5e3af1a3",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Score atual do pet",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets/1/score-saude",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_e654b34c0b9a",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Recalcular score do pet",
+      "method": "POST",
+      "url": "{{ _.base_url }}/pets/1/score-saude/calcular",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_418874eeb251",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Histórico de score",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets/1/score-saude/historico",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_96c98b9d861c",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Timeline do pet",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets/1/timeline",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_c615b41ac5a5",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Plano preventivo do pet",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets/1/plano-preventivo",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_bc6e93c3f7f4",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Criar consulta",
+      "method": "POST",
+      "url": "{{ _.base_url }}/consultas",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"petId\": 1,\n  \"clinicaId\": 1,\n  \"dataConsulta\": \"2026-12-10T10:30:00\",\n  \"tipo\": \"CHECKUP\",\n  \"observacoes\": \"Consulta preventiva de rotina\",\n  \"valor\": 180.0\n}"
+      },
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_5e5d6dc34bbe",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Consultas do pet",
+      "method": "GET",
+      "url": "{{ _.base_url }}/consultas/pet/1?page=0&size=10",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_8bb213964fb2",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Registrar leitura coleira",
+      "method": "POST",
+      "url": "{{ _.base_url }}/leituras/coleira",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"petId\": 1,\n  \"statusAtividade\": \"ATIVO\",\n  \"nivelBateria\": 18\n}"
+      },
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_b1181e0d5e50",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Registrar leitura comedouro",
+      "method": "POST",
+      "url": "{{ _.base_url }}/leituras/comedouro",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"petId\": 1,\n  \"nivelRacaoPct\": 15,\n  \"pesoConsumidoG\": 25\n}"
+      },
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_30cb702c228b",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Registrar leitura ambiente",
+      "method": "POST",
+      "url": "{{ _.base_url }}/leituras/ambiente",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"petId\": 1,\n  \"temperaturaAmbiente\": 34,\n  \"umidadePct\": 80,\n  \"qualidadeArPpm\": 1200,\n  \"petPresente\": true\n}"
+      },
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_d69a9c863c20",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Leituras coleira do pet",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets/1/leituras/coleira",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_c49e2f026617",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Leituras comedouro do pet",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets/1/leituras/comedouro",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_e3f9170cbe77",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Leituras ambiente do pet",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets/1/leituras/ambiente",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_ff6b01a75182",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Buscar alertas ativos",
+      "method": "GET",
+      "url": "{{ _.base_url }}/alertas?petId=1&resolvido=false&page=0&size=10",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_0da10f4a1c67",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Alertas ativos do pet",
+      "method": "GET",
+      "url": "{{ _.base_url }}/pets/1/alertas/ativos",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_b3d6fb2bdac3",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Criar alerta manual",
+      "method": "POST",
+      "url": "{{ _.base_url }}/alertas",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"petId\": 1,\n  \"tipo\": \"CONSULTA_ATRASADA\",\n  \"nivel\": \"ALTO\",\n  \"mensagem\": \"Pet precisa de consulta preventiva.\"\n}"
+      },
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_dd58353eafbe",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Resolver alerta",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/alertas/1/resolver",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_7eb355fe6e16",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Listar protocolos preventivos",
+      "method": "GET",
+      "url": "{{ _.base_url }}/protocolos-preventivos?page=0&size=10",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_d32c4624077b",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Protocolos por espécie com cache",
+      "method": "GET",
+      "url": "{{ _.base_url }}/protocolos-preventivos/por-especie?especie=CAO",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_9492908dfd53",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Criar protocolo preventivo",
+      "method": "POST",
+      "url": "{{ _.base_url }}/protocolos-preventivos",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"especie\": \"CAO\",\n  \"raca\": \"Golden Retriever\",\n  \"tipo\": \"CHECKUP\",\n  \"nome\": \"Check-up semestral\",\n  \"descricao\": \"Avaliação preventiva para cães adultos\",\n  \"idadeMesesAplicacao\": 12,\n  \"intervaloReforcoDias\": 180\n}"
+      },
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_268ef62b8660",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Criar evento preventivo",
+      "method": "POST",
+      "url": "{{ _.base_url }}/eventos-preventivos",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "parameters": [],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"petId\": 1,\n  \"tipo\": \"CHECKUP\",\n  \"descricao\": \"Retorno preventivo pós-alerta\",\n  \"dataPrevista\": \"2026-12-20\"\n}"
+      },
+      "metaSortKey": 1779421486936
+    },
+    {
+      "_id": "req_f1fde9426e71",
+      "_type": "request",
+      "parentId": "fld_75f902c8bb48",
+      "name": "Marcar evento realizado",
+      "method": "PUT",
+      "url": "{{ _.base_url }}/eventos-preventivos/1/realizar",
+      "headers": [],
+      "parameters": [],
+      "body": {},
+      "metaSortKey": 1779421486936
+    }
+  ]
+}
