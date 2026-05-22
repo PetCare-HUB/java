@@ -1,124 +1,149 @@
 package fiap.com.br.petcarehub.controller;
 
 import fiap.com.br.petcarehub.dto.PageResponse;
-import fiap.com.br.petcarehub.entity.Pet;
+import fiap.com.br.petcarehub.dto.request.PetRequest;
+import fiap.com.br.petcarehub.dto.response.*;
 import fiap.com.br.petcarehub.enums.EspeciePet;
-import fiap.com.br.petcarehub.enums.SexoPet;
-import fiap.com.br.petcarehub.projection.PetSummary;
-import fiap.com.br.petcarehub.service.PetService;
-import jakarta.validation.Valid;
+import fiap.com.br.petcarehub.service.*;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/pets")
+@RequiredArgsConstructor
 public class PetController {
 
     private final PetService service;
-
-    public PetController(PetService service) {
-        this.service = service;
-    }
+    private final ScoreSaudeService scoreSaudeService;
+    private final AlertaSaudeService alertaSaudeService;
+    private final LeituraIotService leituraIotService;
+    private final EventoPreventivoService eventoPreventivoService;
+    private final TimelineService timelineService;
 
     @GetMapping
-    @Operation(summary = "Listar todos os pets", description = "Retorna a lista completa de pets cadastrados no sistema.")
-    public List<Pet> findAll() {
-        return service.findAll();
+    @Operation(summary = "Listar pets", description = "Lista pets com paginação e ordenação.")
+    public PageResponse<PetResponse> listar(@PageableDefault(size = 10, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
+        return new PageResponse<>(service.listar(pageable));
     }
-
-    @GetMapping("/paginado")
-    @Operation(summary = "Listar pets paginados", description = "Retorna a lista paginada de pets, com ordenação e paginação controladas por Pageable.")
-    public ResponseEntity<PageResponse<Pet>> listarPaginado(
-            @PageableDefault(size = 5, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable
-    ) {
-        return ResponseEntity.ok(
-                new PageResponse<>(service.getAllPaginado(pageable))
-        );
-    }
-
 
     @GetMapping("/{id}")
-    @Operation(summary = "Buscar pet por ID", description = "Retorna os dados do pet correspondente ao identificador informado.")
-    public Pet findById(@PathVariable Long id) {
-        return service.findById(id);
+    @Operation(summary = "Buscar pet por ID")
+    public PetResponse buscarPorId(@PathVariable Long id) {
+        return service.buscarPorId(id);
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Criar pet", description = "Cadastra um novo pet com os dados enviados na requisição.")
-    public Pet add(@RequestBody @Valid Pet pet) {
-        return service.add(pet);
+    @Operation(summary = "Criar pet")
+    public ResponseEntity<PetResponse> criar(@RequestBody @Valid PetRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(request));
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Atualizar pet", description = "Atualiza os dados do pet correspondente ao identificador informado.")
-    public Pet update(
-            @PathVariable Long id,
-            @RequestBody @Valid Pet pet
-    ) {
-        return service.update(id, pet);
+    @Operation(summary = "Atualizar pet")
+    public PetResponse atualizar(@PathVariable Long id, @RequestBody @Valid PetRequest request) {
+        return service.atualizar(id, request);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Remover pet", description = "Remove o pet correspondente ao identificador informado.")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+    @Operation(summary = "Excluir pet")
+    public void deletar(@PathVariable Long id) {
+        service.deletar(id);
     }
 
     @GetMapping("/nome")
-    @Operation(summary = "Buscar pets por nome", description = "Retorna a lista de pets filtrada pelo nome informado.")
-    public PageResponse<PetSummary> buscarPorNome(
-            @RequestParam String nome,
-            Pageable pageable
-    ) {
-
-        return new PageResponse<>(
-                service.getByNome(nome, pageable)
-        );
+    @Operation(summary = "Buscar pets por nome")
+    public PageResponse<PetResponse> buscarPorNome(@RequestParam String nome, Pageable pageable) {
+        return new PageResponse<>(service.buscarPorNome(nome, pageable));
     }
 
-    @GetMapping("/especie")
-    @Operation(summary = "Buscar pets por espécie", description = "Retorna a lista de pets filtrada pela espécie informada.")
-    public PageResponse<PetSummary> buscarPorEspecie(
-            @RequestParam EspeciePet especie,
-            Pageable pageable
+    @GetMapping("/busca")
+    @Operation(summary = "Busca combinada de pets", description = "Busca por espécie, raça, clínica e faixa de score.")
+    public PageResponse<PetResponse> buscarComFiltros(
+            @RequestParam(required = false) EspeciePet especie,
+            @RequestParam(required = false) String raca,
+            @RequestParam(required = false) Long clinicaId,
+            @RequestParam(required = false) Integer scoreMin,
+            @RequestParam(required = false) Integer scoreMax,
+            @PageableDefault(size = 10, sort = "scoreAtual", direction = Sort.Direction.ASC) Pageable pageable
     ) {
-
-        return new PageResponse<>(
-                service.getByEspecie(especie, pageable)
-        );
+        return new PageResponse<>(service.buscarComFiltros(especie, raca, clinicaId, scoreMin, scoreMax, pageable));
     }
 
-
-    @GetMapping("/raca")
-    @Operation(summary = "Buscar pets por raça", description = "Retorna a lista de pets filtrada pela raça informada.")
-    public PageResponse<PetSummary> buscarPorRaca(
-            @RequestParam String raca,
-            Pageable pageable
-    ) {
-
-        return new PageResponse<>(
-                service.getByRaca(raca, pageable)
-        );
+    @GetMapping("/{id}/score-saude")
+    @Operation(summary = "Consultar score atual do pet")
+    public ScoreSaudeResponse scoreAtual(@PathVariable Long id) {
+        return scoreSaudeService.scoreAtual(id);
     }
 
-    @GetMapping("/sexo")
-    @Operation(summary = "Buscar pets por sexo", description = "Retorna a lista de pets filtrada pelo sexo informado.")
-    public PageResponse<PetSummary> buscarPorSexo(
-            @RequestParam SexoPet sexo,
-            Pageable pageable
-    ) {
+    @PostMapping("/{id}/score-saude/calcular")
+    @Operation(summary = "Recalcular score de saúde", description = "Calcula o score usando últimas leituras IoT, alertas ativos e histórico clínico.")
+    public ScoreSaudeResponse calcularScore(@PathVariable Long id) {
+        return scoreSaudeService.calcular(id);
+    }
 
-        return new PageResponse<>(
-                service.getBySexo(sexo, pageable)
-        );
+    @GetMapping("/{id}/score-saude/historico")
+    @Operation(summary = "Histórico de score do pet")
+    public List<ScoreSaudeResponse> historicoScore(@PathVariable Long id) {
+        return scoreSaudeService.historico(id);
+    }
+
+    @GetMapping("/{id}/alertas/ativos")
+    @Operation(summary = "Alertas ativos do pet")
+    public List<AlertaSaudeResponse> alertasAtivos(@PathVariable Long id) {
+        return alertaSaudeService.alertasAtivosDoPet(id);
+    }
+
+    @GetMapping("/{id}/leituras/coleira")
+    @Operation(summary = "Histórico de leituras da coleira")
+    public List<LeituraColeiraResponse> leiturasColeira(
+            @PathVariable Long id,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime de,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime ate
+    ) {
+        return leituraIotService.buscarColeira(id, de, ate);
+    }
+
+    @GetMapping("/{id}/leituras/comedouro")
+    @Operation(summary = "Histórico de leituras do comedouro")
+    public List<LeituraComedouroResponse> leiturasComedouro(
+            @PathVariable Long id,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime de,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime ate
+    ) {
+        return leituraIotService.buscarComedouro(id, de, ate);
+    }
+
+    @GetMapping("/{id}/leituras/ambiente")
+    @Operation(summary = "Histórico de leituras ambientais")
+    public List<LeituraAmbienteResponse> leiturasAmbiente(
+            @PathVariable Long id,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime de,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime ate
+    ) {
+        return leituraIotService.buscarAmbiente(id, de, ate);
+    }
+
+    @GetMapping("/{id}/timeline")
+    @Operation(summary = "Timeline longitudinal do pet", description = "Consolida consultas, leituras IoT, alertas, scores e eventos preventivos.")
+    public TimelinePetResponse timeline(@PathVariable Long id) {
+        return timelineService.timeline(id);
+    }
+
+    @GetMapping("/{id}/plano-preventivo")
+    @Operation(summary = "Plano preventivo do pet")
+    public List<EventoPreventivoResponse> planoPreventivo(@PathVariable Long id) {
+        return eventoPreventivoService.planoDoPet(id);
     }
 }

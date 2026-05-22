@@ -1,376 +1,394 @@
-# 🐾 PetCare Hub
+# PetCare Hub — API Java Advanced
 
-Sistema de gerenciamento veterinário desenvolvido com Java e Spring Boot, 
+API REST principal do **PetCare Hub**, desenvolvida em **Java 17 + Spring Boot** para o Challenge FIAP 2026 — CLYVO VET.
 
----
+O objetivo da API é apoiar a continuidade do cuidado do pet, conectando responsáveis, pets, consultas, leituras IoT simuladas, alertas automáticos, score de saúde e plano preventivo.
 
-# 📖 Visão Geral
-
-O **PetCare Hub** é uma API REST desenvolvida para centralizar o gerenciamento de informações relacionadas ao ecossistema veterinário.
-
-O sistema permite:
-
-* gerenciamento de responsáveis pelos animais
-* cadastro de pets
-* gerenciamento de clínicas veterinárias
-* registro de consultas veterinárias
-* paginação e filtros de busca
-* documentação automática da API
-
-## 🎯 Objetivo
-
-O projeto foi desenvolvido com foco em:
-
-* aplicação prática de conceitos de Java Advanced
-* modelagem relacional utilizando JPA/Hibernate
-* construção de APIs RESTful com Spring Boot
-* implementação de validações de domínio
-* organização em arquitetura em camadas
-* documentação profissional de APIs
-
+> Observação de arquitetura: a API Java é responsável pelo domínio principal e processamento dos dados. A API .NET fica responsável pelo dashboard B2B das clínicas, consumindo dados processados pelo Java ou consultando a mesma base.
 
 ---
 
-# 🛠️ Tecnologias Utilizadas
+## Tecnologias
 
-## Backend
-
-* Java 17
-* Spring Boot 4
-* Spring Web MVC
-* Spring Data JPA
-* Spring Validation
-* Spring Cache
-* Hibernate
-* Lombok
-
-## Banco de Dados
-
-* Oracle Database
-
-## Documentação
-
-* Swagger/OpenAPI (springdoc-openapi)
-
-## Build e Gerenciamento
-
-* Maven
+- Java 17
+- Spring Boot 3.3.5
+- Spring Web
+- Spring Data JPA
+- Bean Validation
+- H2 Database para execução local
+- Oracle via perfil `oracle`
+- Swagger/OpenAPI
+- Spring Cache + Caffeine
+- Lombok
 
 ---
 
-# 📁 Estrutura de Pastas
-
-```text
-src/main/java/fiap/com/br/petcarehub
-│
-├── config
-├── controller
-├── dto
-├── entity
-├── enums
-├── projection
-├── repository
-├── service
-└── validation
-```
-
-## 📂 Descrição das Pastas
-
-| Pasta        | Responsabilidade                        |
-| ------------ | --------------------------------------- |
-| `config`     | Configurações da aplicação e Swagger    |
-| `controller` | Endpoints REST                          |
-| `dto`        | Objetos de transferência de dados       |
-| `entity`     | Entidades JPA                           |
-| `enums`      | Enumerações do domínio                  |
-| `projection` | Projeções JPA para consultas otimizadas |
-| `repository` | Persistência de dados                   |
-| `service`    | Regras de negócio                       |
-| `validation` | Validações customizadas                 |
-
----
-
-# ⚙️ Funcionalidades
-
-# ✅ Funcionalidades Implementadas
-
-## Clínicas
-
-* CRUD completo de clínicas
-* paginação
-* ordenação
-
-## Responsáveis
-
-* CRUD completo de responsáveis
-* busca por nome
-* busca por email
-* busca por CPF
-* paginação
-* projections customizadas
-
-## Pets
-
-* CRUD completo de pets
-* busca por nome
-* busca por espécie
-* busca por raça
-* paginação
-* projections customizadas
-* validação customizada de idade
-
-## Consultas
-
-* CRUD completo de consultas
-* DTO de resposta
-* paginação
-* relacionamento entre pet e clínica
-
-## Infraestrutura
-
-* documentação Swagger/OpenAPI
-* validações Bean Validation
-* queries customizadas JPQL
-* projections JPA
-* paginação
-* ordenação
-
-
-
----
-
-
-# 🌐 Endpoints da API
-
-# 📍 Clínicas
-
-| Método | Endpoint             | Descrição                |
-| ------ | -------------------- | ------------------------ |
-| GET    | `/clinicas`          | Lista todas as clínicas  |
-| GET    | `/clinicas/paginado` | Lista clínicas paginadas |
-| GET    | `/clinicas/{id}`     | Busca clínica por ID     |
-| POST   | `/clinicas`          | Cria clínica             |
-| PUT    | `/clinicas/{id}`     | Atualiza clínica         |
-| DELETE | `/clinicas/{id}`     | Remove clínica           |
-
----
-
-# 📍 Responsáveis
-
-| Método | Endpoint                 | Descrição            |
-| ------ | ------------------------ | -------------------- |
-| GET    | `/responsaveis`          | Lista responsáveis   |
-| GET    | `/responsaveis/paginado` | Lista paginada       |
-| GET    | `/responsaveis/{id}`     | Busca por ID         |
-| POST   | `/responsaveis`          | Cria responsável     |
-| PUT    | `/responsaveis/{id}`     | Atualiza responsável |
-| DELETE | `/responsaveis/{id}`     | Remove responsável   |
-| GET    | `/responsaveis/nome`     | Busca por nome       |
-| GET    | `/responsaveis/email`    | Busca por email      |
-| GET    | `/responsaveis/cpf`      | Busca por CPF        |
-
----
-
-# 📍 Pets
-
-| Método | Endpoint         | Descrição              |
-| ------ | ---------------- | ---------------------- |
-| GET    | `/pets`          | Lista pets             |
-| GET    | `/pets/paginado` | Lista paginada         |
-| GET    | `/pets/{id}`     | Busca por ID           |
-| POST   | `/pets`          | Cria pet               |
-| PUT    | `/pets/{id}`     | Atualiza pet           |
-| DELETE | `/pets/{id}`     | Remove pet             |
-| GET    | `/pets/nome`     | Busca pets por nome    |
-| GET    | `/pets/especie`  | Busca pets por espécie |
-| GET    | `/pets/raca`     | Busca pets por raça    |
-
----
-
-# 📍 Consultas
-
-| Método | Endpoint              | Descrição             |
-| ------ | --------------------- | --------------------- |
-| GET    | `/consultas`          | Lista consultas       |
-| GET    | `/consultas/paginado` | Lista paginada        |
-| GET    | `/consultas/{id}`     | Busca consulta por ID |
-| POST   | `/consultas`          | Cria consulta         |
-| PUT    | `/consultas/{id}`     | Atualiza consulta     |
-| DELETE | `/consultas/{id}`     | Remove consulta       |
-
----
-
-# 📌 Parâmetros Aceitos
-
-| Parâmetro | Descrição               |
-| --------- | ----------------------- |
-| `page`    | Número da página        |
-| `size`    | Quantidade de registros |
-| `sort`    | Campo de ordenação      |
-
-## Exemplo
-
-```http
-GET /pets/paginado?page=0&size=5&sort=nome,asc
-```
-
----
-
-# 📚 Documentação Swagger
-
-O projeto possui integração com Swagger/OpenAPI.
-
-
-## Acesso
-
-Após iniciar a aplicação:
-
-```text
-http://localhost:8080/swagger-ui.html
-```
-
-ou
-
-```text
-http://localhost:8080/swagger-ui/index.html
-```
-
----
-
-# ▶️ Como Executar o Projeto
-
-## Pré-requisitos
-
-* Java 17+
-* Maven
-* Oracle Database
-
----
-
-# 📥 Clonar Repositório
+## Como executar localmente
 
 ```bash
-git clone <URL_DO_REPOSITORIO>
+./mvnw spring-boot:run
 ```
+
+No Windows:
 
 ```bash
-cd PetCarehub
+mvnw.cmd spring-boot:run
 ```
 
----
+A API sobe em:
 
-# ⚙️ Configurar Variáveis de Ambiente
-
-## application.properties
-
-```properties
-spring.datasource.url=${DB_URL}
-spring.datasource.username=${DB_USERNAME}
-spring.datasource.password=${DB_PASSWORD}
-```
-
-###  Variáveis de Ambiente
-
-| Variável      | Descrição             |
-| ------------- | --------------------- |
-| `DB_URL`      | URL de conexão Oracle |
-| `DB_USERNAME` | Usuário do banco      |
-| `DB_PASSWORD` | Senha do banco        |
-
----
-
-#  Executar Aplicação
-
-```bash
-mvn spring-boot:run
-```
-
-##  Porta Padrão
-
-```text
+```txt
 http://localhost:8080
 ```
 
----
+Swagger:
 
+```txt
+http://localhost:8080/swagger-ui.html
+```
 
-#  Exemplos de Requests e Responses
+H2 Console:
 
-# Criar Responsável
+```txt
+http://localhost:8080/h2-console
+```
 
-## Request
+Dados do H2:
 
-```json
-{
-  "nome": "Carlos Silva",
-  "email": "carlos@email.com",
-  "telefone": "11999999999",
-  "cpf": "12345678900",
-  "ativo": "S"
-}
+```txt
+JDBC URL: jdbc:h2:mem:petcarehub
+User: sa
+Password: vazio
 ```
 
 ---
 
-#  Criar Pet
+## Como executar com Oracle
 
-## Request
+Configure as variáveis de ambiente:
+
+```bash
+DB_URL=jdbc:oracle:thin:@localhost:1521/XEPDB1
+DB_USERNAME=PETCARE
+DB_PASSWORD=petcare123
+```
+
+Execute com o perfil Oracle:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=oracle
+```
+
+No perfil Oracle, o projeto usa:
+
+```properties
+spring.jpa.hibernate.ddl-auto=validate
+```
+
+Ou seja, espera que as tabelas já existam conforme o script/modelagem da disciplina de Database.
+
+---
+
+## Principais recursos implementados
+
+- CRUD de responsáveis
+- CRUD de clínicas para vínculo de domínio
+- CRUD de pets
+- CRUD de consultas
+- DTOs de entrada e saída
+- Bean Validation nos requests
+- Paginação e ordenação com Pageable
+- Busca por parâmetros
+- Busca combinada de pets
+- Tratamento global de exceções com `@RestControllerAdvice`
+- Cache em protocolos preventivos
+- Score de saúde do pet
+- Alertas automáticos a partir de leituras IoT simuladas
+- Timeline longitudinal do pet
+- Plano preventivo
+- Swagger documentando os endpoints
+- Collection Insomnia exportada
+
+---
+
+## Enums importantes para teste
+
+Use exatamente estes valores no JSON:
+
+### Espécie
+
+```txt
+CAO
+GATO
+OUTRO
+```
+
+### Sexo
+
+```txt
+M
+F
+```
+
+### Tipo de consulta
+
+```txt
+CHECKUP
+VACINA
+EMERGENCIA
+RETORNO
+EXAME
+```
+
+### Status de atividade da coleira
+
+```txt
+DORMINDO
+ATIVO
+BRINCANDO
+```
+
+---
+
+## Endpoints principais
+
+### Responsáveis
+
+```http
+GET    /responsaveis
+GET    /responsaveis/{id}
+GET    /responsaveis/nome?nome=Kelson
+GET    /responsaveis/email?email=petcare
+GET    /responsaveis/cpf?cpf=123
+POST   /responsaveis
+PUT    /responsaveis/{id}
+DELETE /responsaveis/{id}
+```
+
+### Clínicas
+
+```http
+GET    /clinicas
+GET    /clinicas/{id}
+GET    /clinicas/nome?nome=Clyvo
+GET    /clinicas/{id}/pets-em-risco?nivel=vermelho
+POST   /clinicas
+PUT    /clinicas/{id}
+DELETE /clinicas/{id}
+```
+
+### Pets
+
+```http
+GET    /pets
+GET    /pets/{id}
+GET    /pets/nome?nome=Rex
+GET    /pets/busca?especie=CAO&raca=Golden&clinicaId=1&scoreMin=0&scoreMax=100
+POST   /pets
+PUT    /pets/{id}
+DELETE /pets/{id}
+```
+
+### Score de saúde
+
+```http
+GET  /pets/{id}/score-saude
+POST /pets/{id}/score-saude/calcular
+GET  /pets/{id}/score-saude/historico
+```
+
+### Alertas
+
+```http
+GET    /alertas?petId=1&resolvido=false
+GET    /pets/{id}/alertas/ativos
+POST   /alertas
+PUT    /alertas/{id}/resolver
+DELETE /alertas/{id}
+```
+
+### Leituras IoT simuladas
+
+```http
+POST /leituras/coleira
+POST /leituras/comedouro
+POST /leituras/ambiente
+
+GET /pets/{id}/leituras/coleira
+GET /pets/{id}/leituras/comedouro
+GET /pets/{id}/leituras/ambiente
+```
+
+### Timeline e plano preventivo
+
+```http
+GET /pets/{id}/timeline
+GET /pets/{id}/plano-preventivo
+```
+
+### Protocolos preventivos com cache
+
+```http
+GET  /protocolos-preventivos
+GET  /protocolos-preventivos/por-especie?especie=CAO
+POST /protocolos-preventivos
+```
+
+---
+
+## Exemplos de JSON
+
+### Criar responsável
+
+```json
+{
+  "nome": "Kelson Silva",
+  "email": "kelson.petcare@example.com",
+  "telefone": "11999990000",
+  "cpf": "12345678901"
+}
+```
+
+### Criar pet
 
 ```json
 {
   "nome": "Rex",
-  "especie": "CACHORRO",
+  "especie": "CAO",
   "raca": "Golden Retriever",
+  "dataNascimento": "2021-05-10",
   "pesoKg": 28.5,
   "sexo": "M",
-  "ativo": "S",
-  "responsavel": {
-    "id": 1
-  },
-  "clinica": {
-    "id": 1
-  }
+  "condicoesCronicas": "Tendência a obesidade",
+  "ativo": true,
+  "responsavelId": 1,
+  "clinicaId": 1
 }
+```
+
+### Registrar leitura da coleira
+
+```json
+{
+  "petId": 1,
+  "statusAtividade": "ATIVO",
+  "nivelBateria": 18
+}
+```
+
+Ao registrar bateria menor que 20%, a API cria automaticamente um alerta de bateria baixa e recalcula o score.
+
+### Registrar leitura do comedouro
+
+```json
+{
+  "petId": 1,
+  "nivelRacaoPct": 15,
+  "pesoConsumidoG": 25
+}
+```
+
+Ao registrar ração abaixo de 20% ou consumo muito baixo, a API cria alertas automáticos.
+
+### Registrar leitura ambiente
+
+```json
+{
+  "petId": 1,
+  "temperaturaAmbiente": 34,
+  "umidadePct": 80,
+  "qualidadeArPpm": 1200,
+  "petPresente": true
+}
+```
+
+Ao registrar ambiente ruim, temperatura fora da faixa ou umidade inadequada, a API cria alertas automáticos.
+
+---
+
+## Regra do Score de Saúde
+
+A API começa com 100 pontos e subtrai pontos conforme os riscos:
+
+| Condição | Penalidade |
+|---|---:|
+| Bateria da coleira abaixo de 20% | -20 |
+| Ração abaixo de 20% | -10 |
+| Consumo alimentar muito baixo | -20 |
+| Temperatura fora da faixa | -15 |
+| Umidade fora da faixa | -10 |
+| Qualidade do ar ruim | -15 |
+| Alerta grave ativo | -10 |
+
+Categorias:
+
+| Score | Categoria |
+|---|---|
+| 80 a 100 | VERDE |
+| 50 a 79 | AMARELO |
+| 0 a 49 | VERMELHO |
+
+---
+
+## Organização do projeto
+
+```txt
+src/main/java/fiap/com/br/petcarehub
+├── config
+├── controller
+├── dto
+│   ├── request
+│   └── response
+├── entity
+├── enums
+├── exception
+├── repository
+└── service
 ```
 
 ---
 
-#  Criar Consulta
+## Documentação complementar
 
-## Request
+A pasta `docs/` contém:
 
-```json
-{
-  "pet": {
-    "id": 1
-  },
-  "clinica": {
-    "id": 1
-  },
-  "dataConsulta": "2026-05-17",
-  "tipo": "ROTINA",
-  "descricao": "Consulta de rotina",
-  "diagnostico": "Saudável",
-  "valor": 120.00,
-  "retornoRecomendado": "N"
-}
+```txt
+docs/
+├── arquitetura.md
+├── arquitetura.png
+├── classes-dominio.md
+├── cronograma.md
+├── der.png
+├── diagrama-classes.png
+└── petcarehub_insomnia_collection.json
 ```
 
 ---
 
-# Exemplo de Response
+## Collection Insomnia
 
-```json
-{
-  "id": 1,
-  "petNome": "Rex",
-  "clinicaNome": "PetCare Center",
-  "dataConsulta": "2026-05-17",
-  "tipo": "ROTINA",
-  "descricao": "Consulta de rotina",
-  "diagnostico": "Saudável",
-  "valor": 120.00,
-  "retornoRecomendado": "N",
-  "dataRetorno": null
-}
+Arquivo principal:
+
+```txt
+petcarehub_insomnia_collection.json
 ```
+
+Cópia dentro de docs:
+
+```txt
+docs/petcarehub_insomnia_collection.json
+```
+
+---
+
+## Integração com o Challenge
+
+A API Java cobre o núcleo da solução:
+
+- continuidade do cuidado do pet;
+- histórico longitudinal;
+- geração de alertas preventivos;
+- cálculo de score de saúde;
+- dados estruturados para app mobile e dashboard clínico;
+- base para integração com IoT via MQTT nas próximas sprints.
+

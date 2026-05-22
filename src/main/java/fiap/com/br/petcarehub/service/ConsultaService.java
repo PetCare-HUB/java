@@ -1,56 +1,86 @@
 package fiap.com.br.petcarehub.service;
 
+import fiap.com.br.petcarehub.dto.request.ConsultaRequest;
+import fiap.com.br.petcarehub.dto.response.ConsultaResponse;
+import fiap.com.br.petcarehub.entity.Clinica;
 import fiap.com.br.petcarehub.entity.Consulta;
+import fiap.com.br.petcarehub.entity.Pet;
 import fiap.com.br.petcarehub.repository.ConsultaRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class ConsultaService {
 
     private final ConsultaRepository repository;
+    private final PetService petService;
+    private final ClinicaService clinicaService;
 
-    private Consulta findConsultaById(Long id) {
-        return repository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "ID " + id + " não encontrado"
-                )
-        );
+    @Transactional(readOnly = true)
+    public Page<ConsultaResponse> listar(Pageable pageable) {
+        return repository.findAll(pageable).map(DtoMapper::toResponse);
     }
 
-    public List<Consulta> findAll() {
-        return repository.findAll();
+    @Transactional(readOnly = true)
+    public Consulta findEntityById(Long id) {
+        return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Consulta não encontrada: " + id));
     }
 
-    public Page<Consulta> getAllPaginado(Pageable pageable) {
-        return repository.findAll(pageable);
+    @Transactional(readOnly = true)
+    public ConsultaResponse buscarPorId(Long id) {
+        return DtoMapper.toResponse(findEntityById(id));
     }
 
-    public Consulta add(Consulta consulta) {
-        return repository.save(consulta);
+    @Transactional
+    public ConsultaResponse criar(ConsultaRequest request) {
+        Pet pet = petService.findEntityById(request.petId());
+        Clinica clinica = clinicaService.findEntityById(request.clinicaId());
+        Consulta consulta = Consulta.builder()
+                .pet(pet)
+                .clinica(clinica)
+                .dataConsulta(request.dataConsulta())
+                .tipo(request.tipo())
+                .observacoes(request.observacoes())
+                .valor(request.valor())
+                .build();
+        return DtoMapper.toResponse(repository.save(consulta));
     }
 
-    public Consulta findById(Long id) {
-        return findConsultaById(id);
+    @Transactional
+    public ConsultaResponse atualizar(Long id, ConsultaRequest request) {
+        Consulta consulta = findEntityById(id);
+        Pet pet = petService.findEntityById(request.petId());
+        Clinica clinica = clinicaService.findEntityById(request.clinicaId());
+        consulta.setPet(pet);
+        consulta.setClinica(clinica);
+        consulta.setDataConsulta(request.dataConsulta());
+        consulta.setTipo(request.tipo());
+        consulta.setObservacoes(request.observacoes());
+        consulta.setValor(request.valor());
+        return DtoMapper.toResponse(repository.save(consulta));
     }
 
-    public void delete(Long id) {
-        findConsultaById(id);
-        repository.deleteById(id);
+    @Transactional
+    public void deletar(Long id) {
+        Consulta consulta = findEntityById(id);
+        repository.delete(consulta);
     }
 
-    public Consulta update(Long id, Consulta newConsulta) {
-        findConsultaById(id);
-        newConsulta.setId(id);
-        return repository.save(newConsulta);
+    @Transactional(readOnly = true)
+    public Page<ConsultaResponse> buscarPorPet(Long petId, Pageable pageable) {
+        return repository.findByPetId(petId, pageable).map(DtoMapper::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ConsultaResponse> ultimasPorPet(Long petId) {
+        return repository.findTop10ByPetIdOrderByDataConsultaDesc(petId).stream().map(DtoMapper::toResponse).toList();
     }
 }

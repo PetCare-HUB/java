@@ -1,9 +1,7 @@
 package fiap.com.br.petcarehub.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import fiap.com.br.petcarehub.enums.EspeciePet;
 import fiap.com.br.petcarehub.enums.SexoPet;
-import fiap.com.br.petcarehub.validation.MaxAge;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -11,79 +9,78 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "PET")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
+@Table(name = "T_PET")
 public class Pet {
 
     @Id
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "seq_pet"
-    )
-    @SequenceGenerator(
-            name = "seq_pet",
-            sequenceName = "SEQ_PET",
-            allocationSize = 1
-    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_PET")
+    @SequenceGenerator(name = "SEQ_PET", sequenceName = "SEQ_PET", allocationSize = 1)
     @Column(name = "ID_PET")
     private Long id;
 
-
-    @ManyToOne
-    @JoinColumn(name = "ID_RESPONSAVEL", nullable = false)
-    @NotNull
-    private Responsavel responsavel;
-
-    @ManyToOne
-    @JoinColumn(name = "ID_CLINICA", nullable = false)
-    @NotNull
-    private Clinica clinica;
-
-    @Column(name = "NOME", nullable = false, length = 100)
     @NotBlank
     @Size(max = 100)
+    @Column(name = "NOME", nullable = false, length = 100)
     private String nome;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "ESPECIE", nullable = false)
     @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ESPECIE", nullable = false, length = 20)
     private EspeciePet especie;
 
+    @Size(max = 100)
     @Column(name = "RACA", length = 100)
-    @Size(max = 50)
     private String raca;
 
+    @PastOrPresent
     @Column(name = "DATA_NASCIMENTO")
-    @MaxAge(25)
     private LocalDate dataNascimento;
 
-    @Column(name = "PESO_KG")
     @Positive
+    @Column(name = "PESO_KG", precision = 6, scale = 2)
     private BigDecimal pesoKg;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "SEXO", columnDefinition = "CHAR(1)")
+    @Column(name = "SEXO", length = 1)
     private SexoPet sexo;
 
-    @Column(name = "CONDICOES_CRONICAS", length = 500)
     @Size(max = 500)
+    @Column(name = "CONDICOES_CRONICAS", length = 500)
     private String condicoesCronicas;
 
+    @Builder.Default
+    @Column(name = "ATIVO", nullable = false)
+    private Boolean ativo = true;
+
+    @Builder.Default
+    @Column(name = "SCORE_ATUAL")
+    private Integer scoreAtual = 100;
+
     @CreationTimestamp
-    @Column(name = "DATA_CADASTRO")
-    private LocalDate dataCadastro;
+    @Column(name = "DATA_CADASTRO", nullable = false)
+    private LocalDateTime dataCadastro;
 
-    @Column(name = "ATIVO")
-    private Character ativo;
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_RESPONSAVEL", nullable = false)
+    private Responsavel responsavel;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "pet",
-            cascade = CascadeType.ALL)
-    private List<Consulta> consultas;
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_CLINICA", nullable = false)
+    private Clinica clinica;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "pet")
+    private List<Consulta> consultas = new ArrayList<>();
 }

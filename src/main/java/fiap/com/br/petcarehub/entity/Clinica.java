@@ -1,69 +1,49 @@
 package fiap.com.br.petcarehub.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "CLINICA")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
+@Table(name = "T_CLINICA", uniqueConstraints = {
+        @UniqueConstraint(name = "UK_CLINICA_CNPJ", columnNames = "CNPJ")
+})
 public class Clinica {
 
     @Id
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "seq_clinica"
-    )
-    @SequenceGenerator(
-            name = "seq_clinica",
-            sequenceName = "SEQ_CLINICA",
-            allocationSize = 1
-    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_CLINICA")
+    @SequenceGenerator(name = "SEQ_CLINICA", sequenceName = "SEQ_CLINICA", allocationSize = 1)
     @Column(name = "ID_CLINICA")
     private Long id;
 
-    @Column(name = "NOME", nullable = false, length = 100)
     @NotBlank
-    @Size(max = 40)
+    @Size(max = 120)
+    @Column(name = "NOME", nullable = false, length = 120)
     private String nome;
 
-    @Column(name = "CNPJ", nullable = false, unique = true, length = 18)
     @NotBlank
-    @Size(max = 14)
+    @Size(max = 18)
+    @Column(name = "CNPJ", nullable = false, length = 18)
     private String cnpj;
 
-    @Column(name = "EMAIL", length = 100)
-    @Email
-    @Size(max = 100)
-    private String email;
-
-    @Column(name = "TELEFONE", length = 20)
-    @Size(max = 12)
-    private String telefone;
-
-    @Column(name = "ENDERECO", length = 255)
+    @Size(max = 200)
+    @Column(name = "ENDERECO", length = 200)
     private String endereco;
 
-    @Column(name = "ATIVO")
-    private Character ativo;
+    @Size(max = 20)
+    @Column(name = "TELEFONE", length = 20)
+    private String telefone;
 
-    @JsonIgnore
-    @OneToMany(
-            mappedBy = "clinica",
-            cascade = CascadeType.ALL
-    )
-    private List<Pet> pets;
-
-    @JsonIgnore
-    @OneToMany(
-            mappedBy = "clinica",
-            cascade = CascadeType.ALL
-    )
-    private List<Consulta> consultas;
+    @Builder.Default
+    @OneToMany(mappedBy = "clinica")
+    private List<Pet> pets = new ArrayList<>();
 }

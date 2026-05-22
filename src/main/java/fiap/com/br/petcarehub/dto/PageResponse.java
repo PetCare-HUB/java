@@ -1,23 +1,27 @@
 package fiap.com.br.petcarehub.dto;
 
-
-import lombok.Getter;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
 
-@Getter
-public class PageResponse<T> {
-
-    private List<T> content;
-    private int pagina;
-    private int totalPaginas;
-    private long totalElementos;
-
+public record PageResponse<T>(
+        List<T> content,
+        int page,
+        int size,
+        long totalElements,
+        int totalPages,
+        boolean first,
+        boolean last
+) {
     public PageResponse(Page<T> page) {
-        this.content = page.getContent();
-        this.pagina = page.getNumber();
-        this.totalPaginas = page.getTotalPages();
-        this.totalElementos = page.getTotalElements();
+        this(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.isFirst(),
+                page.isLast()
+        );
     }
 }

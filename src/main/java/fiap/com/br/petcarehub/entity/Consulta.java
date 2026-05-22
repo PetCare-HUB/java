@@ -6,63 +6,48 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "CONSULTA")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
+@Table(name = "T_CONSULTA")
 public class Consulta {
 
     @Id
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "seq_consulta"
-    )
-    @SequenceGenerator(
-            name = "seq_consulta",
-            sequenceName = "SEQ_CONSULTA",
-            allocationSize = 1
-    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_CONSULTA")
+    @SequenceGenerator(name = "SEQ_CONSULTA", sequenceName = "SEQ_CONSULTA", allocationSize = 1)
     @Column(name = "ID_CONSULTA")
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "ID_PET", nullable = false)
     @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_PET", nullable = false)
     private Pet pet;
 
-    @ManyToOne
-    @JoinColumn(name = "ID_CLINICA", nullable = false)
     @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_CLINICA", nullable = false)
     private Clinica clinica;
 
-    @Column(name = "DATA_CONSULTA")
     @NotNull
-    private LocalDate dataConsulta;
+    @FutureOrPresent
+    @Column(name = "DATA_CONSULTA", nullable = false)
+    private LocalDateTime dataConsulta;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "TIPO_CONSULTA")
     @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "TIPO", nullable = false, length = 30)
     private TipoConsulta tipo;
 
-    @Column(name = "DESCRICAO", length = 1000)
-    @Size(max = 400)
-    private String descricao;
-
-    @Column(name = "DIAGNOSTICO", length = 1000)
     @Size(max = 1000)
-    private String diagnostico;
+    @Column(name = "OBSERVACOES", length = 1000)
+    private String observacoes;
 
-    @Column(name = "VALOR")
-    @DecimalMin(value = "0.0", inclusive = true)
+    @PositiveOrZero
+    @Column(name = "VALOR", precision = 8, scale = 2)
     private BigDecimal valor;
-
-    @Column(name = "RETORNO_RECOMENDADO")
-    private Character retornoRecomendado;
-
-    @Column(name = "DATA_RETORNO")
-    private LocalDate dataRetorno;
 }
