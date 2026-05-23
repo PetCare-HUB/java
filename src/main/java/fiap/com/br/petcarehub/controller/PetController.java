@@ -4,8 +4,6 @@ import fiap.com.br.petcarehub.dto.PageResponse;
 import fiap.com.br.petcarehub.dto.request.PetRequest;
 import fiap.com.br.petcarehub.dto.response.*;
 import fiap.com.br.petcarehub.enums.EspeciePet;
-import fiap.com.br.petcarehub.enums.SexoPet;
-import fiap.com.br.petcarehub.projection.PetSummary;
 import fiap.com.br.petcarehub.service.*;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -65,27 +63,22 @@ public class PetController {
     }
 
     @GetMapping("/nome")
-    @Operation(summary = "Buscar pets por nome", description = "Retorna a lista de pets filtrada pelo nome informado.")
+    @Operation(summary = "Buscar pets por nome")
     public PageResponse<PetResponse> buscarPorNome(@RequestParam String nome, Pageable pageable) {
         return new PageResponse<>(service.buscarPorNome(nome, pageable));
     }
 
-    @GetMapping("/especie")
-    @Operation(summary = "Buscar pets por espécie", description = "Retorna a lista de pets filtrada pela espécie informada.")
-    public PageResponse<PetResponse> buscarPorEspecie(@RequestParam EspeciePet especie, Pageable pageable) {
-        return new PageResponse<>(service.buscarPorEspecie(especie, pageable));
-    }
-
-    @GetMapping("/raca")
-    @Operation(summary = "Buscar pets por raça", description = "Retorna a lista de pets filtrada pela raça informada.")
-    public PageResponse<PetResponse> buscarPorRaca(@RequestParam String raca, Pageable pageable) {
-        return new PageResponse<>(service.buscarPorRaca(raca, pageable));
-    }
-
-    @GetMapping("/sexo")
-    @Operation(summary = "Buscar pets por sexo", description = "Retorna a lista de pets filtrada pelo sexo informado.")
-    public PageResponse<PetResponse> buscarPorSexo(@RequestParam SexoPet sexo, Pageable pageable) {
-        return new PageResponse<>(service.buscarPorSexo(sexo, pageable));
+    @GetMapping("/busca")
+    @Operation(summary = "Busca combinada de pets", description = "Busca por espécie, raça, clínica e faixa de score.")
+    public PageResponse<PetResponse> buscarComFiltros(
+            @RequestParam(required = false) EspeciePet especie,
+            @RequestParam(required = false) String raca,
+            @RequestParam(required = false) Long clinicaId,
+            @RequestParam(required = false) Integer scoreMin,
+            @RequestParam(required = false) Integer scoreMax,
+            @PageableDefault(size = 10, sort = "scoreAtual", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+        return new PageResponse<>(service.buscarComFiltros(especie, raca, clinicaId, scoreMin, scoreMax, pageable));
     }
 
     @GetMapping("/{id}/score-saude")

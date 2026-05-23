@@ -6,7 +6,6 @@ import fiap.com.br.petcarehub.entity.Clinica;
 import fiap.com.br.petcarehub.entity.Pet;
 import fiap.com.br.petcarehub.entity.Responsavel;
 import fiap.com.br.petcarehub.enums.EspeciePet;
-import fiap.com.br.petcarehub.enums.SexoPet;
 import fiap.com.br.petcarehub.repository.PetRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -95,18 +94,8 @@ public class PetService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PetResponse> buscarPorEspecie(EspeciePet especie, Pageable pageable) {
-        return repository.findByEspecie(especie, pageable).map(DtoMapper::toResponse);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<PetResponse> buscarPorRaca(String raca, Pageable pageable) {
-        return repository.findByRacaContainingIgnoreCase(raca, pageable).map(DtoMapper::toResponse);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<PetResponse> buscarPorSexo(SexoPet sexo, Pageable pageable) {
-        return repository.findBySexo(sexo, pageable).map(DtoMapper::toResponse);
+    public Page<PetResponse> buscarComFiltros(EspeciePet especie, String raca, Long clinicaId, Integer scoreMin, Integer scoreMax, Pageable pageable) {
+        return repository.buscarComFiltros(especie, raca, clinicaId, scoreMin, scoreMax, pageable).map(DtoMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
