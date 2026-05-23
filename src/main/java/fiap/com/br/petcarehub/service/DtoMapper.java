@@ -2,6 +2,8 @@ package fiap.com.br.petcarehub.service;
 
 import fiap.com.br.petcarehub.dto.response.*;
 import fiap.com.br.petcarehub.entity.*;
+import fiap.com.br.petcarehub.dto.request.ClinicaRequest;
+import fiap.com.br.petcarehub.dto.request.*;;
 
 public final class DtoMapper {
 
@@ -159,5 +161,21 @@ public final class DtoMapper {
                 protocolo.getIdadeMesesAplicacao(),
                 protocolo.getIntervaloReforcoDias()
         );
+    }
+
+    public static Clinica toClinica(ClinicaRequest request) {
+        return Clinica.builder()
+                .nome(request.nome())
+                .cnpj(request.cnpj())
+                .endereco(request.endereco())
+                .telefone(request.telefone())
+                .build();
+    }
+
+    public static void updateClinica(Clinica clinica, ClinicaRequest request) {
+        if (request.nome() != null) clinica.setNome(request.nome());
+        if (request.cnpj() != null) clinica.setCnpj(request.cnpj());
+        if (request.endereco() != null) clinica.setEndereco(request.endereco());
+        if (request.telefone() != null) clinica.setTelefone(request.telefone());
     }
 }
