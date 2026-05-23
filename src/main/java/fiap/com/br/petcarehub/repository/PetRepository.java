@@ -1,16 +1,16 @@
 package fiap.com.br.petcarehub.repository;
 
 import fiap.com.br.petcarehub.entity.Pet;
-import fiap.com.br.petcarehub.enums.EspeciePet;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface PetRepository extends JpaRepository<Pet, Long> {
+public interface PetRepository extends JpaRepository<Pet, Long>, JpaSpecificationExecutor<Pet> {
 
     Page<Pet> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
 
@@ -39,24 +39,6 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
             @Param("clinicaId") Long clinicaId,
             @Param("scoreMin") Integer scoreMin,
             @Param("scoreMax") Integer scoreMax
-    );
-
-    @Query("""
-            SELECT p
-            FROM Pet p
-            WHERE (:especie IS NULL OR p.especie = :especie)
-              AND (:raca IS NULL OR LOWER(p.raca) LIKE LOWER(CONCAT('%', :raca, '%')))
-              AND (:clinicaId IS NULL OR p.clinica.id = :clinicaId)
-              AND (:scoreMin IS NULL OR p.scoreAtual >= :scoreMin)
-              AND (:scoreMax IS NULL OR p.scoreAtual <= :scoreMax)
-            """)
-    Page<Pet> buscarComFiltros(
-            @Param("especie") EspeciePet especie,
-            @Param("raca") String raca,
-            @Param("clinicaId") Long clinicaId,
-            @Param("scoreMin") Integer scoreMin,
-            @Param("scoreMax") Integer scoreMax,
-            Pageable pageable
     );
 
     @Query("""

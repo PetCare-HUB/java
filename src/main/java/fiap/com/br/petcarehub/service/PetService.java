@@ -7,6 +7,7 @@ import fiap.com.br.petcarehub.entity.Pet;
 import fiap.com.br.petcarehub.entity.Responsavel;
 import fiap.com.br.petcarehub.enums.EspeciePet;
 import fiap.com.br.petcarehub.repository.PetRepository;
+import fiap.com.br.petcarehub.specification.PetSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -35,7 +36,8 @@ public class PetService {
     @Cacheable(value = "pets", key = "#id")
     @Transactional(readOnly = true)
     public Pet findEntityById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pet não encontrado: " + id));
+        return repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pet não encontrado: " + id));
     }
 
     @Transactional(readOnly = true)
@@ -48,6 +50,7 @@ public class PetService {
     public PetResponse criar(PetRequest request) {
         Responsavel responsavel = responsavelService.findEntityById(request.responsavelId());
         Clinica clinica = clinicaService.findEntityById(request.clinicaId());
+
         Pet pet = Pet.builder()
                 .nome(request.nome())
                 .especie(request.especie())
@@ -56,11 +59,12 @@ public class PetService {
                 .pesoKg(request.pesoKg())
                 .sexo(request.sexo())
                 .condicoesCronicas(request.condicoesCronicas())
-                .ativo(request.ativo() == null ? true : request.ativo())
+                .ativo(request.ativo() != null ? request.ativo() : true)
                 .scoreAtual(100)
                 .responsavel(responsavel)
                 .clinica(clinica)
                 .build();
+
         return DtoMapper.toResponse(repository.save(pet));
     }
 
@@ -70,6 +74,7 @@ public class PetService {
         Pet pet = findEntityById(id);
         Responsavel responsavel = responsavelService.findEntityById(request.responsavelId());
         Clinica clinica = clinicaService.findEntityById(request.clinicaId());
+
         pet.setNome(request.nome());
         pet.setEspecie(request.especie());
         pet.setRaca(request.raca());
@@ -77,9 +82,10 @@ public class PetService {
         pet.setPesoKg(request.pesoKg());
         pet.setSexo(request.sexo());
         pet.setCondicoesCronicas(request.condicoesCronicas());
-        pet.setAtivo(request.ativo() == null ? true : request.ativo());
+        pet.setAtivo(request.ativo() != null ? request.ativo() : pet.getAtivo()); // ← bug corrigido
         pet.setResponsavel(responsavel);
         pet.setClinica(clinica);
+
         return DtoMapper.toResponse(repository.save(pet));
     }
 
@@ -92,12 +98,21 @@ public class PetService {
 
     @Transactional(readOnly = true)
     public Page<PetResponse> buscarPorNome(String nome, Pageable pageable) {
-        return repository.findByNomeContainingIgnoreCase(nome, pageable).map(DtoMapper::toResponse);
+        return repository.findByNomeContainingIgnoreCase(nome, pageable)
+                .map(DtoMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public Page<PetResponse> buscarComFiltros(EspeciePet especie, String raca, Long clinicaId, Integer scoreMin, Integer scoreMax, Pageable pageable) {
-        return repository.buscarComFiltros(especie, raca, clinicaId, scoreMin, scoreMax, pageable).map(DtoMapper::toResponse);
+    public Page<PetResponse> buscarComFiltros(
+            EspeciePet especie,
+            String raca,
+            Long clinicaId,
+            Integer scoreMin,
+            Integer scoreMax,
+            Pageable pageable
+    ) {
+        var spec = PetSpecification.filtrar(especie, raca, clinicaId, scoreMin, scoreMax);
+        return repository.findAll(spec, pageable).map(DtoMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
