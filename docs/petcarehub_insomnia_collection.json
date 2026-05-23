@@ -869,9 +869,17 @@
       "name": "Marcar alerta como resolvido",
       "method": "PUT",
       "url": "{{ _.base_url }}/alertas/{{ _.alerta_id }}/resolver",
-      "headers": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
       "parameters": [],
-      "body": {},
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"resolvido\": true \n}"
+      },
       "metaSortKey": 56
     },
     {
