@@ -29,7 +29,8 @@ public class PetSpecification {
             if (raca != null && !raca.isBlank()) {
                 predicates.add(cb.like(
                         cb.lower(root.get("raca")),
-                        "%" + raca.toLowerCase() + "%"
+                        "%" + raca.toLowerCase() + "%",
+                        '\\'
                 ));
             }
 

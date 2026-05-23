@@ -13,11 +13,11 @@ O objetivo da API é apoiar a continuidade do cuidado do pet, conectando respons
 - Java 17
 - Spring Boot 3.3.5
 - Spring Web
-- Spring Data JPA
-- Bean Validation
+- Spring Data JPA (com Criteria / Specifications para filtros dinâmicos)
+- Bean Validation (incluindo validações customizadas)
 - H2 Database para execução local
 - Oracle via perfil `oracle`
-- Swagger/OpenAPI
+- Swagger/OpenAPI (Springdoc)
 - Spring Cache + Caffeine
 - Lombok
 
@@ -91,21 +91,22 @@ Ou seja, espera que as tabelas já existam conforme o script/modelagem da discip
 
 ## Principais recursos implementados
 
-- CRUD de responsáveis
-- CRUD de clínicas para vínculo de domínio
-- CRUD de pets
-- CRUD de consultas
+- CRUD de responsáveis com busca por nome, email e CPF
+- CRUD de clínicas com vínculo de domínio
+- CRUD de pets com busca combinada via JPA Specifications
+- CRUD de consultas com busca por pet
 - DTOs de entrada e saída
 - Bean Validation nos requests
+- Validações customizadas (`@MaxAge` para idade máxima do pet)
 - Paginação e ordenação com Pageable
-- Busca por parâmetros
-- Busca combinada de pets
+- Busca combinada de pets com filtros dinâmicos (Criteria API)
 - Tratamento global de exceções com `@RestControllerAdvice`
 - Cache em protocolos preventivos
 - Score de saúde do pet
 - Alertas automáticos a partir de leituras IoT simuladas
 - Timeline longitudinal do pet
 - Plano preventivo
+- Métricas, agenda e alertas IoT por clínica
 - Swagger documentando os endpoints
 - Collection Insomnia exportada
 
@@ -148,9 +149,41 @@ ATIVO
 BRINCANDO
 ```
 
+### Tipo de alerta
+
+```txt
+BATERIA_COLEIRA_BAIXA
+RACAO_BAIXA
+BAIXA_ALIMENTACAO
+AMBIENTE_RUIM
+TEMPERATURA_FORA_DA_FAIXA
+UMIDADE_FORA_DA_FAIXA
+SCORE_CRITICO
+CONSULTA_ATRASADA
+```
+
+### Nível do alerta
+
+```txt
+BAIXO
+MEDIO
+ALTO
+CRITICO
+```
+
+### Tipo de evento preventivo
+
+```txt
+VACINA
+CHECKUP
+VERMIFUGO
+RETORNO
+MEDICAMENTO
+```
+
 ---
 
-## Endpoints principais
+## Endpoints
 
 ### Responsáveis
 
@@ -171,11 +204,16 @@ DELETE /responsaveis/{id}
 GET    /clinicas
 GET    /clinicas/{id}
 GET    /clinicas/nome?nome=Clyvo
-GET    /clinicas/{id}/pets-em-risco?nivel=vermelho
 POST   /clinicas
 PUT    /clinicas/{id}
 DELETE /clinicas/{id}
+GET    /clinicas/{id}/pets-em-risco?nivel=vermelho
+GET    /clinicas/{id}/metricas?periodo=90d
+GET    /clinicas/{id}/agenda/proximos-30-dias
+GET    /clinicas/{id}/alertas-iot/hoje
 ```
+
+> O parâmetro `periodo` aceita valores no formato `Nd` onde `N` é o número de dias. Exemplos: `7d`, `30d`, `90d` (padrão).
 
 ### Pets
 
@@ -189,7 +227,9 @@ PUT    /pets/{id}
 DELETE /pets/{id}
 ```
 
-### Score de saúde
+> O endpoint `/pets/busca` usa **JPA Specifications** para combinar filtros dinâmicos. Todos os parâmetros são opcionais e podem ser combinados livremente.
+
+### Score de saúde do pet
 
 ```http
 GET  /pets/{id}/score-saude
@@ -197,15 +237,35 @@ POST /pets/{id}/score-saude/calcular
 GET  /pets/{id}/score-saude/historico
 ```
 
+### Timeline e plano preventivo do pet
+
+```http
+GET /pets/{id}/timeline
+GET /pets/{id}/plano-preventivo
+```
+
+### Consultas
+
+```http
+GET    /consultas
+GET    /consultas/{id}
+GET    /consultas/pet/{petId}
+POST   /consultas
+PUT    /consultas/{id}
+DELETE /consultas/{id}
+```
+
 ### Alertas
 
 ```http
-GET    /alertas?petId=1&resolvido=false
+GET    /alertas?petId=1&tipo=BATERIA_COLEIRA_BAIXA&resolvido=false
 GET    /pets/{id}/alertas/ativos
 POST   /alertas
 PUT    /alertas/{id}/resolver
 DELETE /alertas/{id}
 ```
+
+> O endpoint `/alertas` usa **JPA Specifications** para filtros dinâmicos por `petId`, `tipo` e `resolvido`.
 
 ### Leituras IoT simuladas
 
@@ -219,20 +279,38 @@ GET /pets/{id}/leituras/comedouro
 GET /pets/{id}/leituras/ambiente
 ```
 
-### Timeline e plano preventivo
-
-```http
-GET /pets/{id}/timeline
-GET /pets/{id}/plano-preventivo
-```
-
-### Protocolos preventivos com cache
+### Protocolos preventivos (com cache Caffeine)
 
 ```http
 GET  /protocolos-preventivos
 GET  /protocolos-preventivos/por-especie?especie=CAO
 POST /protocolos-preventivos
 ```
+
+### Eventos preventivos
+
+```http
+POST /eventos-preventivos
+PUT  /eventos-preventivos/{id}/realizar
+```
+
+---
+
+## Validações Bean Validation
+
+Os DTOs de request usam Bean Validation padrão (`@NotBlank`, `@NotNull`, `@Size`, `@Positive`, `@Min`, `@Max`, `@Email`, `@Past`, `@PastOrPresent`, `@FutureOrPresent`).
+
+### Validação customizada `@MaxAge`
+
+Criamos a validação customizada `@MaxAge` para limitar a idade máxima de um pet a partir da data de nascimento. Está aplicada em `PetRequest.dataNascimento`:
+
+```java
+@PastOrPresent
+@MaxAge(25)
+LocalDate dataNascimento
+```
+
+Implementação em `validation/MaxAge.java` + `validation/MaxAgeValidator.java`. Isso demonstra o uso de `ConstraintValidator` customizado, complementando as validações padrão.
 
 ---
 
@@ -246,6 +324,17 @@ POST /protocolos-preventivos
   "email": "kelson.petcare@example.com",
   "telefone": "11999990000",
   "cpf": "12345678901"
+}
+```
+
+### Criar clínica
+
+```json
+{
+  "nome": "Clyvo Vet Paulista",
+  "cnpj": "12.345.678/0001-90",
+  "endereco": "Av. Paulista, 1000",
+  "telefone": "1133334444"
 }
 ```
 
@@ -265,6 +354,23 @@ POST /protocolos-preventivos
   "clinicaId": 1
 }
 ```
+
+> Pets com `dataNascimento` há mais de 25 anos retornam `400 Bad Request` (validação `@MaxAge(25)`).
+
+### Criar consulta
+
+```json
+{
+  "petId": 1,
+  "clinicaId": 1,
+  "dataConsulta": "2026-12-10T10:30:00",
+  "tipo": "CHECKUP",
+  "observacoes": "Consulta preventiva de rotina",
+  "valor": 180.0
+}
+```
+
+> O campo `dataConsulta` precisa ser presente ou futuro (`@FutureOrPresent`).
 
 ### Registrar leitura da coleira
 
@@ -304,6 +410,42 @@ Ao registrar ração abaixo de 20% ou consumo muito baixo, a API cria alertas au
 
 Ao registrar ambiente ruim, temperatura fora da faixa ou umidade inadequada, a API cria alertas automáticos.
 
+### Criar alerta manual
+
+```json
+{
+  "petId": 1,
+  "tipo": "CONSULTA_ATRASADA",
+  "nivel": "ALTO",
+  "mensagem": "Pet precisa de consulta preventiva."
+}
+```
+
+### Criar protocolo preventivo
+
+```json
+{
+  "especie": "CAO",
+  "tipo": "VACINA",
+  "nome": "V10",
+  "descricao": "Vacina polivalente anual para cães",
+  "idadeMesesAplicacao": 2,
+  "intervaloReforcoDias": 365
+}
+```
+
+### Criar evento preventivo
+
+```json
+{
+  "petId": 1,
+  "tipo": "CHECKUP",
+  "descricao": "Retorno preventivo pós-alerta",
+  "dataPrevista": "2026-12-20",
+  "realizado": false
+}
+```
+
 ---
 
 ## Regra do Score de Saúde
@@ -328,22 +470,26 @@ Categorias:
 | 50 a 79 | AMARELO |
 | 0 a 49 | VERMELHO |
 
+Quando o score cai abaixo de 50, a API cria automaticamente um alerta do tipo `SCORE_CRITICO`.
+
 ---
 
 ## Organização do projeto
 
 ```txt
 src/main/java/fiap/com/br/petcarehub
-├── config
-├── controller
+├── config              # DataLoader (seed) + SwaggerConfig
+├── controller          # REST controllers
 ├── dto
-│   ├── request
-│   └── response
-├── entity
-├── enums
-├── exception
-├── repository
-└── service
+│   ├── request         # DTOs de entrada (com validação)
+│   └── response        # DTOs de saída
+├── entity              # Entidades JPA
+├── enums               # Enums do domínio
+├── exception           # GlobalExceptionHandler + ErroResponse
+├── repository          # Spring Data JPA repositories
+├── service             # Serviços de domínio
+├── specification       # JPA Specifications (filtros dinâmicos)
+└── validation          # @MaxAge customizado
 ```
 
 ---
@@ -367,17 +513,19 @@ docs/
 
 ## Collection Insomnia
 
-Arquivo principal:
-
-```txt
-petcarehub_insomnia_collection.json
-```
-
-Cópia dentro de docs:
+Arquivo principal na pasta `docs/`:
 
 ```txt
 docs/petcarehub_insomnia_collection.json
 ```
+
+A collection cobre todos os endpoints da API e inclui casos de teste para validação Bean Validation (ex: rejeição de pet com idade superior a 25 anos).
+
+Para importar no Insomnia:
+
+1. `Application` → `Preferences` → `Data` → `Import Data` → `From File`
+2. Selecione o arquivo `petcarehub_insomnia_collection.json`
+3. As requisições virão organizadas por entidade
 
 ---
 
@@ -391,4 +539,3 @@ A API Java cobre o núcleo da solução:
 - cálculo de score de saúde;
 - dados estruturados para app mobile e dashboard clínico;
 - base para integração com IoT via MQTT nas próximas sprints.
-
