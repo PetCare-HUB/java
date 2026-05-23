@@ -7,6 +7,7 @@ import fiap.com.br.petcarehub.enums.NivelAlerta;
 import fiap.com.br.petcarehub.enums.TipoAlerta;
 import fiap.com.br.petcarehub.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ScoreSaudeService {

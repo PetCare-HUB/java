@@ -7,6 +7,7 @@ import fiap.com.br.petcarehub.entity.Consulta;
 import fiap.com.br.petcarehub.entity.Pet;
 import fiap.com.br.petcarehub.repository.ConsultaRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ConsultaService {

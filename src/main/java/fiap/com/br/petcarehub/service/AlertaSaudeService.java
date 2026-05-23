@@ -8,6 +8,7 @@ import fiap.com.br.petcarehub.enums.NivelAlerta;
 import fiap.com.br.petcarehub.enums.TipoAlerta;
 import fiap.com.br.petcarehub.repository.AlertaSaudeRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AlertaSaudeService {
