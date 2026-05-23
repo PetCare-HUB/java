@@ -15,6 +15,7 @@ public interface AlertaSaudeRepository extends JpaRepository<AlertaSaude, Long> 
     List<AlertaSaude> findByPetIdAndResolvidoFalseOrderByDataCriacaoDesc(Long petId);
     List<AlertaSaude> findTop10ByPetIdOrderByDataCriacaoDesc(Long petId);
     long countByPetIdAndResolvidoFalseAndNivelIn(Long petId, List<NivelAlerta> niveis);
+    long countByPetClinicaIdAndResolvidoFalse(Long clinicaId);
 
     @Query("""
             SELECT a

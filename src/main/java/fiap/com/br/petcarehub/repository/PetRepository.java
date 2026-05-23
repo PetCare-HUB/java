@@ -12,6 +12,12 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
 
     Page<Pet> findByNomeContainingIgnoreCase(String nome, Pageable pageable);
 
+    long countByClinicaId(Long clinicaId);
+
+    long countByClinicaIdAndAtivoTrue(Long clinicaId);
+
+    long countByClinicaIdAndScoreAtualLessThanEqual(Long clinicaId, Integer scoreAtual);
+
     @Query("""
             SELECT p
             FROM Pet p
