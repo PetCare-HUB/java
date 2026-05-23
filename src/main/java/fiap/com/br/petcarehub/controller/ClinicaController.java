@@ -1,6 +1,6 @@
 package fiap.com.br.petcarehub.controller;
 
-import fiap.com.br.petcarehub.dto.PageResponse;
+import fiap.com.br.petcarehub.dto.response.PageResponse;
 import fiap.com.br.petcarehub.dto.request.ClinicaRequest;
 import fiap.com.br.petcarehub.dto.response.AlertaSaudeResponse;
 import fiap.com.br.petcarehub.dto.response.ClinicaResponse;

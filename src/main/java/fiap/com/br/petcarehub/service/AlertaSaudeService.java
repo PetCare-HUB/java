@@ -7,6 +7,7 @@ import fiap.com.br.petcarehub.entity.Pet;
 import fiap.com.br.petcarehub.enums.NivelAlerta;
 import fiap.com.br.petcarehub.enums.TipoAlerta;
 import fiap.com.br.petcarehub.repository.AlertaSaudeRepository;
+import fiap.com.br.petcarehub.specification.AlertaSaudeSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -29,18 +30,21 @@ public class AlertaSaudeService {
 
     @Transactional(readOnly = true)
     public Page<AlertaSaudeResponse> buscar(Long petId, TipoAlerta tipo, Boolean resolvido, Pageable pageable) {
-        return repository.buscar(petId, tipo, resolvido, pageable).map(DtoMapper::toResponse);
+        var spec = AlertaSaudeSpecification.filtrar(petId, tipo, resolvido);
+        return repository.findAll(spec, pageable).map(DtoMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
     public AlertaSaude findEntityById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Alerta não encontrado: " + id));
+        return repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Alerta não encontrado: " + id));
     }
 
     @Transactional(readOnly = true)
     public List<AlertaSaudeResponse> alertasAtivosDoPet(Long petId) {
         petService.findEntityById(petId);
-        return repository.findByPetIdAndResolvidoFalseOrderByDataCriacaoDesc(petId).stream().map(DtoMapper::toResponse).toList();
+        return repository.findByPetIdAndResolvidoFalseOrderByDataCriacaoDesc(petId).stream()
+                .map(DtoMapper::toResponse).toList();
     }
 
     @Transactional
@@ -82,6 +86,7 @@ public class AlertaSaudeService {
 
     @Transactional(readOnly = true)
     public List<AlertaSaudeResponse> ultimosPorPet(Long petId) {
-        return repository.findTop10ByPetIdOrderByDataCriacaoDesc(petId).stream().map(DtoMapper::toResponse).toList();
+        return repository.findTop10ByPetIdOrderByDataCriacaoDesc(petId).stream()
+                .map(DtoMapper::toResponse).toList();
     }
 }

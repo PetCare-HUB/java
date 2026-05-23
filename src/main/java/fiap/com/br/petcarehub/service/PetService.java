@@ -121,6 +121,7 @@ public class PetService {
         return repository.findPetsEmRisco(clinicaId, limite, pageable).map(DtoMapper::toResponse);
     }
 
+    @CacheEvict(value = {"pets", "scores"}, key = "#petId")
     @Transactional
     public void atualizarScoreAtual(Long petId, Integer score) {
         Pet pet = findEntityById(petId);

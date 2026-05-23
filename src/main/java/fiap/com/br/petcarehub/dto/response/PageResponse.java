@@ -1,4 +1,4 @@
-package fiap.com.br.petcarehub.dto;
+package fiap.com.br.petcarehub.dto.response;
 
 import org.springframework.data.domain.Page;
 

@@ -19,6 +19,5 @@ public interface PetSummary {
 
     SexoPet getSexo();
 
-    Character getAtivo();
-
+    Boolean getAtivo();
 }
