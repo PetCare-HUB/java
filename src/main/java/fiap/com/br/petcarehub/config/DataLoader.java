@@ -16,7 +16,7 @@ public class DataLoader {
 
     @Bean
     CommandLineRunner seedDatabase(
-            ResponsavelRepository responsavelRepository,
+            TutorRepository tutorRepository,
             ClinicaRepository clinicaRepository,
             PetRepository petRepository,
             ConsultaRepository consultaRepository,
@@ -29,18 +29,18 @@ public class DataLoader {
             ScoreSaudeRepository scoreRepository
     ) {
         return args -> {
-            if (responsavelRepository.count() > 0) {
+            if (tutorRepository.count() > 0) {
                 return;
             }
 
-            Responsavel kelson = responsavelRepository.save(Responsavel.builder()
+            Tutor kelson = tutorRepository.save(Tutor.builder()
                     .nome("Kelson Silva")
                     .email("kelson.petcare@example.com")
                     .telefone("11999990000")
                     .cpf("12345678901")
                     .build());
 
-            Responsavel ana = responsavelRepository.save(Responsavel.builder()
+            Tutor ana = tutorRepository.save(Tutor.builder()
                     .nome("Ana Pereira")
                     .email("ana.petcare@example.com")
                     .telefone("11988887777")
@@ -64,7 +64,7 @@ public class DataLoader {
                     .condicoesCronicas("Tendência a obesidade")
                     .ativo(true)
                     .scoreAtual(76)
-                    .responsavel(kelson)
+                    .tutor(kelson)
                     .clinica(clyvo)
                     .build());
 
@@ -78,7 +78,7 @@ public class DataLoader {
                     .condicoesCronicas("Sem condições crônicas")
                     .ativo(true)
                     .scoreAtual(92)
-                    .responsavel(ana)
+                    .tutor(ana)
                     .clinica(clyvo)
                     .build());
 

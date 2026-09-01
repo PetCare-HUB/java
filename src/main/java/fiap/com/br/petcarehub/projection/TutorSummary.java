@@ -1,6 +1,6 @@
 package fiap.com.br.petcarehub.projection;
 
-public interface ResponsavelSummary {
+public interface TutorSummary {
 
     Long getId();
 

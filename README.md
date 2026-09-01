@@ -2,7 +2,7 @@
 
 API REST principal do **PetCare Hub**, desenvolvida em **Java 17 + Spring Boot** para o Challenge FIAP 2026 — CLYVO VET.
 
-O objetivo da API é apoiar a continuidade do cuidado do pet, conectando responsáveis, pets, consultas, leituras IoT simuladas, alertas automáticos, score de saúde e plano preventivo.
+O objetivo da API é apoiar a continuidade do cuidado do pet, conectando tutores, pets, consultas, leituras IoT simuladas, alertas automáticos, score de saúde e plano preventivo.
 
 > Observação de arquitetura: a API Java é responsável pelo domínio principal e processamento dos dados. A API .NET fica responsável pelo dashboard B2B das clínicas, consumindo dados processados pelo Java ou consultando a mesma base.
 
@@ -91,7 +91,7 @@ Ou seja, espera que as tabelas já existam conforme o script/modelagem da discip
 
 ## Principais recursos implementados
 
-- CRUD de responsáveis com busca por nome, email e CPF
+- CRUD de tutor com busca por nome, email e CPF
 - CRUD de clínicas com vínculo de domínio
 - CRUD de pets com busca combinada via JPA Specifications
 - CRUD de consultas com busca por pet
@@ -185,17 +185,17 @@ MEDICAMENTO
 
 ## Endpoints
 
-### Responsáveis
+### tutor
 
 ```http
-GET    /responsaveis
-GET    /responsaveis/{id}
-GET    /responsaveis/nome?nome=Kelson
-GET    /responsaveis/email?email=petcare
-GET    /responsaveis/cpf?cpf=123
-POST   /responsaveis
-PUT    /responsaveis/{id}
-DELETE /responsaveis/{id}
+GET    /tutor
+GET    /tutor/{id}
+GET    /tutor/nome?nome=Kelson
+GET    /tutor/email?email=petcare
+GET    /tutor/cpf?cpf=123
+POST   /tutor
+PUT    /tutor/{id}
+DELETE /tutor/{id}
 ```
 
 ### Clínicas
@@ -316,7 +316,7 @@ Implementação em `validation/MaxAge.java` + `validation/MaxAgeValidator.java`.
 
 ## Exemplos de JSON
 
-### Criar responsável
+### Criar Tutor
 
 ```json
 {
@@ -350,7 +350,7 @@ Implementação em `validation/MaxAge.java` + `validation/MaxAgeValidator.java`.
   "sexo": "M",
   "condicoesCronicas": "Tendência a obesidade",
   "ativo": true,
-  "responsavelId": 1,
+  "tutoresId": 1,
   "clinicaId": 1
 }
 ```

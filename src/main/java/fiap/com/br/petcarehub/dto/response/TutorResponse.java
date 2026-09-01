@@ -2,7 +2,7 @@ package fiap.com.br.petcarehub.dto.response;
 
 import java.time.LocalDateTime;
 
-public record ResponsavelResponse(
+public record TutorResponse(
         Long id,
         String nome,
         String email,

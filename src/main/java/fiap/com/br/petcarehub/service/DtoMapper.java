@@ -3,28 +3,28 @@ package fiap.com.br.petcarehub.service;
 import fiap.com.br.petcarehub.dto.response.*;
 import fiap.com.br.petcarehub.entity.*;
 import fiap.com.br.petcarehub.dto.request.ClinicaRequest;
-import fiap.com.br.petcarehub.dto.request.*;;
+;
 
 public final class DtoMapper {
 
     private DtoMapper() {}
 
-    public static ResponsavelResponse toResponse(Responsavel responsavel) {
-        return new ResponsavelResponse(
-                responsavel.getId(),
-                responsavel.getNome(),
-                responsavel.getEmail(),
-                responsavel.getTelefone(),
-                responsavel.getCpf(),
-                responsavel.getDataCadastro()
+    public static TutorResponse toResponse(Tutor tutor) {
+        return new TutorResponse(
+                tutor.getId(),
+                tutor.getNome(),
+                tutor.getEmail(),
+                tutor.getTelefone(),
+                tutor.getCpf(),
+                tutor.getDataCadastro()
         );
     }
 
-    public static ResponsavelResumoResponse toResumo(Responsavel responsavel) {
-        return new ResponsavelResumoResponse(
-                responsavel.getId(),
-                responsavel.getNome(),
-                responsavel.getEmail()
+    public static TutorResumoResponse toResumo(Tutor tutor) {
+        return new TutorResumoResponse(
+                tutor.getId(),
+                tutor.getNome(),
+                tutor.getEmail()
         );
     }
 
@@ -58,7 +58,7 @@ public final class DtoMapper {
                 pet.getAtivo(),
                 pet.getScoreAtual(),
                 pet.getDataCadastro(),
-                toResumo(pet.getResponsavel()),
+                toResumo(pet.getTutor()),
                 toResumo(pet.getClinica())
         );
     }

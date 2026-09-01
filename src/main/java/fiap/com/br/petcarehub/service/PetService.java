@@ -4,7 +4,7 @@ import fiap.com.br.petcarehub.dto.request.PetRequest;
 import fiap.com.br.petcarehub.dto.response.PetResponse;
 import fiap.com.br.petcarehub.entity.Clinica;
 import fiap.com.br.petcarehub.entity.Pet;
-import fiap.com.br.petcarehub.entity.Responsavel;
+import fiap.com.br.petcarehub.entity.Tutor;
 import fiap.com.br.petcarehub.enums.EspeciePet;
 import fiap.com.br.petcarehub.repository.PetRepository;
 import fiap.com.br.petcarehub.specification.PetSpecification;
@@ -25,7 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class PetService {
 
     private final PetRepository repository;
-    private final ResponsavelService responsavelService;
+    private final TutorService tutorService;
     private final ClinicaService clinicaService;
 
     @Transactional(readOnly = true)
@@ -48,7 +48,7 @@ public class PetService {
     @CacheEvict(value = {"pets", "scores"}, allEntries = true)
     @Transactional
     public PetResponse criar(PetRequest request) {
-        Responsavel responsavel = responsavelService.findEntityById(request.responsavelId());
+        Tutor tutor = tutorService.findEntityById(request.responsavelId());
         Clinica clinica = clinicaService.findEntityById(request.clinicaId());
 
         Pet pet = Pet.builder()
@@ -61,7 +61,7 @@ public class PetService {
                 .condicoesCronicas(request.condicoesCronicas())
                 .ativo(request.ativo() != null ? request.ativo() : true)
                 .scoreAtual(100)
-                .responsavel(responsavel)
+                .tutor(tutor)
                 .clinica(clinica)
                 .build();
 
@@ -72,7 +72,7 @@ public class PetService {
     @Transactional
     public PetResponse atualizar(Long id, PetRequest request) {
         Pet pet = findEntityById(id);
-        Responsavel responsavel = responsavelService.findEntityById(request.responsavelId());
+        Tutor tutor = tutorService.findEntityById(request.responsavelId());
         Clinica clinica = clinicaService.findEntityById(request.clinicaId());
 
         pet.setNome(request.nome());
@@ -83,7 +83,7 @@ public class PetService {
         pet.setSexo(request.sexo());
         pet.setCondicoesCronicas(request.condicoesCronicas());
         pet.setAtivo(request.ativo() != null ? request.ativo() : pet.getAtivo()); // ← bug corrigido
-        pet.setResponsavel(responsavel);
+        pet.setTutor(tutor);
         pet.setClinica(clinica);
 
         return DtoMapper.toResponse(repository.save(pet));

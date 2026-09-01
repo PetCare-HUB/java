@@ -17,16 +17,16 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "T_RESPONSAVEL", uniqueConstraints = {
-        @UniqueConstraint(name = "UK_RESPONSAVEL_EMAIL", columnNames = "EMAIL"),
-        @UniqueConstraint(name = "UK_RESPONSAVEL_CPF", columnNames = "CPF")
+@Table(name = "T_Tutor", uniqueConstraints = {
+        @UniqueConstraint(name = "UK_TUTOR_EMAIL", columnNames = "EMAIL"),
+        @UniqueConstraint(name = "UK_TUTOR_CPF", columnNames = "CPF")
 })
-public class Responsavel {
+public class Tutor {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_RESPONSAVEL")
-    @SequenceGenerator(name = "SEQ_RESPONSAVEL", sequenceName = "SEQ_RESPONSAVEL", allocationSize = 1)
-    @Column(name = "ID_RESPONSAVEL")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_TUTOR")
+    @SequenceGenerator(name = "SEQ_TUTOR", sequenceName = "SEQ_TUTOR", allocationSize = 1)
+    @Column(name = "ID_TUTOR")
     private Long id;
 
     @NotBlank
