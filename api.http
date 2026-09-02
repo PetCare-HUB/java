@@ -3,7 +3,7 @@ POST http://localhost:8080/auth/login
 Content-Type: application/json
 
 {
-  "Username": "UnidadePaulista.petcare@email.com",
+  "email": "UnidadePaulista.petcare@email.com",
   "password": "12345678"
 }
 

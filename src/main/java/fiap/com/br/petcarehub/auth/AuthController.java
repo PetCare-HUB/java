@@ -34,7 +34,7 @@ public class AuthController {
 
         var auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.Username(),
+                        request.email(),
                         request.password()
                 )
         );
