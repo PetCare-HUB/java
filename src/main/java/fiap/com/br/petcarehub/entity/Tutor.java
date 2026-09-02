@@ -36,17 +36,16 @@ public class Tutor {
     @Column(name = "NOME", nullable = false, length = 120)
     private String nome;
 
-    @Column(name = "SENHA", length = 255)
+    @Column(name = "senha_hash", length = 255)
     private String senha;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "statusAcesso", nullable = false)
+    @Column(name = "status_acesso", nullable = false)
     private StatusAcesso statusAcesso;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "ROLE", length = 30, nullable = false)
     private Role role;
-
 
     @NotBlank
     @Email

@@ -39,7 +39,7 @@ public class Clinica {
     private String email;
 
     @NotBlank
-    @Column(name = "SENHA", length = 255)
+    @Column(name = "senha_hash", length = 255)
     private String senha;
 
     @NotBlank
