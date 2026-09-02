@@ -5,7 +5,6 @@ import fiap.com.br.petcarehub.enums.StatusAcesso;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -37,8 +36,8 @@ public class Tutor {
     @Column(name = "NOME", nullable = false, length = 120)
     private String nome;
 
-    @Column(name = "SENHA_HASH", length = 255)
-    private String senhaHash;
+    @Column(name = "SENHA", length = 255)
+    private String senha;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "statusAcesso", nullable = false)

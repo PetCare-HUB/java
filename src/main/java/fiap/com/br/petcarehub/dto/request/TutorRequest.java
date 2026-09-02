@@ -1,14 +1,13 @@
 package fiap.com.br.petcarehub.dto.request;
 
 import fiap.com.br.petcarehub.enums.Role;
-import fiap.com.br.petcarehub.enums.StatusAcesso;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record TutorRequest(
         @NotBlank @Size(max = 120) String nome,
-        String senhaHash,
+        String senha,
         Role role,
         @NotBlank @Email @Size(max = 150) String email,
         @NotBlank @Size(max = 20) String telefone,

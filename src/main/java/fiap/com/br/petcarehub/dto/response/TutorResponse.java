@@ -9,6 +9,7 @@ public record TutorResponse(
         Long id,
         String nome,
         StatusAcesso statusAcesso,
+        String senha,
         Role role ,
         String email,
         String telefone,
