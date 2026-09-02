@@ -7,6 +7,7 @@ import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -36,7 +37,48 @@ public class SecurityConfig {
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
+
+                        // Rotas públicas
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll()
+
+                        // Apenas CLINICA
+                        .requestMatchers(HttpMethod.POST, "/tutor")
+                        .hasRole("CLINICA")
+
+                        .requestMatchers(HttpMethod.PUT, "/alertas/*/resolver")
+                        .hasRole("CLINICA")
+
+                        .requestMatchers("/clinicas/**")
+                        .hasRole("CLINICA")
+
+                        // Apenas TUTOR
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/pets",
+                                "/leituras/**",
+                                "/eventos-preventivos"
+                        ).hasRole("TUTOR")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/pets/*",
+                                "/eventos-preventivos/*/realizar"
+                        ).hasRole("TUTOR")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/pets/*"
+                        ).hasRole("TUTOR")
+
+                        // TUTOR e CLINICA
+                        .requestMatchers("/pets/*/**")
+                        .hasAnyRole("TUTOR", "CLINICA")
+
+                        // Qualquer usuário autenticado
+                        .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
