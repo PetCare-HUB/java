@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -48,6 +49,21 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno", "Ocorreu um erro inesperado", request.getRequestURI(), List.of(ex.getClass().getSimpleName()));
     }
 
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErroResponse> handleBadCredentials(
+            BadCredentialsException ex,
+            HttpServletRequest request
+    ) {
+        return build(
+                HttpStatus.UNAUTHORIZED,
+                "Unauthorized",
+                "Email ou senha inválidos.",
+                request.getRequestURI(),
+                List.of()
+        );
+    }
+
+
     private String formatarErroCampo(FieldError error) {
         return error.getField() + ": " + error.getDefaultMessage();
     }
@@ -62,4 +78,8 @@ public class GlobalExceptionHandler {
                 detalhes
         ));
     }
+
+
+
+
 }
