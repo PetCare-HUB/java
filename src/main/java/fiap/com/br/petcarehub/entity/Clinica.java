@@ -31,6 +31,10 @@ public class Clinica {
     private String nome;
 
     @NotBlank
+    @Column(name = "SENHA", length = 255)
+    private String senha;
+
+    @NotBlank
     @Size(max = 18)
     @Column(name = "CNPJ", nullable = false, length = 18)
     private String cnpj;

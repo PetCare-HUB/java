@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -33,6 +34,7 @@ public class ClinicaService {
     private final PetRepository petRepository;
     private final AlertaSaudeRepository alertaSaudeRepository;
     private final ConsultaRepository consultaRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public Page<ClinicaResponse> listar(Pageable pageable) {
         log.debug("Listando clínicas com paginação: {}", pageable);
@@ -55,6 +57,7 @@ public class ClinicaService {
         log.info("Criando nova clínica: nome={}", request.nome());
         try {
             Clinica clinica = DtoMapper.toClinica(request);
+            clinica.setSenha(passwordEncoder.encode(request.senha()));
             Clinica salva = repository.save(clinica);
             log.info("Clínica criada com sucesso. ID: {}", salva.getId());
             return DtoMapper.toResponse(salva);

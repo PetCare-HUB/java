@@ -6,6 +6,7 @@ import fiap.com.br.petcarehub.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,7 +27,8 @@ public class DataLoader {
             LeituraComedouroRepository leituraComedouroRepository,
             LeituraAmbienteRepository leituraAmbienteRepository,
             AlertaSaudeRepository alertaRepository,
-            ScoreSaudeRepository scoreRepository
+            ScoreSaudeRepository scoreRepository,
+            PasswordEncoder passwordEncoder
     ) {
         return args -> {
             if (tutorRepository.count() > 0) {
@@ -56,6 +58,7 @@ public class DataLoader {
                     .cnpj("12.345.678/0001-90")
                     .endereco("Av. Paulista, 1000 - São Paulo")
                     .telefone("1133334444")
+                    .senha(passwordEncoder.encode("12345678"))
                     .build());
 
             Pet rex = petRepository.save(Pet.builder()

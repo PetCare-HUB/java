@@ -51,7 +51,7 @@ public class TutorService {
                 .statusAcesso(StatusAcesso.PRE_CADASTRADO);
 
         if (request.senha() != null && !request.senha().isBlank()) {
-            builder.senhaHash(passwordEncoder.encode(request.senha()));
+            builder.senha(passwordEncoder.encode(request.senha()));
         }
 
         Tutor tutor = builder.build();

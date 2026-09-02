@@ -14,7 +14,6 @@ public final class DtoMapper {
                 tutor.getId(),
                 tutor.getNome(),
                 tutor.getStatusAcesso(),
-                tutor.getSenha(),
                 tutor.getRole(),
                 tutor.getEmail(),
                 tutor.getTelefone(),
