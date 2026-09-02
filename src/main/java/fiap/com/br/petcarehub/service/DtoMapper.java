@@ -13,6 +13,8 @@ public final class DtoMapper {
         return new TutorResponse(
                 tutor.getId(),
                 tutor.getNome(),
+                tutor.getStatusAcesso(),
+                tutor.getRole(),
                 tutor.getEmail(),
                 tutor.getTelefone(),
                 tutor.getCpf(),

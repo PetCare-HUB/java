@@ -38,6 +38,8 @@ public class DataLoader {
                     .email("kelson.petcare@example.com")
                     .telefone("11999990000")
                     .cpf("12345678901")
+                    .role(Role.TUTOR)
+                    .statusAcesso(StatusAcesso.PRE_CADASTRADO)
                     .build());
 
             Tutor ana = tutorRepository.save(Tutor.builder()
@@ -45,6 +47,8 @@ public class DataLoader {
                     .email("ana.petcare@example.com")
                     .telefone("11988887777")
                     .cpf("98765432100")
+                    .role(Role.TUTOR)
+                    .statusAcesso(StatusAcesso.PRE_CADASTRADO)
                     .build());
 
             Clinica clyvo = clinicaRepository.save(Clinica.builder()

@@ -1,8 +1,11 @@
 package fiap.com.br.petcarehub.entity;
 
+import fiap.com.br.petcarehub.enums.Role;
+import fiap.com.br.petcarehub.enums.StatusAcesso;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -34,6 +37,18 @@ public class Tutor {
     @Column(name = "NOME", nullable = false, length = 120)
     private String nome;
 
+    @Column(name = "SENHA_HASH", length = 255)
+    private String senhaHash;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "statusAcesso", nullable = false)
+    private StatusAcesso statusAcesso;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ROLE", length = 30, nullable = false)
+    private Role role;
+
+
     @NotBlank
     @Email
     @Size(max = 150)
@@ -55,6 +70,6 @@ public class Tutor {
     private LocalDateTime dataCadastro;
 
     @Builder.Default
-    @OneToMany(mappedBy = "responsavel")
+    @OneToMany(mappedBy = "tutor")
     private List<Pet> pets = new ArrayList<>();
 }

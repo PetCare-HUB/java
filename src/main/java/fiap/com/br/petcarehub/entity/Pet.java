@@ -72,7 +72,7 @@ public class Pet {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_RESPONSAVEL", nullable = false)
+    @JoinColumn(name = "ID_TUTOR", nullable = false)
     private Tutor tutor;
 
     @NotNull

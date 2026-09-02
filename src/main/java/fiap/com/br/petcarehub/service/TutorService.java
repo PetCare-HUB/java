@@ -3,11 +3,14 @@ package fiap.com.br.petcarehub.service;
 import fiap.com.br.petcarehub.dto.request.TutorRequest;
 import fiap.com.br.petcarehub.dto.response.TutorResponse;
 import fiap.com.br.petcarehub.entity.Tutor;
+import fiap.com.br.petcarehub.enums.Role;
+import fiap.com.br.petcarehub.enums.StatusAcesso;
 import fiap.com.br.petcarehub.repository.TutorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -15,7 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 @RequiredArgsConstructor
 public class TutorService {
-
+    private final PasswordEncoder passwordEncoder;
     private final TutorRepository repository;
 
     @Transactional(readOnly = true)
@@ -35,12 +38,23 @@ public class TutorService {
 
     @Transactional
     public TutorResponse criar(TutorRequest request) {
-        Tutor tutor = Tutor.builder()
+        Role role = request.role() != null
+                ? request.role()
+                : Role.TUTOR;
+
+        Tutor.TutorBuilder builder = Tutor.builder()
                 .nome(request.nome())
                 .email(request.email())
                 .telefone(request.telefone())
                 .cpf(request.cpf())
-                .build();
+                .role(role)
+                .statusAcesso(StatusAcesso.PRE_CADASTRADO);
+
+        if (request.senhaHash() != null && !request.senhaHash().isBlank()) {
+            builder.senhaHash(passwordEncoder.encode(request.senhaHash()));
+        }
+
+        Tutor tutor = builder.build();
         return DtoMapper.toResponse(repository.save(tutor));
     }
 
