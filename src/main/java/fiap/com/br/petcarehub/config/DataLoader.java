@@ -56,7 +56,7 @@ public class DataLoader {
             Clinica clyvo = clinicaRepository.save(Clinica.builder()
                     .nome("Clyvo Vet Unidade Paulista")
                     .cnpj("12.345.678/0001-90")
-                    .email("UnidadePaulista.petcare@example.com")
+                    .email("UnidadePaulista.petcare@email.com")
                     .endereco("Av. Paulista, 1000 - São Paulo")
                     .telefone("1133334444")
                     .senha(passwordEncoder.encode("12345678"))

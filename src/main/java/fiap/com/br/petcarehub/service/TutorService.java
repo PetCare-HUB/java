@@ -38,23 +38,16 @@ public class TutorService {
 
     @Transactional
     public TutorResponse criar(TutorRequest request) {
-        Role role = request.role() != null
-                ? request.role()
-                : Role.TUTOR;
 
-        Tutor.TutorBuilder builder = Tutor.builder()
+        Tutor tutor = Tutor.builder()
                 .nome(request.nome())
                 .email(request.email())
                 .telefone(request.telefone())
                 .cpf(request.cpf())
-                .role(role)
-                .statusAcesso(StatusAcesso.PRE_CADASTRADO);
+                .role(Role.TUTOR)
+                .statusAcesso(StatusAcesso.PRE_CADASTRADO)
+                .build();
 
-        if (request.senha() != null && !request.senha().isBlank()) {
-            builder.senha(passwordEncoder.encode(request.senha()));
-        }
-
-        Tutor tutor = builder.build();
         return DtoMapper.toResponse(repository.save(tutor));
     }
 

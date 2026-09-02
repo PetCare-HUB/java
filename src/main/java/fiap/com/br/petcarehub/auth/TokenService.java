@@ -1,5 +1,7 @@
 package fiap.com.br.petcarehub.auth;
 
+import fiap.com.br.petcarehub.repository.ClinicaRepository;
+import fiap.com.br.petcarehub.repository.TutorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,6 +18,8 @@ import java.time.temporal.ChronoUnit;
 public class TokenService {
 
     private final JwtEncoder encoder;
+    private final TutorRepository tutorRepository;
+    private final ClinicaRepository clinicaRepository;
 
     public String generateToken(Authentication authentication) {
 
@@ -24,15 +28,36 @@ public class TokenService {
         var role = authentication.getAuthorities()
                 .stream()
                 .findFirst()
-                .map(GrantedAuthority::getAuthority);
+                .map(GrantedAuthority::getAuthority)
+                .map(r -> r.replace("ROLE_", ""))
+                .orElse(null);
 
-        var claims = JwtClaimsSet.builder()
+        var claimsBuilder = JwtClaimsSet.builder()
                 .issuer("petcare-hub-api")
                 .issuedAt(now)
                 .expiresAt(now.plus(30, ChronoUnit.MINUTES))
                 .subject(authentication.getName())
-                .claim("role", role)
-                .build();
+                .claim("role", role);
+
+        var tutor = tutorRepository.findByEmail(authentication.getName());
+
+        if (tutor.isPresent()) {
+
+            claimsBuilder
+                    .claim("tutorId", tutor.get().getId());
+
+        } else {
+
+            var clinica = clinicaRepository.findByEmail(authentication.getName());
+
+            if (clinica.isPresent()) {
+
+                claimsBuilder
+                        .claim("clinicaId", clinica.get().getId());
+            }
+        }
+
+        var claims = claimsBuilder.build();
 
         return encoder
                 .encode(JwtEncoderParameters.from(claims))

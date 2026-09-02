@@ -1,15 +1,16 @@
 ### POST login
-POST http://localhost:8080/login
+POST http://localhost:8080/auth/login
 Content-Type: application/json
 
 {
-  "Username": "carlos.tutor@example.com",
+  "Username": "UnidadePaulista.petcare@email.com",
   "password": "12345678"
 }
 
 ### POST user
-POST http://localhost:8080/user
+POST http://localhost:8080/tutor
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "nome": "Carlos Tutor",

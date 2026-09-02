@@ -11,19 +11,26 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
     public final AuthenticationManager authenticationManager;
     public final TokenService tokenService;
     private final AuthService authService;
 
+
     @PostMapping("/ativar-conta")
-    public ResponseEntity<Void> ativarConta(
+    public ResponseEntity<LoginResponse> ativarConta(
             @Valid @RequestBody AtivarContaRequest request
     ) {
-        authService.ativarConta(request);
-        return ResponseEntity.noContent().build();
+        var jwt = authService.ativarConta(request);
+
+        return ResponseEntity.ok(
+                new LoginResponse(jwt)
+        );
     }
+
+
 
     public record LoginRequest(@NotBlank String Username, @NotBlank String password) {}
     public record LoginResponse(String token) { }
