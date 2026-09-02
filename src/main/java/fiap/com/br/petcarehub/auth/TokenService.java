@@ -1,5 +1,6 @@
 package fiap.com.br.petcarehub.auth;
 
+import fiap.com.br.petcarehub.dto.response.LoginResponse;
 import fiap.com.br.petcarehub.repository.ClinicaRepository;
 import fiap.com.br.petcarehub.repository.TutorRepository;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +10,6 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
@@ -21,9 +21,10 @@ public class TokenService {
     private final TutorRepository tutorRepository;
     private final ClinicaRepository clinicaRepository;
 
-    public String generateToken(Authentication authentication) {
+    public LoginResponse generateToken(Authentication authentication) {
 
         var now = Instant.now();
+        var expiracao = now.plus(30, ChronoUnit.MINUTES);
 
         var role = authentication.getAuthorities()
                 .stream()
@@ -35,32 +36,39 @@ public class TokenService {
         var claimsBuilder = JwtClaimsSet.builder()
                 .issuer("petcare-hub-api")
                 .issuedAt(now)
-                .expiresAt(now.plus(30, ChronoUnit.MINUTES))
+                .expiresAt(expiracao)
                 .subject(authentication.getName())
                 .claim("role", role);
 
+        Long tutorId = null;
+        Long clinicaId = null;
         var tutor = tutorRepository.findByEmail(authentication.getName());
-
         if (tutor.isPresent()) {
-
+            tutorId = tutor.get().getId();
             claimsBuilder
-                    .claim("tutorId", tutor.get().getId());
-
+                    .claim("tutorId", tutorId);
         } else {
-
             var clinica = clinicaRepository.findByEmail(authentication.getName());
 
             if (clinica.isPresent()) {
-
+                clinicaId = clinica.get().getId();
                 claimsBuilder
-                        .claim("clinicaId", clinica.get().getId());
+                        .claim("clinicaId", clinicaId);
             }
         }
 
         var claims = claimsBuilder.build();
 
-        return encoder
+        String token = encoder
                 .encode(JwtEncoderParameters.from(claims))
                 .getTokenValue();
+        return new LoginResponse(
+                token,
+                "Bearer",
+                expiracao.toString(),
+                role,
+                tutorId,
+                clinicaId
+        );
     }
 }

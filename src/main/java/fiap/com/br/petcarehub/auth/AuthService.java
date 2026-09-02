@@ -1,6 +1,7 @@
 package fiap.com.br.petcarehub.auth;
 
 import fiap.com.br.petcarehub.dto.request.AtivarContaRequest;
+import fiap.com.br.petcarehub.dto.response.LoginResponse;
 import fiap.com.br.petcarehub.entity.Tutor;
 import fiap.com.br.petcarehub.enums.StatusAcesso;
 import fiap.com.br.petcarehub.repository.ClinicaRepository;
@@ -29,7 +30,7 @@ public class AuthService implements UserDetailsService {
     private final TokenService tokenService;
 
     @Transactional
-    public String ativarConta(AtivarContaRequest request) {
+    public LoginResponse ativarConta(AtivarContaRequest request) {
         Tutor tutor = tutorRepository.findByNomeAndCpfAndEmail(
                 request.nome(),
                 request.cpf(),

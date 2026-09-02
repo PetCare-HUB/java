@@ -1,8 +1,9 @@
 package fiap.com.br.petcarehub.auth;
 
 import fiap.com.br.petcarehub.dto.request.AtivarContaRequest;
+import fiap.com.br.petcarehub.dto.request.LoginRequest;
+import fiap.com.br.petcarehub.dto.response.LoginResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,17 +24,10 @@ public class AuthController {
     public ResponseEntity<LoginResponse> ativarConta(
             @Valid @RequestBody AtivarContaRequest request
     ) {
-        var jwt = authService.ativarConta(request);
+        var response = authService.ativarConta(request);
 
-        return ResponseEntity.ok(
-                new LoginResponse(jwt)
-        );
+        return ResponseEntity.ok(response);
     }
-
-
-
-    public record LoginRequest(@NotBlank String Username, @NotBlank String password) {}
-    public record LoginResponse(String token) { }
 
     @PostMapping("/login")
     public LoginResponse login(@RequestBody @Valid LoginRequest request) {
@@ -45,8 +39,6 @@ public class AuthController {
                 )
         );
 
-        var jwt = tokenService.generateToken(auth);
-
-        return new LoginResponse(jwt);
+        return tokenService.generateToken(auth);
     }
 }
