@@ -34,6 +34,7 @@ public final class DtoMapper {
         return new ClinicaResponse(
                 clinica.getId(),
                 clinica.getNome(),
+                clinica.getEmail(),
                 clinica.getCnpj(),
                 clinica.getEndereco(),
                 clinica.getTelefone()

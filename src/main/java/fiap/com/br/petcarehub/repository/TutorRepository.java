@@ -16,6 +16,7 @@ public interface TutorRepository extends JpaRepository<Tutor, Long> {
             String cpf,
             String email
     );
+    Optional<Tutor> findByEmail(String email);
     boolean existsByEmail(String email);
     boolean existsByCpf(String cpf);
 }

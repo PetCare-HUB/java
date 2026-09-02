@@ -1,6 +1,7 @@
 package fiap.com.br.petcarehub.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -15,7 +16,8 @@ import java.util.List;
 @Builder
 @Entity
 @Table(name = "T_CLINICA", uniqueConstraints = {
-        @UniqueConstraint(name = "UK_CLINICA_CNPJ", columnNames = "CNPJ")
+        @UniqueConstraint(name = "UK_CLINICA_CNPJ", columnNames = "CNPJ"),
+        @UniqueConstraint(name = "UK_CLINICA_EMAIL", columnNames = "EMAIL")
 })
 public class Clinica {
 
@@ -29,6 +31,12 @@ public class Clinica {
     @Size(max = 120)
     @Column(name = "NOME", nullable = false, length = 120)
     private String nome;
+
+    @NotBlank
+    @Email
+    @Size(max = 150)
+    @Column(name = "EMAIL", nullable = false, length = 150)
+    private String email;
 
     @NotBlank
     @Column(name = "SENHA", length = 255)
