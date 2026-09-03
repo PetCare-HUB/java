@@ -13,6 +13,5 @@ public record AlertaSaudeResponse(
         NivelAlerta nivel,
         String mensagem,
         Boolean resolvido,
-        LocalDateTime dataCriacao,
         LocalDateTime dataResolucao
 ) {}

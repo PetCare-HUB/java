@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "T_EVENTO_PREVENTIVO")
+@Table(name = "EVENTO_PREVENTIVO")
 public class EventoPreventivo {
 
     @Id

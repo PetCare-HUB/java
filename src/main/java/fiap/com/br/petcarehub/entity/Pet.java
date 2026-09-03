@@ -19,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "T_PET")
+@Table(name = "PET")
 public class Pet {
 
     @Id

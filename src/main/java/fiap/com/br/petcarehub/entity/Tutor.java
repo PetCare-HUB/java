@@ -19,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "T_Tutor", uniqueConstraints = {
+@Table(name = "Tutor", uniqueConstraints = {
         @UniqueConstraint(name = "UK_TUTOR_EMAIL", columnNames = "EMAIL"),
         @UniqueConstraint(name = "UK_TUTOR_CPF", columnNames = "CPF")
 })

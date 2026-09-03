@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "T_ALERTA_SAUDE")
+@Table(name = "ALERTA_SAUDE")
 public class AlertaSaude {
 
     @Id
@@ -49,9 +49,6 @@ public class AlertaSaude {
     @Column(name = "RESOLVIDO", nullable = false)
     private Boolean resolvido = false;
 
-    @CreationTimestamp
-    @Column(name = "DATA_CRIACAO", nullable = false)
-    private LocalDateTime dataCriacao;
 
     @Column(name = "DATA_RESOLUCAO")
     private LocalDateTime dataResolucao;

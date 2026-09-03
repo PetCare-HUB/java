@@ -15,7 +15,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "T_PROTOCOLO_PREVENTIVO")
+@Table(name = "PROTOCOLO_PREVENTIVO")
 public class ProtocoloPreventivo {
 
     @Id

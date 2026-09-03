@@ -10,7 +10,7 @@ Content-Type: application/json
 ### POST user
 POST http://localhost:8080/tutor
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {token}
 
 {
   "nome": "Carlos Tutor",
