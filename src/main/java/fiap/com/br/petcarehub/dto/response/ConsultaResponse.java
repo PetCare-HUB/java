@@ -13,6 +13,9 @@ public record ConsultaResponse(
         String clinicaNome,
         LocalDateTime dataConsulta,
         TipoConsulta tipo,
-        String observacoes,
+        String descricao,
+        String diagnostico,
+        Boolean retornoRecomendado,
+        LocalDateTime dataRetorno,
         BigDecimal valor
 ) {}

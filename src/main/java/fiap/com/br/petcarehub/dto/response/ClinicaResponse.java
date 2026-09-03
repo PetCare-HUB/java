@@ -6,5 +6,6 @@ public record ClinicaResponse(
         String email,
         String cnpj,
         String endereco,
-        String telefone
+        String telefone,
+        char ativo
 ) {}

@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 @Getter
 @Setter
@@ -51,12 +52,12 @@ public class AlertaSaude {
     private String mensagem;
 
     @NotNull
-    @Column(name = "VALOR_DETECTADO", nullable = false)
-    private Integer valorDetectado;
+    @Column(name = "VALOR_DETECTADO", precision = 10, scale = 2)
+    private BigDecimal valorDetectado;
 
     @NotNull
-    @Column(name = "LIMITE_REFERENCIA", nullable = false)
-    private Integer limiteReferente;
+    @Column(name = "LIMITE_REFERENCIA", precision = 10, scale = 2)
+    private BigDecimal limiteReferencia;
 
     @Builder.Default
     @Column(name = "RESOLVIDO", nullable = false)

@@ -48,7 +48,7 @@ public class PetService {
     @CacheEvict(value = {"pets", "scores"}, allEntries = true)
     @Transactional
     public PetResponse criar(PetRequest request) {
-        Tutor tutor = tutorService.findEntityById(request.responsavelId());
+        Tutor tutor = tutorService.findEntityById(request.tutorId());
         Clinica clinica = clinicaService.findEntityById(request.clinicaId());
 
         Pet pet = Pet.builder()
@@ -72,7 +72,7 @@ public class PetService {
     @Transactional
     public PetResponse atualizar(Long id, PetRequest request) {
         Pet pet = findEntityById(id);
-        Tutor tutor = tutorService.findEntityById(request.responsavelId());
+        Tutor tutor = tutorService.findEntityById(request.tutorId());
         Clinica clinica = clinicaService.findEntityById(request.clinicaId());
 
         pet.setNome(request.nome());

@@ -17,6 +17,6 @@ public record PetRequest(
         SexoPet sexo,
         @Size(max = 500) String condicoesCronicas,
         Boolean ativo,
-        @NotNull Long responsavelId,
+        @NotNull Long tutorId,
         @NotNull Long clinicaId
 ) {}

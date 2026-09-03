@@ -43,11 +43,9 @@ public class Consulta {
     @Column(name = "TIPO_CONSULTA", nullable = false, length = 30)
     private TipoConsulta tipo;
 
-    @NotNull
     @Column(name = "DESCRICAO", length = 500)
     private String descricao;
 
-    @NotNull
     @Column(name = "DIAGNOSTICO", length = 500)
     private String diagnostico;
 
@@ -55,7 +53,6 @@ public class Consulta {
     @Column(name = "RETORNO_RECOMENDADO", nullable = false)
     private Boolean retornoRecomendado = false;
 
-    @NotNull
     @Column(name = "DATA_RETORNO")
     private LocalDateTime dataRetorno;
 

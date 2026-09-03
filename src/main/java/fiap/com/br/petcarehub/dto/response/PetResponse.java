@@ -17,8 +17,7 @@ public record PetResponse(
         SexoPet sexo,
         String condicoesCronicas,
         Boolean ativo,
-        Integer scoreAtual,
         LocalDateTime dataCadastro,
-        TutorResumoResponse responsavel,
+        TutorResumoResponse tutor,
         ClinicaResumoResponse clinica
 ) {}

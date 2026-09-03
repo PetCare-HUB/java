@@ -44,7 +44,7 @@ public class TutorService {
                 .email(request.email())
                 .telefone(request.telefone())
                 .cpf(request.cpf())
-                .role(Role.TUTOR)
+//                .role(Role.TUTOR)
                 .statusAcesso(StatusAcesso.PRE_CADASTRADO)
                 .build();
 

@@ -11,6 +11,9 @@ public record ConsultaRequest(
         @NotNull Long clinicaId,
         @NotNull @FutureOrPresent LocalDateTime dataConsulta,
         @NotNull TipoConsulta tipo,
-        @Size(max = 1000) String observacoes,
-        @PositiveOrZero BigDecimal valor
+        @Size(max = 500) String descricao,
+        @Size(max = 500) String diagnostico,
+        @NotNull Boolean retornoRecomendado,
+        LocalDateTime dataRetorno,
+        @NotNull @PositiveOrZero BigDecimal valor
 ) {}

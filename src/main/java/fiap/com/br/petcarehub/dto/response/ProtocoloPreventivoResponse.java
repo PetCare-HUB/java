@@ -8,8 +8,8 @@ public record ProtocoloPreventivoResponse(
         EspeciePet especie,
         String raca,
         TipoEventoPreventivo tipo,
-        String nome,
         String descricao,
-        Integer idadeMesesAplicacao,
-        Integer intervaloReforcoDias
+        Integer idadeMesesRecomendada,
+        Integer intervaloDias,
+        char ativo
 ) {}

@@ -5,9 +5,11 @@ import fiap.com.br.petcarehub.enums.TipoAlerta;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.checkerframework.checker.units.qual.N;
 
 public record AlertaSaudeRequest(
         @NotNull Long petId,
+        @NotNull Long leituraId,
         @NotNull TipoAlerta tipo,
         @NotNull NivelAlerta nivel,
         @NotBlank @Size(max = 500) String mensagem

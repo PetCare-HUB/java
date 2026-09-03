@@ -1,5 +1,6 @@
 package fiap.com.br.petcarehub.dto.response;
 
+import fiap.com.br.petcarehub.enums.StatusEventoPreventivo;
 import fiap.com.br.petcarehub.enums.TipoEventoPreventivo;
 
 import java.time.LocalDate;
@@ -11,5 +12,6 @@ public record EventoPreventivoResponse(
         TipoEventoPreventivo tipo,
         String descricao,
         LocalDate dataPrevista,
-        Boolean realizado
+        StatusEventoPreventivo status,
+        LocalDate dataRealizacao
 ) {}

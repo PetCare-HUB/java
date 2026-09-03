@@ -88,8 +88,9 @@ public final class DtoMapper {
                 alerta.getTipo(),
                 alerta.getNivel(),
                 alerta.getMensagem(),
+                alerta.getValorDetectado(),
+                alerta.getLimiteReferencia(),
                 alerta.getResolvido(),
-                // alerta.getDataCriacao(),
                 alerta.getDataResolucao()
         );
     }

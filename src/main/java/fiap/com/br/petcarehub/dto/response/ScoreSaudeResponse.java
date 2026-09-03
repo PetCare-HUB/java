@@ -8,8 +8,12 @@ public record ScoreSaudeResponse(
         Long id,
         Long petId,
         String petNome,
-        Integer score,
+        Integer scoreTotal,
+        Integer scoreAtividade,
+        Integer scoreAlimentacao,
+        Integer scoreAmbiente,
+        Integer scoreConsulta,
+        Integer scorePreventivo,
         CategoriaScore categoria,
-        String observacao,
         LocalDateTime dataCalculo
 ) {}
