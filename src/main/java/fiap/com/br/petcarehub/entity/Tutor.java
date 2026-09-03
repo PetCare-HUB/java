@@ -19,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "Tutor", uniqueConstraints = {
+@Table(name = "TUTOR", uniqueConstraints = {
         @UniqueConstraint(name = "UK_TUTOR_EMAIL", columnNames = "EMAIL"),
         @UniqueConstraint(name = "UK_TUTOR_CPF", columnNames = "CPF")
 })
@@ -43,14 +43,10 @@ public class Tutor {
     @Column(name = "status_acesso", nullable = false)
     private StatusAcesso statusAcesso;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "ROLE", length = 30, nullable = false)
-    private Role role;
-
     @NotBlank
     @Email
     @Size(max = 150)
-    @Column(name = "EMAIL", nullable = false, length = 150)
+    @Column(name = "EMAIL", nullable = false, length = 100)
     private String email;
 
     @NotBlank

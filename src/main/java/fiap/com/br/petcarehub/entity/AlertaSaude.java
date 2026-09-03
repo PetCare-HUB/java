@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
+
 
 import java.time.LocalDateTime;
 @Getter
@@ -31,13 +31,18 @@ public class AlertaSaude {
     private Pet pet;
 
     @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_LEITURA", nullable = false)
+    private LeituraColeira idLeitura;
+
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "TIPO", nullable = false, length = 40)
+    @Column(name = "TIPO_ALERTA", nullable = false, length = 40)
     private TipoAlerta tipo;
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "NIVEL", nullable = false, length = 20)
+    @Column(name = "NIVEL_ALERTA", nullable = false, length = 20)
     private NivelAlerta nivel;
 
     @NotBlank
@@ -45,10 +50,20 @@ public class AlertaSaude {
     @Column(name = "MENSAGEM", nullable = false, length = 500)
     private String mensagem;
 
+    @NotNull
+    @Column(name = "VALOR_DETECTADO", nullable = false)
+    private Integer valorDetectado;
+
+    @NotNull
+    @Column(name = "LIMITE_REFERENCIA", nullable = false)
+    private Integer limiteReferente;
+
     @Builder.Default
     @Column(name = "RESOLVIDO", nullable = false)
     private Boolean resolvido = false;
 
+    @Column(name = "DATA_ALERTA")
+    private LocalDateTime dataAlerta;
 
     @Column(name = "DATA_RESOLUCAO")
     private LocalDateTime dataResolucao;

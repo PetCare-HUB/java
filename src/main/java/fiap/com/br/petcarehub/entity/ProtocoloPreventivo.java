@@ -35,13 +35,8 @@ public class ProtocoloPreventivo {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "TIPO", nullable = false, length = 30)
+    @Column(name = "TIPO_EVENTO", nullable = false, length = 30)
     private TipoEventoPreventivo tipo;
-
-    @NotBlank
-    @Size(max = 150)
-    @Column(name = "NOME", nullable = false, length = 150)
-    private String nome;
 
     @Size(max = 500)
     @Column(name = "DESCRICAO", length = 500)
@@ -49,10 +44,13 @@ public class ProtocoloPreventivo {
 
     @NotNull
     @Min(0)
-    @Column(name = "IDADE_MESES_APLICACAO", nullable = false)
-    private Integer idadeMesesAplicacao;
+    @Column(name = "IDADE_MESES_RECOMENDADA")
+    private Integer idadeMesesRecomendada;
 
     @Min(1)
-    @Column(name = "INTERVALO_REFORCO_DIAS")
-    private Integer intervaloReforcoDias;
+    @Column(name = "INTERVALO_DIAS")
+    private Integer intervaloDias;
+
+    @Column(name = "ATIVO")
+    private char ativo;
 }

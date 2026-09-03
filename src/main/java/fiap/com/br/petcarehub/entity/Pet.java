@@ -30,7 +30,7 @@ public class Pet {
 
     @NotBlank
     @Size(max = 100)
-    @Column(name = "NOME", nullable = false, length = 100)
+    @Column(name = "NOME", nullable = false, length = 80)
     private String nome;
 
     @NotNull
@@ -39,7 +39,7 @@ public class Pet {
     private EspeciePet especie;
 
     @Size(max = 100)
-    @Column(name = "RACA", length = 100)
+    @Column(name = "RACA", length = 80)
     private String raca;
 
     @PastOrPresent
@@ -47,7 +47,7 @@ public class Pet {
     private LocalDate dataNascimento;
 
     @Positive
-    @Column(name = "PESO_KG", precision = 6, scale = 2)
+    @Column(name = "PESO_KG", nullable = false, precision = 5, scale = 2)
     private BigDecimal pesoKg;
 
     @Enumerated(EnumType.STRING)
@@ -55,16 +55,13 @@ public class Pet {
     private SexoPet sexo;
 
     @Size(max = 500)
-    @Column(name = "CONDICOES_CRONICAS", length = 500)
+    @Column(name = "CONDICOES_CRONICAS", length = 300)
     private String condicoesCronicas;
 
     @Builder.Default
     @Column(name = "ATIVO", nullable = false)
     private Boolean ativo = true;
 
-    @Builder.Default
-    @Column(name = "SCORE_ATUAL")
-    private Integer scoreAtual = 100;
 
     @CreationTimestamp
     @Column(name = "DATA_CADASTRO", nullable = false)

@@ -56,6 +56,8 @@ public class Clinica {
     @Column(name = "TELEFONE", length = 20)
     private String telefone;
 
+    private char ativo;
+
     @Builder.Default
     @OneToMany(mappedBy = "clinica")
     private List<Pet> pets = new ArrayList<>();

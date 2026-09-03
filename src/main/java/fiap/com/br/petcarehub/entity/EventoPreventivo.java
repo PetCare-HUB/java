@@ -1,5 +1,6 @@
 package fiap.com.br.petcarehub.entity;
 
+import fiap.com.br.petcarehub.enums.StatusEventoPreventivo;
 import fiap.com.br.petcarehub.enums.TipoEventoPreventivo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -29,9 +30,13 @@ public class EventoPreventivo {
     @JoinColumn(name = "ID_PET", nullable = false)
     private Pet pet;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_PROTOCOLO")
+    private ProtocoloPreventivo protocolo;
+
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "TIPO", nullable = false, length = 30)
+    @Column(name = "TIPO_EVENTO", nullable = false, length = 30)
     private TipoEventoPreventivo tipo;
 
     @NotBlank
@@ -43,7 +48,10 @@ public class EventoPreventivo {
     @Column(name = "DATA_PREVISTA", nullable = false)
     private LocalDate dataPrevista;
 
-    @Builder.Default
-    @Column(name = "REALIZADO", nullable = false)
-    private Boolean realizado = false;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "STATUS", nullable = false, length = 20)
+    private StatusEventoPreventivo status;
+
+    @Column(name = "DATA_REALIZACAO")
+    private LocalDate dataRealizacao;
 }

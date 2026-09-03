@@ -40,13 +40,26 @@ public class Consulta {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "TIPO", nullable = false, length = 30)
+    @Column(name = "TIPO_CONSULTA", nullable = false, length = 30)
     private TipoConsulta tipo;
 
-    @Size(max = 1000)
-    @Column(name = "OBSERVACOES", length = 1000)
-    private String observacoes;
+    @NotNull
+    @Column(name = "DESCRICAO", length = 500)
+    private String descricao;
 
+    @NotNull
+    @Column(name = "DIAGNOSTICO", length = 500)
+    private String diagnostico;
+
+    @NotNull
+    @Column(name = "RETORNO_RECOMENDADO", nullable = false)
+    private Boolean retornoRecomendado = false;
+
+    @NotNull
+    @Column(name = "DATA_RETORNO")
+    private LocalDateTime dataRetorno;
+
+    @NotNull
     @PositiveOrZero
     @Column(name = "VALOR", precision = 8, scale = 2)
     private BigDecimal valor;

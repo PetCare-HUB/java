@@ -34,17 +34,33 @@ public class ScoreSaude {
     @NotNull
     @Min(0)
     @Max(100)
-    @Column(name = "SCORE", nullable = false)
-    private Integer score;
+    @Column(name = "SCORE_TOTAL", nullable = false)
+    private Integer scoreTotal;
+
+    @NotNull
+    @Column(name = "SCORE_ATIVIDADE", nullable = false)
+    private Integer scoreAtividade;
+
+    @NotNull
+    @Column(name = "SCORE_ALIMENTACAO", nullable = false)
+    private Integer scoreAlimentacao;
+
+    @NotNull
+    @Column(name = "SCORE_AMBIENTE", nullable = false)
+    private Integer scoreAmbiente;
+
+    @NotNull
+    @Column(name = "SCORE_CONSULTA", nullable = false)
+    private Integer scoreConsulta;
+
+    @NotNull
+    @Column(name = "SCORE_PREVENTIVO", nullable = false)
+    private Integer scorePreventivo;
 
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "CATEGORIA", nullable = false, length = 20)
     private CategoriaScore categoria;
-
-    @Size(max = 1000)
-    @Column(name = "OBSERVACAO", length = 1000)
-    private String observacao;
 
     @CreationTimestamp
     @Column(name = "DATA_CALCULO", nullable = false)
