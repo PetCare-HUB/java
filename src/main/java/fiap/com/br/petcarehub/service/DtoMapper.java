@@ -1,9 +1,8 @@
 package fiap.com.br.petcarehub.service;
 
+import fiap.com.br.petcarehub.dto.request.ClinicaRequest;
 import fiap.com.br.petcarehub.dto.response.*;
 import fiap.com.br.petcarehub.entity.*;
-import fiap.com.br.petcarehub.dto.request.ClinicaRequest;
-;
 
 public final class DtoMapper {
 
@@ -14,7 +13,6 @@ public final class DtoMapper {
                 tutor.getId(),
                 tutor.getNome(),
                 tutor.getStatusAcesso(),
-                tutor.getRole(),
                 tutor.getEmail(),
                 tutor.getTelefone(),
                 tutor.getCpf(),
@@ -37,7 +35,8 @@ public final class DtoMapper {
                 clinica.getEmail(),
                 clinica.getCnpj(),
                 clinica.getEndereco(),
-                clinica.getTelefone()
+                clinica.getTelefone(),
+                clinica.getAtivo()
         );
     }
 
@@ -59,7 +58,6 @@ public final class DtoMapper {
                 pet.getSexo(),
                 pet.getCondicoesCronicas(),
                 pet.getAtivo(),
-                pet.getScoreAtual(),
                 pet.getDataCadastro(),
                 toResumo(pet.getTutor()),
                 toResumo(pet.getClinica())
@@ -75,7 +73,10 @@ public final class DtoMapper {
                 consulta.getClinica().getNome(),
                 consulta.getDataConsulta(),
                 consulta.getTipo(),
-                consulta.getObservacoes(),
+                consulta.getDescricao(),
+                consulta.getDiagnostico(),
+                consulta.getRetornoRecomendado(),
+                consulta.getDataRetorno(),
                 consulta.getValor()
         );
     }
@@ -91,6 +92,7 @@ public final class DtoMapper {
                 alerta.getValorDetectado(),
                 alerta.getLimiteReferencia(),
                 alerta.getResolvido(),
+                alerta.getDataAlerta(),
                 alerta.getDataResolucao()
         );
     }
@@ -100,9 +102,13 @@ public final class DtoMapper {
                 score.getId(),
                 score.getPet().getId(),
                 score.getPet().getNome(),
-                score.getScore(),
+                score.getScoreTotal(),
+                score.getScoreAtividade(),
+                score.getScoreAlimentacao(),
+                score.getScoreAmbiente(),
+                score.getScoreConsulta(),
+                score.getScorePreventivo(),
                 score.getCategoria(),
-                score.getObservacao(),
                 score.getDataCalculo()
         );
     }
@@ -150,7 +156,8 @@ public final class DtoMapper {
                 evento.getTipo(),
                 evento.getDescricao(),
                 evento.getDataPrevista(),
-                evento.getRealizado()
+                evento.getStatus(),
+                evento.getDataRealizacao()
         );
     }
 
@@ -160,16 +167,18 @@ public final class DtoMapper {
                 protocolo.getEspecie(),
                 protocolo.getRaca(),
                 protocolo.getTipo(),
-                protocolo.getNome(),
                 protocolo.getDescricao(),
-                protocolo.getIdadeMesesAplicacao(),
-                protocolo.getIntervaloReforcoDias()
+                protocolo.getIdadeMesesRecomendada(),
+                protocolo.getIntervaloDias(),
+                protocolo.getAtivo()
         );
     }
 
     public static Clinica toClinica(ClinicaRequest request) {
         return Clinica.builder()
                 .nome(request.nome())
+                .email(request.email())
+                .senha(request.senha())
                 .cnpj(request.cnpj())
                 .endereco(request.endereco())
                 .telefone(request.telefone())
@@ -177,9 +186,11 @@ public final class DtoMapper {
     }
 
     public static void updateClinica(Clinica clinica, ClinicaRequest request) {
-        if (request.nome() != null) clinica.setNome(request.nome());
-        if (request.cnpj() != null) clinica.setCnpj(request.cnpj());
-        if (request.endereco() != null) clinica.setEndereco(request.endereco());
-        if (request.telefone() != null) clinica.setTelefone(request.telefone());
+        if (request.nome() != null) {clinica.setNome(request.nome());}
+        if (request.email() != null) {clinica.setEmail(request.email());}
+        if (request.senha() != null) {clinica.setSenha(request.senha());}
+        if (request.cnpj() != null) {clinica.setCnpj(request.cnpj());}
+        if (request.endereco() != null) {clinica.setEndereco(request.endereco());}
+        if (request.telefone() != null) {clinica.setTelefone(request.telefone());}
     }
 }

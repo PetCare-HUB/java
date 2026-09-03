@@ -3,7 +3,6 @@ package fiap.com.br.petcarehub.service;
 import fiap.com.br.petcarehub.dto.request.TutorRequest;
 import fiap.com.br.petcarehub.dto.response.TutorResponse;
 import fiap.com.br.petcarehub.entity.Tutor;
-import fiap.com.br.petcarehub.enums.Role;
 import fiap.com.br.petcarehub.enums.StatusAcesso;
 import fiap.com.br.petcarehub.repository.TutorRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 @RequiredArgsConstructor
 public class TutorService {
-    private final PasswordEncoder passwordEncoder;
     private final TutorRepository repository;
 
     @Transactional(readOnly = true)
@@ -28,7 +26,7 @@ public class TutorService {
 
     @Transactional(readOnly = true)
     public Tutor findEntityById(Long id) {
-        return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Responsável não encontrado: " + id));
+        return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Tutor não encontrado: " + id));
     }
 
     @Transactional(readOnly = true)
@@ -44,7 +42,6 @@ public class TutorService {
                 .email(request.email())
                 .telefone(request.telefone())
                 .cpf(request.cpf())
-//                .role(Role.TUTOR)
                 .statusAcesso(StatusAcesso.PRE_CADASTRADO)
                 .build();
 
