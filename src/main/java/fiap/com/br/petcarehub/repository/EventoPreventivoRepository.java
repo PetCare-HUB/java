@@ -13,5 +13,4 @@ public interface EventoPreventivoRepository extends JpaRepository<EventoPreventi
 
     long countByPetClinicaIdAndDataPrevistaBetween(Long clinicaId, LocalDate inicio, LocalDate fim);
 
-    long countByPetClinicaIdAndDataPrevistaBetweenAndRealizadoFalse(Long clinicaId, LocalDate inicio, LocalDate fim);
 }

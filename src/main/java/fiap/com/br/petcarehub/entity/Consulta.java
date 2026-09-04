@@ -1,5 +1,6 @@
 package fiap.com.br.petcarehub.entity;
 
+import fiap.com.br.petcarehub.config.BooleanToCharacterConverter;
 import fiap.com.br.petcarehub.enums.TipoConsulta;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
@@ -50,8 +51,9 @@ public class Consulta {
     private String diagnostico;
 
     @NotNull
+    @Convert(converter = BooleanToCharacterConverter.class)
     @Column(name = "RETORNO_RECOMENDADO", nullable = false)
-    private Boolean retornoRecomendado = false;
+    private Boolean retornoRecomendado;
 
     @Column(name = "DATA_RETORNO")
     private LocalDateTime dataRetorno;
