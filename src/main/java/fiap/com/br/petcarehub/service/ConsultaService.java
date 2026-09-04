@@ -45,28 +45,39 @@ public class ConsultaService {
     public ConsultaResponse criar(ConsultaRequest request) {
         Pet pet = petService.findEntityById(request.petId());
         Clinica clinica = clinicaService.findEntityById(request.clinicaId());
+
         Consulta consulta = Consulta.builder()
                 .pet(pet)
                 .clinica(clinica)
                 .dataConsulta(request.dataConsulta())
                 .tipo(request.tipo())
-                .observacoes(request.observacoes())
+                .descricao(request.descricao())
+                .diagnostico(request.diagnostico())
+                .retornoRecomendado(request.retornoRecomendado())
+                .dataRetorno(request.dataRetorno())
                 .valor(request.valor())
                 .build();
+
         return DtoMapper.toResponse(repository.save(consulta));
     }
 
     @Transactional
     public ConsultaResponse atualizar(Long id, ConsultaRequest request) {
         Consulta consulta = findEntityById(id);
+
         Pet pet = petService.findEntityById(request.petId());
         Clinica clinica = clinicaService.findEntityById(request.clinicaId());
+
         consulta.setPet(pet);
         consulta.setClinica(clinica);
         consulta.setDataConsulta(request.dataConsulta());
         consulta.setTipo(request.tipo());
-        consulta.setObservacoes(request.observacoes());
+        consulta.setDescricao(request.descricao());
+        consulta.setDiagnostico(request.diagnostico());
+        consulta.setRetornoRecomendado(request.retornoRecomendado());
+        consulta.setDataRetorno(request.dataRetorno());
         consulta.setValor(request.valor());
+
         return DtoMapper.toResponse(repository.save(consulta));
     }
 

@@ -7,5 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ProtocoloPreventivoRepository extends JpaRepository<ProtocoloPreventivo, Long> {
-    List<ProtocoloPreventivo> findByEspecieOrderByIdadeMesesAplicacaoAsc(EspeciePet especie);
+
+    List<ProtocoloPreventivo> findByEspecieOrderByIdadeMesesRecomendadaAsc(EspeciePet especie);
 }

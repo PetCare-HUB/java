@@ -31,7 +31,7 @@ public class ProtocoloPreventivoService {
     @Cacheable(value = "protocolos", key = "#especie")
     @Transactional(readOnly = true)
     public List<ProtocoloPreventivoResponse> buscarPorEspecie(EspeciePet especie) {
-        return repository.findByEspecieOrderByIdadeMesesAplicacaoAsc(especie).stream().map(DtoMapper::toResponse).toList();
+        return repository.findByEspecieOrderByIdadeMesesRecomendadaAsc(especie).stream().map(DtoMapper::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
@@ -39,18 +39,18 @@ public class ProtocoloPreventivoService {
         return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Protocolo preventivo não encontrado: " + id));
     }
 
-    @CacheEvict(value = "protocolos", allEntries = true)
     @Transactional
     public ProtocoloPreventivoResponse criar(ProtocoloPreventivoRequest request) {
+
         ProtocoloPreventivo protocolo = ProtocoloPreventivo.builder()
                 .especie(request.especie())
                 .raca(request.raca())
                 .tipo(request.tipo())
-                .nome(request.nome())
                 .descricao(request.descricao())
-                .idadeMesesAplicacao(request.idadeMesesAplicacao())
-                .intervaloReforcoDias(request.intervaloReforcoDias())
+                .idadeMesesRecomendada(request.idadeMesesRecomendada())
+                .intervaloDias(request.intervaloDias())
                 .build();
+
         return DtoMapper.toResponse(repository.save(protocolo));
     }
 }
