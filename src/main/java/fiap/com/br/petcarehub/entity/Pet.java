@@ -1,5 +1,6 @@
 package fiap.com.br.petcarehub.entity;
 
+import fiap.com.br.petcarehub.config.BooleanToCharacterConverter;
 import fiap.com.br.petcarehub.enums.EspeciePet;
 import fiap.com.br.petcarehub.enums.SexoPet;
 import jakarta.persistence.*;
@@ -58,7 +59,9 @@ public class Pet {
     @Column(name = "CONDICOES_CRONICAS", length = 300)
     private String condicoesCronicas;
 
+    @NotNull
     @Builder.Default
+    @Convert(converter = BooleanToCharacterConverter.class)
     @Column(name = "ATIVO", nullable = false)
     private Boolean ativo = true;
 
@@ -66,6 +69,10 @@ public class Pet {
     @CreationTimestamp
     @Column(name = "DATA_CADASTRO", nullable = false)
     private LocalDateTime dataCadastro;
+
+    @NotNull
+    @Column(name = "SCORE_ATUAL")
+    private Integer scoreAtual;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)

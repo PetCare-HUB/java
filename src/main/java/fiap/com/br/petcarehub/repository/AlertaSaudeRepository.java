@@ -12,22 +12,23 @@ import java.util.List;
 
 public interface AlertaSaudeRepository extends JpaRepository<AlertaSaude, Long>, JpaSpecificationExecutor<AlertaSaude> {
 
-    List<AlertaSaude> findByPetIdAndResolvidoFalseOrderByDataCriacaoDesc(Long petId);
+    List<AlertaSaude> findByPetIdAndResolvidoFalseOrderByDataAlertaDesc(Long petId);
 
-    List<AlertaSaude> findTop10ByPetIdOrderByDataCriacaoDesc(Long petId);
+    List<AlertaSaude> findTop10ByPetIdOrderByDataAlertaDesc(Long petId);
+
 
     long countByPetIdAndResolvidoFalseAndNivelIn(Long petId, List<NivelAlerta> niveis);
 
     long countByPetClinicaIdAndResolvidoFalse(Long clinicaId);
 
-    @Query("SELECT a FROM AlertaSaude a WHERE a.pet.clinica.id = :clinicaId AND a.dataCriacao BETWEEN :inicio AND :fim ORDER BY a.dataCriacao DESC")
+    @Query("SELECT a FROM AlertaSaude a WHERE a.pet.clinica.id = :clinicaId AND a.dataAlerta BETWEEN :inicio AND :fim ORDER BY a.dataAlerta DESC")
     List<AlertaSaude> findByPetClinicaIdAndDataAlertaBetweenOrderByDataAlertaDesc(
             @Param("clinicaId") Long clinicaId,
             @Param("inicio") LocalDateTime inicio,
             @Param("fim") LocalDateTime fim
     );
 
-    @Query("SELECT COUNT(a) FROM AlertaSaude a WHERE a.pet.clinica.id = :clinicaId AND a.dataCriacao BETWEEN :inicio AND :fim")
+    @Query("SELECT COUNT(a) FROM AlertaSaude a WHERE a.pet.clinica.id = :clinicaId AND a.dataAlerta BETWEEN :inicio AND :fim")
     long countByPetClinicaIdAndDataAlertaBetween(
             @Param("clinicaId") Long clinicaId,
             @Param("inicio") LocalDateTime inicio,

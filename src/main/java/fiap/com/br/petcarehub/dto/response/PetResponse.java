@@ -19,5 +19,6 @@ public record PetResponse(
         Boolean ativo,
         LocalDateTime dataCadastro,
         TutorResumoResponse tutor,
-        ClinicaResumoResponse clinica
+        ClinicaResumoResponse clinica,
+        Integer scoreTotal
 ) {}

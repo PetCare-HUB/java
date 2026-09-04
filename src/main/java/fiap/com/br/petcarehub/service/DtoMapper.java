@@ -60,7 +60,8 @@ public final class DtoMapper {
                 pet.getAtivo(),
                 pet.getDataCadastro(),
                 toResumo(pet.getTutor()),
-                toResumo(pet.getClinica())
+                toResumo(pet.getClinica()),
+                pet.getScoreAtual()
         );
     }
 

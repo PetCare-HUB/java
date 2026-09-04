@@ -1,5 +1,6 @@
 package fiap.com.br.petcarehub.entity;
 
+import fiap.com.br.petcarehub.config.BooleanToCharacterConverter;
 import fiap.com.br.petcarehub.enums.NivelAlerta;
 import fiap.com.br.petcarehub.enums.TipoAlerta;
 import jakarta.persistence.*;
@@ -19,7 +20,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "ALERTA_SAUDE")
 public class AlertaSaude {
-
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_ALERTA_SAUDE")
     @SequenceGenerator(name = "SEQ_ALERTA_SAUDE", sequenceName = "SEQ_ALERTA_SAUDE", allocationSize = 1)
@@ -33,7 +33,7 @@ public class AlertaSaude {
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_LEITURA", nullable = false)
+    @JoinColumn(name = "ID_LEITURA_COLEIRA", nullable = false)
     private LeituraColeira idLeitura;
 
     @NotNull
@@ -60,6 +60,7 @@ public class AlertaSaude {
     private BigDecimal limiteReferencia;
 
     @Builder.Default
+    @Convert(converter = BooleanToCharacterConverter.class)
     @Column(name = "RESOLVIDO", nullable = false)
     private Boolean resolvido = false;
 

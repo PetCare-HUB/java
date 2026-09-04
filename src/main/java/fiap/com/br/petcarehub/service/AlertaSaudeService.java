@@ -43,7 +43,7 @@ public class AlertaSaudeService {
     @Transactional(readOnly = true)
     public List<AlertaSaudeResponse> alertasAtivosDoPet(Long petId) {
         petService.findEntityById(petId);
-        return repository.findByPetIdAndResolvidoFalseOrderByDataCriacaoDesc(petId).stream()
+        return repository.findByPetIdAndResolvidoFalseOrderByDataAlertaDesc(petId).stream()
                 .map(DtoMapper::toResponse).toList();
     }
 
@@ -86,7 +86,7 @@ public class AlertaSaudeService {
 
     @Transactional(readOnly = true)
     public List<AlertaSaudeResponse> ultimosPorPet(Long petId) {
-        return repository.findTop10ByPetIdOrderByDataCriacaoDesc(petId).stream()
+        return repository.findTop10ByPetIdOrderByDataAlertaDesc(petId).stream()
                 .map(DtoMapper::toResponse).toList();
     }
 }

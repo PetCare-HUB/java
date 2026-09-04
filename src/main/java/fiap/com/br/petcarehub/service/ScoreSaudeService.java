@@ -101,9 +101,8 @@ public class ScoreSaudeService {
 
         ScoreSaude scoreSaude = ScoreSaude.builder()
                 .pet(pet)
-                .score(score)
+                .scoreTotal(score)
                 .categoria(categoria)
-                .observacao(observacao.toString().trim())
                 .build();
 
         ScoreSaude salvo = repository.save(scoreSaude);
