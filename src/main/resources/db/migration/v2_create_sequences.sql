@@ -1,0 +1,168 @@
+SET SERVEROUTPUT ON;
+
+------------------------------------------------------------
+-- PETCARE HUB - CREATE SEQUENCES
+-- Sequences para gerar IDs das tabelas
+------------------------------------------------------------
+
+------------------------------------------------------------
+-- LIMPEZA OPCIONAL
+-- Remove as sequences caso já existam
+------------------------------------------------------------
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE seq_responsavel';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE seq_clinica';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE seq_pet';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE seq_consulta';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE seq_protocolo_preventivo';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE seq_evento_preventivo';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE seq_dispositivo_iot';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE seq_leitura_sensor';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE seq_alerta_saude';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE seq_score_saude';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE seq_log_erros';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+------------------------------------------------------------
+-- CRIAÇÃO DAS SEQUENCES
+------------------------------------------------------------
+
+CREATE SEQUENCE seq_responsavel
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE SEQUENCE seq_clinica
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE SEQUENCE seq_pet
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE SEQUENCE seq_consulta
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE SEQUENCE seq_protocolo_preventivo
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE SEQUENCE seq_evento_preventivo
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE SEQUENCE seq_dispositivo_iot
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE SEQUENCE seq_leitura_sensor
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE SEQUENCE seq_alerta_saude
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE SEQUENCE seq_score_saude
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+CREATE SEQUENCE seq_log_erros
+START WITH 1
+INCREMENT BY 1
+NOCACHE
+NOCYCLE;
+
+------------------------------------------------------------
+-- TESTE FINAL: LISTAR SEQUENCES CRIADAS
+------------------------------------------------------------
+
+SELECT sequence_name
+FROM user_sequences
+WHERE sequence_name IN (
+    'SEQ_RESPONSAVEL',
+    'SEQ_CLINICA',
+    'SEQ_PET',
+    'SEQ_CONSULTA',
+    'SEQ_PROTOCOLO_PREVENTIVO',
+    'SEQ_EVENTO_PREVENTIVO',
+    'SEQ_DISPOSITIVO_IOT',
+    'SEQ_LEITURA_SENSOR',
+    'SEQ_ALERTA_SAUDE',
+    'SEQ_SCORE_SAUDE',
+    'SEQ_LOG_ERROS'
+)
+ORDER BY sequence_name;
