@@ -30,12 +30,7 @@ public class AlertaSaude {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ID_PET", nullable = false)
     private Pet pet;
-
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ID_LEITURA_COLEIRA", nullable = false)
-    private LeituraColeira idLeitura;
-
+    
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "TIPO_ALERTA", nullable = false, length = 40)
