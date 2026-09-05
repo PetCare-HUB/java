@@ -60,7 +60,6 @@ public class PetService {
                 .sexo(request.sexo())
                 .condicoesCronicas(request.condicoesCronicas())
                 .ativo(request.ativo() != null ? request.ativo() : true)
-                .scoreAtual(100)
                 .tutor(tutor)
                 .clinica(clinica)
                 .build();
@@ -121,11 +120,4 @@ public class PetService {
         return repository.findPetsEmRisco(clinicaId, limite, pageable).map(DtoMapper::toResponse);
     }
 
-    @CacheEvict(value = {"pets", "scores"}, key = "#petId")
-    @Transactional
-    public void atualizarScoreAtual(Long petId, Integer score) {
-        Pet pet = findEntityById(petId);
-        pet.setScoreAtual(score);
-        repository.save(pet);
-    }
 }

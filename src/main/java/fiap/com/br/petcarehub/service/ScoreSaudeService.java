@@ -106,7 +106,6 @@ public class ScoreSaudeService {
                 .build();
 
         ScoreSaude salvo = repository.save(scoreSaude);
-        petService.atualizarScoreAtual(petId, score);
 
         if (score < 50) {
             alertaSaudeService.criarInterno(

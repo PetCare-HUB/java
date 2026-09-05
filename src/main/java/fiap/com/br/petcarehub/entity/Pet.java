@@ -70,9 +70,6 @@ public class Pet {
     @Column(name = "DATA_CADASTRO", nullable = false)
     private LocalDateTime dataCadastro;
 
-    @NotNull
-    @Column(name = "SCORE_ATUAL")
-    private Integer scoreAtual;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
