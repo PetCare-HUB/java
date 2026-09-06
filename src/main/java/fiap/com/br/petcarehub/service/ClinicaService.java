@@ -5,10 +5,8 @@ import fiap.com.br.petcarehub.dto.response.AlertaSaudeResponse;
 import fiap.com.br.petcarehub.dto.response.ClinicaResponse;
 import fiap.com.br.petcarehub.dto.response.PetResponse;
 import fiap.com.br.petcarehub.entity.Clinica;
-import fiap.com.br.petcarehub.repository.AlertaSaudeRepository;
-import fiap.com.br.petcarehub.repository.ClinicaRepository;
-import fiap.com.br.petcarehub.repository.ConsultaRepository;
-import fiap.com.br.petcarehub.repository.PetRepository;
+import fiap.com.br.petcarehub.entity.ScoreSaude;
+import fiap.com.br.petcarehub.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -35,6 +33,7 @@ public class ClinicaService {
     private final AlertaSaudeRepository alertaSaudeRepository;
     private final ConsultaRepository consultaRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ScoreSaudeRepository scoreSaudeRepository;
 
     public Page<ClinicaResponse> listar(Pageable pageable) {
         log.debug("Listando clínicas com paginação: {}", pageable);
@@ -95,28 +94,38 @@ public class ClinicaService {
     }
 
     public List<PetResponse> petEmRisco(Long clinicaId, String nivel) {
-        log.info("Buscando pets em risco da clínica {} - Nível: {}", clinicaId, nivel);
+        log.info("Buscando pets da clínica {} - Nível: {}", clinicaId, nivel);
+
         findEntityById(clinicaId);
 
+        List<ScoreSaude> scores;
+
         if ("verde".equalsIgnoreCase(nivel)) {
-            // Score >= 80
-            return petRepository.findByClinicaIdAndScoreAtualGreaterThanEqualAndAtivoTrueOrderByScoreAtualAsc(clinicaId, 80)
-                    .stream()
-                    .map(DtoMapper::toResponse)
-                    .toList();
+
+            scores = scoreSaudeRepository
+                    .findUltimosScoresPorClinicaEMaiorOuIgual(clinicaId, 80);
+
         } else if ("amarelo".equalsIgnoreCase(nivel)) {
-            // Score 50-79
-            return petRepository.findByClinicaIdAndScoreAtualBetweenAndAtivoTrueOrderByScoreAtualAsc(clinicaId, 50, 79)
-                    .stream()
-                    .map(DtoMapper::toResponse)
-                    .toList();
+
+            scores = scoreSaudeRepository
+                    .findUltimosScoresPorClinicaEntre(clinicaId, 50, 79);
+
+        } else if ("vermelho".equalsIgnoreCase(nivel)) {
+
+            scores = scoreSaudeRepository
+                    .findUltimosScoresPorClinicaMenorQue(clinicaId, 50);
+
         } else {
-            // vermelho: Score < 50
-            return petRepository.findByClinicaIdAndScoreAtualLessThanAndAtivoTrueOrderByScoreAtualAsc(clinicaId, 50)
-                    .stream()
-                    .map(DtoMapper::toResponse)
-                    .toList();
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Nível de risco inválido. Use verde, amarelo ou vermelho."
+            );
         }
+
+        return scores.stream()
+                .map(ScoreSaude::getPet)
+                .map(DtoMapper::toResponse)
+                .toList();
     }
 
     public Map<String, Object> metricas(Long clinicaId, String periodo) {
@@ -134,7 +143,8 @@ public class ClinicaService {
 
             long totalPets = petRepository.countByClinicaId(clinicaId);
             long petsAtivos = petRepository.countByClinicaIdAndAtivoTrue(clinicaId);
-            long petsEmRisco = petRepository.countByClinicaIdAndScoreAtualLessThan(clinicaId, 50);
+            long petsEmRisco = scoreSaudeRepository
+                    .countPetsComUltimoScoreMenorQue(clinicaId, 50);
 
             long totalConsultasNoPeriodo = consultaRepository.countByClinicaIdAndDataConsultaBetween(
                     clinicaId, dataInicio, dataFim);

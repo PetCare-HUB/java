@@ -26,7 +26,7 @@ public class ProtocoloPreventivoController {
 
     @GetMapping
     @Operation(summary = "Listar protocolos preventivos")
-    public PageResponse<ProtocoloPreventivoResponse> listar(@PageableDefault(size = 10, sort = "idadeMesesAplicacao", direction = Sort.Direction.ASC) Pageable pageable) {
+    public PageResponse<ProtocoloPreventivoResponse> listar(@PageableDefault(size = 10, sort = "idadeMesesRecomendada", direction = Sort.Direction.ASC) Pageable pageable) {
         return new PageResponse<>(service.listar(pageable));
     }
 
