@@ -1,11 +1,3 @@
-### POST login
-POST http://localhost:8080/auth/login
-Content-Type: application/json
-
-{
-  "email": "contato@vidapet.com",
-  "password": "12345678"
-}
 
 ### POST user
 POST http://localhost:8080/tutor
@@ -18,3 +10,189 @@ Authorization: Bearer {token}
   "telefone": "11999998888",
   "cpf": "11122233344"
 }
+
+### =====================================================
+### CONFIGURAÇÃO
+### =====================================================
+
+@baseUrl = http://localhost:8080
+
+
+### =====================================================
+### AUTH
+### =====================================================
+
+### POST login
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+  "email": "contato@vidapet.com",
+  "password": "12345678"
+}
+
+
+
+### =====================================================
+### CLÍNICAS - valido
+### =====================================================
+
+### Listar todas as clínicas
+GET {{baseUrl}}/clinicas
+
+
+### Buscar clínica por nome
+GET {{baseUrl}}/clinicas/nome?nome=vet
+
+
+### Buscar clínica por ID
+GET {{baseUrl}}/clinicas/70
+
+
+### Agenda dos próximos 30 dias da clínica -falta teste
+GET {{baseUrl}}/clinicas/70/agenda/proximos-30-dias
+
+
+### Alertas IoT de hoje da clínica
+GET {{baseUrl}}/clinicas/70/alertas-iot/hoje
+
+
+### Métricas da clínica
+GET {{baseUrl}}/clinicas/70/metricas
+
+
+### Pets em risco da clínica
+GET {{baseUrl}}/clinicas/70/pets-em-risco
+
+
+### =====================================================
+### PETS - valido
+### =====================================================
+
+### Listar todos os pets
+GET {{baseUrl}}/pets
+
+### Buscar pet nome - Busca por espécie, raça e faixa de score
+GET {{baseUrl}}/pets/busca?nome=thor
+
+### Buscar pet especie - Busca por espécie, raça e faixa de score
+GET {{baseUrl}}/pets/busca?especie = CAO
+
+### Buscar pet raca - Busca por espécie, raça e faixa de score
+GET {{baseUrl}}/pets/busca?raca=bull
+
+### Buscar pet scoreMin e scoreMax - Busca por espécie, raça e faixa de score
+GET {{baseUrl}}/pets/busca?scoreMin=80&scoreMax=100
+
+
+
+### Buscar pet por nome
+GET {{baseUrl}}/pets/nome?nome=Rex
+
+
+### Buscar pet por ID
+GET {{baseUrl}}/pets/70
+
+
+### Alertas ativos do pet
+GET {{baseUrl}}/pets/70/alertas/ativos
+
+
+### Leituras de ambiente do pet
+GET {{baseUrl}}/pets/70/leituras/ambiente
+
+
+### Leituras da coleira
+GET {{baseUrl}}/pets/70/leituras/coleira
+
+
+### Leituras do comedouro
+GET {{baseUrl}}/pets/70/leituras/comedouro
+
+
+### Plano preventivo do pet
+GET {{baseUrl}}/pets/70/plano-preventivo
+
+
+### Score de saúde atual
+GET {{baseUrl}}/pets/70/score-saude
+
+
+### Histórico do score de saúde
+GET {{baseUrl}}/pets/70/score-saude/historico
+
+
+### Timeline do pet
+GET {{baseUrl}}/pets/70/timeline
+
+
+### =====================================================
+### CONSULTAS - valido
+### =====================================================
+
+### Listar consultas
+GET {{baseUrl}}/consultas
+
+
+### Consultas de um pet
+GET {{baseUrl}}/consultas/pet/70
+
+
+### Consulta por ID
+GET {{baseUrl}}/consultas/70
+
+
+### =====================================================
+### TUTOR - valido
+### =====================================================
+
+### Listar tutores
+GET {{baseUrl}}/tutor
+
+
+### Buscar tutor por CPF
+GET {{baseUrl}}/tutor/cpf?cpf=123
+
+
+### Buscar tutor por email
+GET {{baseUrl}}/tutor/email?email=bruno
+
+
+### Buscar tutor por nome
+GET {{baseUrl}}/tutor/nome?nome=lima
+
+
+### Buscar tutor por ID
+GET {{baseUrl}}/tutor/70
+
+
+### =====================================================
+### PROTOCOLOS PREVENTIVOS
+### =====================================================
+
+### Listar protocolos
+GET {{baseUrl}}/protocolos-preventivos
+
+
+### Protocolos por espécie
+GET {{baseUrl}}/protocolos-preventivos/por-especie?especie=CAO
+
+
+### =====================================================
+### ALERTAS
+### =====================================================
+
+### Listar alertas
+GET {{baseUrl}}/alertas
+
+### Alertas do pet
+GET {{baseUrl}}/alertas?petId=70
+
+### Alertas por tipo
+GET {{baseUrl}}/alertas?tipo=SCORE_CRITICO
+
+### Alertas do pet, por tipo e não resolvidos
+GET {{baseUrl}}/alertas?petId=70&tipo=SCORE_CRITICO&resolvido=false
+
+### Alertas do pet, paginados
+GET {{baseUrl}}/alertas?petId=70&page=0&size=10
