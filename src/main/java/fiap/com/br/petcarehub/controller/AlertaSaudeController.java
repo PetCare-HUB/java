@@ -28,7 +28,7 @@ public class AlertaSaudeController {
             @RequestParam(required = false) Long petId,
             @RequestParam(required = false) TipoAlerta tipo,
             @RequestParam(required = false) Boolean resolvido,
-            @PageableDefault(size = 10, sort = "dataCriacao", direction = Sort.Direction.DESC) Pageable pageable
+            @PageableDefault(size = 10, sort = "dataAlerta", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return new PageResponse<>(service.buscar(petId, tipo, resolvido, pageable));
     }

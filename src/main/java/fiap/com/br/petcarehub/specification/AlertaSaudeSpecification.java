@@ -28,6 +28,8 @@ public class AlertaSaudeSpecification {
                 predicates.add(cb.equal(root.get("resolvido"), resolvido));
             }
 
+            if (predicates.isEmpty()) {return cb.conjunction();}
+
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
