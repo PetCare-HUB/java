@@ -76,7 +76,7 @@ public class PetController {
             @RequestParam(required = false) Long clinicaId,
             @RequestParam(required = false) Integer scoreMin,
             @RequestParam(required = false) Integer scoreMax,
-            @PageableDefault(size = 10, sort = "scoreAtual", direction = Sort.Direction.ASC) Pageable pageable
+            @PageableDefault(size = 10, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable
     ) {
         return new PageResponse<>(service.buscarComFiltros(especie, raca, clinicaId, scoreMin, scoreMax, pageable));
     }

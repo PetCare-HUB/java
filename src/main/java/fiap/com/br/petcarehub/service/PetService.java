@@ -7,6 +7,7 @@ import fiap.com.br.petcarehub.entity.Pet;
 import fiap.com.br.petcarehub.entity.Tutor;
 import fiap.com.br.petcarehub.enums.EspeciePet;
 import fiap.com.br.petcarehub.repository.PetRepository;
+import fiap.com.br.petcarehub.repository.ScoreSaudeRepository;
 import fiap.com.br.petcarehub.specification.PetSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ public class PetService {
     private final PetRepository repository;
     private final TutorService tutorService;
     private final ClinicaService clinicaService;
+    private final ScoreSaudeRepository scoreSaudeRepository;
 
     @Transactional(readOnly = true)
     public Page<PetResponse> listar(Pageable pageable) {
@@ -115,9 +117,27 @@ public class PetService {
     }
 
     @Transactional(readOnly = true)
-    public Page<PetResponse> petsEmRisco(Long clinicaId, String nivel, Pageable pageable) {
-        int limite = "vermelho".equalsIgnoreCase(nivel) ? 49 : 79;
-        return repository.findPetsEmRisco(clinicaId, limite, pageable).map(DtoMapper::toResponse);
+    public Page<PetResponse> petsEmRisco(
+            Long clinicaId,
+            String nivel,
+            Pageable pageable
+    ) {
+        int limite;
+
+        if ("vermelho".equalsIgnoreCase(nivel)) {
+            limite = 49;
+        } else if ("amarelo".equalsIgnoreCase(nivel)) {
+            limite = 79;
+        } else {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Nível de risco inválido. Use vermelho ou amarelo."
+            );
+        }
+
+        return scoreSaudeRepository
+                .findPetsEmRisco(clinicaId, limite, pageable)
+                .map(score -> DtoMapper.toResponse(score.getPet()));
     }
 
 }
