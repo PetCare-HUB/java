@@ -45,12 +45,20 @@ public class ScoreSaudeService {
     @Transactional
     public ScoreSaudeResponse calcular(Long petId) {
         Pet pet = petService.findEntityById(petId);
+
         int score = 100;
+        int scoreAtividade = 100;
+        int scoreAlimentacao = 100;
+        int scoreAmbiente = 100;
+        int scoreConsulta = 100;
+        int scorePreventivo = 100; // sem lógica própria ainda — fica neutro até termos regra de vacina/preventivo
+
         StringBuilder observacao = new StringBuilder("Score calculado com base em leituras IoT, consultas e alertas. ");
 
         Optional<LeituraColeira> coleira = leituraColeiraRepository.findTopByPetIdOrderByTimestampLeituraDesc(petId);
         if (coleira.isPresent() && coleira.get().getNivelBateria() < 20) {
             score -= 20;
+            scoreAtividade -= 20;
             observacao.append("Bateria da coleira abaixo de 20%. ");
         }
 
@@ -58,10 +66,12 @@ public class ScoreSaudeService {
         if (comedouro.isPresent()) {
             if (comedouro.get().getNivelRacaoPct() < 20) {
                 score -= 10;
+                scoreAlimentacao -= 10;
                 observacao.append("Nível de ração baixo. ");
             }
             if (comedouro.get().getPesoConsumidoG().compareTo(new BigDecimal("30")) < 0) {
                 score -= 20;
+                scoreAlimentacao -= 20;
                 observacao.append("Consumo alimentar abaixo do esperado. ");
             }
         }
@@ -71,14 +81,17 @@ public class ScoreSaudeService {
             BigDecimal temp = ambiente.get().getTemperaturaAmbiente();
             if (temp.compareTo(new BigDecimal("10")) < 0 || temp.compareTo(new BigDecimal("32")) > 0) {
                 score -= 15;
+                scoreAmbiente -= 15;
                 observacao.append("Temperatura ambiente fora da faixa segura. ");
             }
             if (ambiente.get().getUmidadePct() < 30 || ambiente.get().getUmidadePct() > 75) {
                 score -= 10;
+                scoreAmbiente -= 10;
                 observacao.append("Umidade ambiente fora da faixa ideal. ");
             }
             if (ambiente.get().getQualidadeArPpm() > 1000) {
                 score -= 15;
+                scoreAmbiente -= 15;
                 observacao.append("Qualidade do ar ruim. ");
             }
         }
@@ -93,15 +106,27 @@ public class ScoreSaudeService {
         long alertasGraves = alertaSaudeRepository.countByPetIdAndResolvidoFalseAndNivelIn(petId, java.util.List.of(NivelAlerta.ALTO, NivelAlerta.CRITICO));
         if (alertasGraves > 0) {
             score -= 10;
+            scoreConsulta -= 10;
             observacao.append("Existem alertas graves ativos. ");
         }
 
         score = Math.max(0, Math.min(100, score));
+        scoreAtividade = Math.max(0, Math.min(100, scoreAtividade));
+        scoreAlimentacao = Math.max(0, Math.min(100, scoreAlimentacao));
+        scoreAmbiente = Math.max(0, Math.min(100, scoreAmbiente));
+        scoreConsulta = Math.max(0, Math.min(100, scoreConsulta));
+        scorePreventivo = Math.max(0, Math.min(100, scorePreventivo));
+
         CategoriaScore categoria = categoria(score);
 
         ScoreSaude scoreSaude = ScoreSaude.builder()
                 .pet(pet)
                 .scoreTotal(score)
+                .scoreAtividade(scoreAtividade)
+                .scoreAlimentacao(scoreAlimentacao)
+                .scoreAmbiente(scoreAmbiente)
+                .scoreConsulta(scoreConsulta)
+                .scorePreventivo(scorePreventivo)
                 .categoria(categoria)
                 .build();
 
