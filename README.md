@@ -1,550 +1,416 @@
 # PetCare Hub — API Java Advanced
 
-API REST principal do **PetCare Hub**, desenvolvida em **Java 17 + Spring Boot** para o Challenge FIAP 2026 — CLYVO VET.
-
-O objetivo da API é apoiar a continuidade do cuidado do pet, conectando tutores, pets, consultas, leituras IoT simuladas, alertas automáticos, score de saúde e plano preventivo.
-
-> Observação de arquitetura: a API Java é responsável pelo domínio principal e processamento dos dados. A API .NET fica responsável pelo dashboard B2B das clínicas, consumindo dados processados pelo Java ou consultando a mesma base.
-
----
-
-## Tecnologias
-
-- Java 17
-- Spring Boot 3.3.5
-- Spring Web
-- Spring Data JPA (com Criteria / Specifications para filtros dinâmicos)
-- Bean Validation (incluindo validações customizadas)
-- H2 Database para execução local
-- Oracle via perfil `oracle`
-- Swagger/OpenAPI (Springdoc)
-- Spring Cache + Caffeine
-- Lombok
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java 17" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.3.5-brightgreen?style=for-the-badge&logo=springboot" alt="Spring Boot 3.3.5" />
+  <img src="https://img.shields.io/badge/Spring%20Security-JWT%20RSA-blue?style=for-the-badge&logo=springsecurity" alt="Spring Security" />
+  <img src="https://img.shields.io/badge/Flyway-Migrations-red?style=for-the-badge&logo=flyway" alt="Flyway" />
+  <img src="https://img.shields.io/badge/Database-Oracle-red?style=for-the-badge&logo=oracle" alt="Database" />
+  <img src="https://img.shields.io/badge/Swagger-OpenAPI%203.0-green?style=for-the-badge&logo=swagger" alt="Swagger" />
+</p>
 
 ---
 
-## Como executar localmente
+## 📌 Sumário Executivo
 
-```bash
-./mvnw spring-boot:run
+O **PetCare Hub** é uma solução para a continuidade do cuidado preventivo de animais de estimação. A aplicação central em **Java 17 + Spring Boot** atua como o **core de domínio, telemetria e inteligência em saúde**, provendo:
+
+1. **Camada de Visualização & Interatividade**: Interface Swagger UI interativa com documentação OpenAPI 3.0 e integração com a camada web/dashboard do ecossistema.
+2. **Controle de Versão de Banco com Flyway**: Pipeline de migrações estruturadas (V1 a V8) garantindo integridade de tabelas, sequences, triggers e índices em Oracle e H2.
+3. **Autenticação e Autorização com Spring Security**: Arquitetura OAuth2 Resource Server com tokens **JWT assinados assimetricamente via par de chaves RSA**, com controle granular de perfis (**CLINICA** e **TUTOR**) e fluxo seguro de ativação de conta.
+4. **Fluxos de Negócio Completos (Além do CRUD)**:
+   - Ingestão de telemetria IoT com detecção automática de anomalias e geração proativa de alertas.
+   - Motor de cálculo algorítmico do Score de Saúde (0 a 100) com classificação em semáforos e histórico.
+   - Gestão de plano preventivo com cache de alta performance (Caffeine) e timeline clínica longitudinal unificada.
+5. **Validações Robustas de Dados**: Validações Bean Validation combinadas com `ConstraintValidator` customizado (`@MaxAge`).
+
+---
+
+## 🏛️ Arquitetura e Tecnologias
+
+- **Linguagem & Framework**: Java 17, Spring Boot 3.3.5
+- **Segurança**: Spring Security, Spring OAuth2 Resource Server, Nimbus Jose JWT, BCrypt Password Encoder, RSA Asymmetric Keys (2048-bit)
+- **Persistência & Migração**: Spring Data JPA, Hibernate, Flyway Migration (`flyway-core`, `flyway-database-oracle`), JPA Criteria API / Specifications
+- **Bancos de Dados**: Oracle Database 23c / 19c (perfil `oracle`), H2 Database em memória (desenvolvimento e testes)
+- **Cache & Performance**: Spring Cache com Caffeine Cache (evicção por tempo e capacidade máxima)
+- **Validação**: Jakarta Bean Validation (`hibernate-validator`) + `@MaxAge` Custom Validator
+- **Documentação da API**: SpringDoc OpenAPI 3.0 / Swagger UI
+- **Utilitários**: Lombok, Logback com logging estruturado em JSON e console
+
+---
+
+## 🔐 Spring Security & Controle de Acesso (RBAC)
+
+A aplicação utiliza arquitetura de autenticação stateless baseada em **JWT (JSON Web Tokens)** assinados com par de chaves **RSA (chave pública e privada em `src/main/resources/Keys/`)**.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Clínica Veterinária
+    actor T as Tutor do Pet
+    participant API as PetCare Hub API
+    participant DB as Banco de Dados
+    participant SEC as Spring Security / RSA
+
+    C->>API: POST /tutor (Pré-cadastro com status PRE_CADASTRADO)
+    API->>DB: Salva Tutor (sem senha inicial)
+    T->>API: POST /auth/ativar-conta (Valida nome, CPF, e-mail e define senha)
+    API->>DB: Atualiza status para ATIVO e salva senha com hash BCrypt
+    API->>SEC: Gera JWT assinado com chave privada RSA (role: ROLE_TUTOR)
+    API-->>T: Retorna Token JWT e dados do Tutor
+    T->>API: GET /pets (com Authorization: Bearer {token})
+    API->>SEC: Valida assinatura com chave pública RSA e checa ROLE_TUTOR
+    API-->>T: Retorna dados dos Pets do Tutor
 ```
 
-No Windows:
+### Perfis de Usuário e Permissões
 
+1. **`ROLE_CLINICA`**:
+   - Acesso total à gestão da clínica (`/clinicas/**`).
+   - Cadastro e gerenciamento de tutores (`POST /tutor`).
+   - Resolução e encerramento de alertas clínicos (`PUT /alertas/{id}/resolver`).
+   - Acesso a métricas da clínica, agenda de 30 dias e pets em risco.
+   - Consulta de dados clínicos e scores dos pets.
+
+2. **`ROLE_TUTOR`**:
+   - Cadastro e manutenção de seus pets (`POST /pets`, `PUT /pets/{id}`, `DELETE /pets/{id}`).
+   - Ingestão de leituras de sensores IoT (`POST /leituras/coleira`, `/comedouro`, `/ambiente`).
+   - Cadastro e conclusão de eventos preventivos (`POST /eventos-preventivos`, `PUT /eventos-preventivos/{id}/realizar`).
+   - Visualização de histórico, timeline e plano preventivo do pet.
+
+### Matriz de Proteção de Rotas
+
+| Rota / Endpoint | Método(s) | Permissão / Role | Descrição |
+|---|---|---|---|
+| `/auth/login` | `POST` | Pública (`permitAll`) | Autenticação de Clínica ou Tutor com e-mail e senha. |
+| `/auth/ativar-conta` | `POST` | Pública (`permitAll`) | Primeiro acesso do tutor para definir senha. |
+| `/swagger-ui/**`, `/v3/api-docs/**` | `GET` | Pública (`permitAll`) | Documentação interativa da API. |
+| `/tutor` | `POST` | `ROLE_CLINICA` | Pré-cadastro de tutor pela clínica parceira. |
+| `/clinicas/**` | `GET`, `POST`, `PUT`, `DELETE` | `ROLE_CLINICA` | Gestão de clínicas, métricas e dashboards. |
+| `/alertas/{id}/resolver` | `PUT` | `ROLE_CLINICA` | Resolução médica de um alerta ativo. |
+| `/pets` | `POST` | `ROLE_TUTOR` | Cadastro de novo pet pelo tutor. |
+| `/pets/{id}` | `PUT`, `DELETE` | `ROLE_TUTOR` | Atualização ou inativação do pet pelo tutor. |
+| `/leituras/**` | `POST` | `ROLE_TUTOR` | Envio de telemetria dos dispositivos IoT do pet. |
+| `/eventos-preventivos` | `POST` | `ROLE_TUTOR` | Agendamento de evento preventivo pelo tutor. |
+| `/eventos-preventivos/{id}/realizar` | `PUT` | `ROLE_TUTOR` | Confirmação de realização de vacina/check-up. |
+| `/pets/{id}/**` | `GET` | `ROLE_TUTOR`, `ROLE_CLINICA` | Consulta de timeline, scores, alertas e telemetria. |
+| Demais rotas | `*` | Autenticado | Exige token JWT válido. |
+
+---
+
+## 🗄️ Flyway — Controle de Versões do Banco de Dados
+
+O versionamento do banco é gerenciado de forma incremental e idempotente pelo Flyway, localizado em `src/main/resources/db/migration/`:
+
+| Versão | Script SQL | Responsabilidade e Impacto |
+|---|---|---|
+| **V1** | `v1_create_tables.sql` | Criação das tabelas centrais do domínio: `CLINICA`, `TUTOR`, `PET`, `CONSULTA`, `PROTOCOLO_PREVENTIVO`, `EVENTO_PREVENTIVO`, `LEITURA_COLEIRA`, `LEITURA_COMEDOURO`, `LEITURA_AMBIENTE`, `ALERTA_SAUDE`, `SCORE_SAUDE`. |
+| **V2** | `v2_create_sequences.sql` | Criação de sequences de auto-incremento para identificadores das entidades no Oracle Database. |
+| **V3** | `v3_create_indexes.sql` | Criação de índices de chave estrangeira e busca rápida (CPF, E-mail, data de leitura, busca combinada de pets). |
+| **V4** | `v4_add_defaults_sequences.sql` | Definição de valores default para colunas e integração de triggers de sequence. |
+| **V5** | `v5_rename_responsavel_to_tutor.sql` | Refatoração de domínio para padronização de nomenclatura de `RESPONSAVEL` para `TUTOR`. |
+| **V6** | `v6_add_auth_fields.sql` | Adição de colunas `senha_hash` e `status_acesso` com constraint de check (`PRE_CADASTRADO`, `ATIVO`, `BLOQUEADO`, `INATIVO`) para o Spring Security. |
+| **V7** | `v7_fix_defaults_sequences.sql` | Ajustes de constraints, defaults e integridade referencial de sequences. |
+| **V8** | `v8_split_leitura_sensor.sql` | Especialização e segregação das leituras IoT em tabelas dedicadas: coleira, comedouro e ambiente para escalabilidade. |
+
+---
+
+## ⚙️ Fluxos de Negócio Completos (Além do CRUD)
+
+### 🩺 Fluxo 1: Telemetria IoT ➔ Anomalias ➔ Alertas ➔ Score de Saúde
+
+```mermaid
+graph TD
+    A[Dispositivo IoT / Sensor] -->|POST /leituras/coleira ou comedouro ou ambiente| B(LeituraIotService)
+    B --> C[Persiste Telemetria no BD]
+    B --> D{Avaliação de Limiares}
+    D -->|Bateria < 20%| E1[Cria Alerta: BATERIA_COLEIRA_BAIXA]
+    D -->|Ração < 20% ou Consumo Baixo| E2[Cria Alerta: RACAO_BAIXA / BAIXA_ALIMENTACAO]
+    D -->|Temp / Umidade / Ar Fora da Faixa| E3[Cria Alerta: AMBIENTE_RUIM / TEMPERATURA / UMIDADE]
+    E1 & E2 & E3 --> F[AlertaSaudeService.criarAlerta]
+    F --> G[ScoreSaudeService.calcularScore]
+    G --> H[Algoritmo Penaliza Score Base 100]
+    H --> I{Score < 50?}
+    I -->|Sim| J[Dispara Alerta Crítico: SCORE_CRITICO]
+    I -->|Não| K[Atualiza Score no Pet e Grava Histórico]
+    J --> K
+```
+
+#### Regras de Penalidade do Score de Saúde:
+
+- **Score Inicial**: 100 pontos.
+- **Penalidades**:
+  - Bateria da coleira < 20%: **-20 pts**
+  - Nível de ração < 20%: **-10 pts**
+  - Consumo alimentar muito baixo: **-20 pts**
+  - Temperatura fora da faixa ideal: **-15 pts**
+  - Umidade fora da faixa ideal: **-10 pts**
+  - Qualidade do ar ruim (ppm alto): **-15 pts**
+  - Alerta grave ativo: **-10 pts**
+- **Categorias**:
+  - `VERDE` (80 a 100) — Saudável / Seguro
+  - `AMARELO` (50 a 79) — Atenção / Risco Moderado
+  - `VERMELHO` (0 a 49) — Crítico (Gera alerta `SCORE_CRITICO`)
+
+---
+
+### 🛡️ Fluxo 2: Gestão Preventiva & Timeline Longitudinal com Cache
+
+1. **Protocolos Preventivos com Cache Caffeine**:
+   - Protocolos são agrupados por espécie (`CAO`, `GATO`, `OUTRO`) e tipo (`VACINA`, `VERMIFUGO`, `CHECKUP`).
+   - Utiliza `@Cacheable(value = "protocolos")` com expiração de 10 minutos para máxima eficiência de leitura.
+2. **Timeline Longitudinal Unificada**:
+   - Endpoint `/pets/{id}/timeline` consolida consultas veterinárias, eventos preventivos realizados/pendentes e histórico de alertas clínicos em ordem cronológica reversa, oferecendo visão 360° do histórico do animal.
+3. **Plano Preventivo Personalizado**:
+   - Endpoint `/pets/{id}/plano-preventivo` cruza a idade atual do animal com os protocolos cadastrados para gerar automaticamente os próximos eventos recomendados.
+
+---
+
+## 🔍 Validações de Formulários e Dados
+
+A API utiliza validação estrita em todas as requisições de entrada:
+
+### 1. Bean Validation Padrão
+- `@NotBlank`, `@NotNull`: Campos obrigatórios.
+- `@Size(min, max)`: Limites de tamanho de strings (nomes, telefones, observações).
+- `@Email`: Validação de formato de e-mail RFC 5322.
+- `@Positive`, `@Min`, `@Max`: Valores numéricos positivos e faixas de percentual (0 a 100%).
+- `@PastOrPresent`: Datas que não podem estar no futuro (data de nascimento, timestamps de leitura).
+- `@FutureOrPresent`: Datas de agendamento que não podem estar no passado (consultas, eventos preventivos).
+
+### 2. Validação Customizada `@MaxAge`
+Implementação de `ConstraintValidator` customizado em `validation/MaxAge.java` e `validation/MaxAgeValidator.java` para garantir que a data de nascimento do pet não ultrapasse o limite biológico plausível:
+
+```java
+@PastOrPresent(message = "A data de nascimento não pode estar no futuro.")
+@MaxAge(value = 25, message = "A idade do pet não pode ultrapassar 25 anos.")
+private LocalDate dataNascimento;
+```
+
+---
+
+## 🚀 Como Executar o Projeto
+
+### Pré-requisitos
+- **Java 17 JDK** instalado e configurado nas variáveis de ambiente (`JAVA_HOME`).
+- **Maven 3.8+** (ou utilizar o wrapper `./mvnw` incluso).
+
+### 1. Execução Local (Perfil Padrão com Banco H2 em Memória)
+
+No Linux / macOS:
+```bash
+./mvnw clean spring-boot:run
+```
+
+No Windows (PowerShell / CMD):
+```bash
+mvnw.cmd clean spring-boot:run
+```
+
+- **API Base**: `http://localhost:8080`
+- **Swagger UI (Frontend Interativo)**: `http://localhost:8080/swagger-ui.html`
+- **OpenAPI JSON Docs**: `http://localhost:8080/v3/api-docs`
+- **H2 Web Console**: `http://localhost:8080/h2-console`
+  - *JDBC URL*: `jdbc:h2:mem:petcarehub`
+  - *User*: `sa`
+  - *Password*: *(vazio)*
+
+---
+
+### 2. Execução com Banco Oracle Database
+
+Defina as variáveis de ambiente com os dados do Oracle:
+
+```bash
+# Linux/macOS
+export DB_URL="jdbc:oracle:thin:@localhost:1521/XEPDB1"
+export DB_USERNAME="PETCARE"
+export DB_PASSWORD="sua_senha_oracle"
+
+# Windows (PowerShell)
+$env:DB_URL="jdbc:oracle:thin:@localhost:1521/XEPDB1"
+$env:DB_USERNAME="PETCARE"
+$env:DB_PASSWORD="sua_senha_oracle"
+```
+
+Inicie com o perfil de execução:
 ```bash
 mvnw.cmd spring-boot:run
 ```
 
-A API sobe em:
-
-```txt
-http://localhost:8080
-```
-
-Swagger:
-
-```txt
-http://localhost:8080/swagger-ui.html
-```
-
-H2 Console:
-
-```txt
-http://localhost:8080/h2-console
-```
-
-Dados do H2:
-
-```txt
-JDBC URL: jdbc:h2:mem:petcarehub
-User: sa
-Password: vazio
-```
+O Flyway executará automaticamente as migrações `V1` a `V8` no banco Oracle.
 
 ---
 
-## Como executar com Oracle
+## 📖 Principais Endpoints da API
 
-Configure as variáveis de ambiente:
+### 🔑 Autenticação (`/auth`)
 
-```bash
-DB_URL=jdbc:oracle:thin:@localhost:1521/XEPDB1
-DB_USERNAME=PETCARE
-DB_PASSWORD=petcare123
-```
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| `POST` | `/auth/login` | Público | Autentica usuário e retorna JWT com role e expiração. |
+| `POST` | `/auth/ativar-conta` | Público | Ativa a conta pré-cadastrada do tutor e define a senha. |
 
-Execute com o perfil Oracle:
+### 👨‍⚕️ Clínicas (`/clinicas`)
 
-```bash
-./mvnw spring-boot:run -Dspring-boot.run.profiles=oracle
-```
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| `GET` | `/clinicas` | `ROLE_CLINICA` | Lista todas as clínicas parceiras. |
+| `GET` | `/clinicas/{id}` | `ROLE_CLINICA` | Busca clínica por ID. |
+| `GET` | `/clinicas/nome?nome={nome}` | `ROLE_CLINICA` | Busca clínica por parte do nome. |
+| `POST` | `/clinicas` | `ROLE_CLINICA` | Cadastra nova clínica. |
+| `PUT` | `/clinicas/{id}` | `ROLE_CLINICA` | Atualiza dados da clínica. |
+| `DELETE` | `/clinicas/{id}` | `ROLE_CLINICA` | Remove clínica. |
+| `GET` | `/clinicas/{id}/pets-em-risco` | `ROLE_CLINICA` | Lista pets com score na faixa amarela ou vermelha. |
+| `GET` | `/clinicas/{id}/metricas` | `ROLE_CLINICA` | Métricas operacionais e de saúde preventiva da clínica. |
+| `GET` | `/clinicas/{id}/agenda/proximos-30-dias` | `ROLE_CLINICA` | Próximas consultas e eventos dos pets vinculados. |
+| `GET` | `/clinicas/{id}/alertas-iot/hoje` | `ROLE_CLINICA` | Alertas gerados nas últimas 24h para a clínica. |
 
-No perfil Oracle, o projeto usa:
+### 🐶 Pets (`/pets`)
 
-```properties
-spring.jpa.hibernate.ddl-auto=validate
-```
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| `GET` | `/pets` | Autenticado | Lista pets paginados com suporte a filtros. |
+| `GET` | `/pets/{id}` | Autenticado | Detalhes do pet. |
+| `GET` | `/pets/nome?nome={nome}` | Autenticado | Busca pets por nome. |
+| `GET` | `/pets/busca?especie=CAO&raca=Golden` | Autenticado | Busca combinada dinâmica com JPA Specifications. |
+| `POST` | `/pets` | `ROLE_TUTOR` | Cadastra novo pet. |
+| `PUT` | `/pets/{id}` | `ROLE_TUTOR` | Atualiza dados do pet. |
+| `DELETE` | `/pets/{id}` | `ROLE_TUTOR` | Desativa pet. |
+| `GET` | `/pets/{id}/score-saude` | Autenticado | Retorna o score de saúde atual e categoria. |
+| `POST` | `/pets/{id}/score-saude/calcular` | Autenticado | Força recálculo algorítmico do score. |
+| `GET` | `/pets/{id}/score-saude/historico` | Autenticado | Histórico de evolução do score do pet. |
+| `GET` | `/pets/{id}/timeline` | Autenticado | Timeline longitudinal consolidada do animal. |
+| `GET` | `/pets/{id}/plano-preventivo` | Autenticado | Plano preventivo sugerido com base nos protocolos. |
+| `GET` | `/pets/{id}/alertas/ativos` | Autenticado | Lista alertas clínicos pendentes de resolução. |
 
-Ou seja, espera que as tabelas já existam conforme o script/modelagem da disciplina de Database.
+### 📡 Telemetria IoT (`/leituras`)
 
----
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| `POST` | `/leituras/coleira` | `ROLE_TUTOR` | Ingestão de leitura da coleira (bateria, atividade). |
+| `POST` | `/leituras/comedouro` | `ROLE_TUTOR` | Ingestão de comedouro inteligente (nível, gramas). |
+| `POST` | `/leituras/ambiente` | `ROLE_TUTOR` | Ingestão de sensores de ambiente (temp, umidade, ar). |
+| `GET` | `/pets/{id}/leituras/coleira` | Autenticado | Histórico de leituras da coleira do pet. |
+| `GET` | `/pets/{id}/leituras/comedouro` | Autenticado | Histórico de leituras do comedouro do pet. |
+| `GET` | `/pets/{id}/leituras/ambiente` | Autenticado | Histórico de leituras do ambiente do pet. |
 
-## Principais recursos implementados
+### 🚨 Alertas de Saúde (`/alertas`)
 
-- CRUD de tutor com busca por nome, email e CPF
-- CRUD de clínicas com vínculo de domínio
-- CRUD de pets com busca combinada via JPA Specifications
-- CRUD de consultas com busca por pet
-- DTOs de entrada e saída
-- Bean Validation nos requests
-- Validações customizadas (`@MaxAge` para idade máxima do pet)
-- Paginação e ordenação com Pageable
-- Busca combinada de pets com filtros dinâmicos (Criteria API)
-- Tratamento global de exceções com `@RestControllerAdvice`
-- Cache em protocolos preventivos
-- Score de saúde do pet
-- Alertas automáticos a partir de leituras IoT simuladas
-- Timeline longitudinal do pet
-- Plano preventivo
-- Métricas, agenda e alertas IoT por clínica
-- Swagger documentando os endpoints
-- Collection Insomnia exportada
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| `GET` | `/alertas` | Autenticado | Busca alertas com filtros dinâmicos (Specification). |
+| `POST` | `/alertas` | Autenticado | Cria alerta manual de saúde. |
+| `PUT` | `/alertas/{id}/resolver` | `ROLE_CLINICA` | Marca alerta como resolvido pela clínica. |
+| `DELETE` | `/alertas/{id}` | Autenticado | Exclui alerta. |
 
----
+### 💉 Protocolos & Eventos Preventivos
 
-## Enums importantes para teste
-
-Use exatamente estes valores no JSON:
-
-### Espécie
-
-```txt
-CAO
-GATO
-OUTRO
-```
-
-### Sexo
-
-```txt
-M
-F
-```
-
-### Tipo de consulta
-
-```txt
-CHECKUP
-VACINA
-EMERGENCIA
-RETORNO
-EXAME
-```
-
-### Status de atividade da coleira
-
-```txt
-DORMINDO
-ATIVO
-BRINCANDO
-```
-
-### Tipo de alerta
-
-```txt
-BATERIA_COLEIRA_BAIXA
-RACAO_BAIXA
-BAIXA_ALIMENTACAO
-AMBIENTE_RUIM
-TEMPERATURA_FORA_DA_FAIXA
-UMIDADE_FORA_DA_FAIXA
-SCORE_CRITICO
-CONSULTA_ATRASADA
-```
-
-### Nível do alerta
-
-```txt
-BAIXO
-MEDIO
-ALTO
-CRITICO
-```
-
-### Tipo de evento preventivo
-
-```txt
-VACINA
-CHECKUP
-VERMIFUGO
-RETORNO
-MEDICAMENTO
-```
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| `GET` | `/protocolos-preventivos` | Autenticado | Lista protocolos (Cache Caffeine). |
+| `GET` | `/protocolos-preventivos/por-especie` | Autenticado | Lista protocolos filtrados por espécie. |
+| `POST` | `/protocolos-preventivos` | `ROLE_CLINICA` | Cria novo protocolo de saúde. |
+| `POST` | `/eventos-preventivos` | `ROLE_TUTOR` | Agenda evento preventivo para um pet. |
+| `PUT` | `/eventos-preventivos/{id}/realizar` | `ROLE_TUTOR` | Conclui evento preventivo agendado. |
 
 ---
 
-## Endpoints
+## 📝 Exemplos de Requisições JSON
 
-### tutor
-
-```http
-GET    /tutor
-GET    /tutor/{id}
-GET    /tutor/nome?nome=Kelson
-GET    /tutor/email?email=petcare
-GET    /tutor/cpf?cpf=123
-POST   /tutor
-PUT    /tutor/{id}
-DELETE /tutor/{id}
-```
-
-### Clínicas
-
-```http
-GET    /clinicas
-GET    /clinicas/{id}
-GET    /clinicas/nome?nome=Clyvo
-POST   /clinicas
-PUT    /clinicas/{id}
-DELETE /clinicas/{id}
-GET    /clinicas/{id}/pets-em-risco?nivel=vermelho
-GET    /clinicas/{id}/metricas?periodo=90d
-GET    /clinicas/{id}/agenda/proximos-30-dias
-GET    /clinicas/{id}/alertas-iot/hoje
-```
-
-> O parâmetro `periodo` aceita valores no formato `Nd` onde `N` é o número de dias. Exemplos: `7d`, `30d`, `90d` (padrão).
-
-### Pets
-
-```http
-GET    /pets
-GET    /pets/{id}
-GET    /pets/nome?nome=Rex
-GET    /pets/busca?especie=CAO&raca=Golden&clinicaId=1&scoreMin=0&scoreMax=100
-POST   /pets
-PUT    /pets/{id}
-DELETE /pets/{id}
-```
-
-> O endpoint `/pets/busca` usa **JPA Specifications** para combinar filtros dinâmicos. Todos os parâmetros são opcionais e podem ser combinados livremente.
-
-### Score de saúde do pet
-
-```http
-GET  /pets/{id}/score-saude
-POST /pets/{id}/score-saude/calcular
-GET  /pets/{id}/score-saude/historico
-```
-
-### Timeline e plano preventivo do pet
-
-```http
-GET /pets/{id}/timeline
-GET /pets/{id}/plano-preventivo
-```
-
-### Consultas
-
-```http
-GET    /consultas
-GET    /consultas/{id}
-GET    /consultas/pet/{petId}
-POST   /consultas
-PUT    /consultas/{id}
-DELETE /consultas/{id}
-```
-
-### Alertas
-
-```http
-GET    /alertas?petId=1&tipo=BATERIA_COLEIRA_BAIXA&resolvido=false
-GET    /pets/{id}/alertas/ativos
-POST   /alertas
-PUT    /alertas/{id}/resolver
-DELETE /alertas/{id}
-```
-
-> O endpoint `/alertas` usa **JPA Specifications** para filtros dinâmicos por `petId`, `tipo` e `resolvido`.
-
-### Leituras IoT simuladas
-
-```http
-POST /leituras/coleira
-POST /leituras/comedouro
-POST /leituras/ambiente
-
-GET /pets/{id}/leituras/coleira
-GET /pets/{id}/leituras/comedouro
-GET /pets/{id}/leituras/ambiente
-```
-
-### Protocolos preventivos (com cache Caffeine)
-
-```http
-GET  /protocolos-preventivos
-GET  /protocolos-preventivos/por-especie?especie=CAO
-POST /protocolos-preventivos
-```
-
-### Eventos preventivos
-
-```http
-POST /eventos-preventivos
-PUT  /eventos-preventivos/{id}/realizar
-```
-
----
-
-## Validações Bean Validation
-
-Os DTOs de request usam Bean Validation padrão (`@NotBlank`, `@NotNull`, `@Size`, `@Positive`, `@Min`, `@Max`, `@Email`, `@Past`, `@PastOrPresent`, `@FutureOrPresent`).
-
-### Validação customizada `@MaxAge`
-
-Criamos a validação customizada `@MaxAge` para limitar a idade máxima de um pet a partir da data de nascimento. Está aplicada em `PetRequest.dataNascimento`:
-
-```java
-@PastOrPresent
-@MaxAge(25)
-LocalDate dataNascimento
-```
-
-Implementação em `validation/MaxAge.java` + `validation/MaxAgeValidator.java`. Isso demonstra o uso de `ConstraintValidator` customizado, complementando as validações padrão.
-
----
-
-## Exemplos de JSON
-
-### Criar Tutor
-
+### 1. Ativação de Conta do Tutor (`POST /auth/ativar-conta`)
 ```json
 {
   "nome": "Kelson Silva",
+  "cpf": "12345678901",
   "email": "kelson.petcare@example.com",
-  "telefone": "11999990000",
-  "cpf": "12345678901"
+  "senha": "SenhaForte@123"
 }
 ```
 
-### Criar clínica
-
+### 2. Login de Usuário (`POST /auth/login`)
 ```json
 {
-  "nome": "Clyvo Vet Paulista",
-  "cnpj": "12.345.678/0001-90",
-  "endereco": "Av. Paulista, 1000",
-  "telefone": "1133334444"
+  "email": "kelson.petcare@example.com",
+  "password": "SenhaForte@123"
+}
+```
+*Resposta:*
+```json
+{
+  "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "role": "ROLE_TUTOR",
+  "expiresIn": 86400,
+  "nome": "Kelson Silva",
+  "email": "kelson.petcare@example.com"
 }
 ```
 
-### Criar pet
-
+### 3. Cadastro de Pet com Validação (`POST /pets`)
 ```json
 {
   "nome": "Rex",
   "especie": "CAO",
   "raca": "Golden Retriever",
   "dataNascimento": "2021-05-10",
-  "pesoKg": 28.5,
+  "pesoKg": 28.50,
   "sexo": "M",
-  "condicoesCronicas": "Tendência a obesidade",
+  "condicoesCronicas": "Tendência a sobrepeso",
   "ativo": true,
   "tutoresId": 1,
   "clinicaId": 1
 }
 ```
 
-> Pets com `dataNascimento` há mais de 25 anos retornam `400 Bad Request` (validação `@MaxAge(25)`).
-
-### Criar consulta
-
-```json
-{
-  "petId": 1,
-  "clinicaId": 1,
-  "dataConsulta": "2026-12-10T10:30:00",
-  "tipo": "CHECKUP",
-  "observacoes": "Consulta preventiva de rotina",
-  "valor": 180.0
-}
-```
-
-> O campo `dataConsulta` precisa ser presente ou futuro (`@FutureOrPresent`).
-
-### Registrar leitura da coleira
-
+### 4. Ingestão de Leitura IoT Coleira (`POST /leituras/coleira`)
 ```json
 {
   "petId": 1,
   "statusAtividade": "ATIVO",
-  "nivelBateria": 18
+  "nivelBateria": 15
 }
 ```
-
-Ao registrar bateria menor que 20%, a API cria automaticamente um alerta de bateria baixa e recalcula o score.
-
-### Registrar leitura do comedouro
-
-```json
-{
-  "petId": 1,
-  "nivelRacaoPct": 15,
-  "pesoConsumidoG": 25
-}
-```
-
-Ao registrar ração abaixo de 20% ou consumo muito baixo, a API cria alertas automáticos.
-
-### Registrar leitura ambiente
-
-```json
-{
-  "petId": 1,
-  "temperaturaAmbiente": 34,
-  "umidadePct": 80,
-  "qualidadeArPpm": 1200,
-  "petPresente": true
-}
-```
-
-Ao registrar ambiente ruim, temperatura fora da faixa ou umidade inadequada, a API cria alertas automáticos.
-
-### Criar alerta manual
-
-```json
-{
-  "petId": 1,
-  "tipo": "CONSULTA_ATRASADA",
-  "nivel": "ALTO",
-  "mensagem": "Pet precisa de consulta preventiva."
-}
-```
-
-### Criar protocolo preventivo
-
-```json
-{
-  "especie": "CAO",
-  "tipo": "VACINA",
-  "nome": "V10",
-  "descricao": "Vacina polivalente anual para cães",
-  "idadeMesesAplicacao": 2,
-  "intervaloReforcoDias": 365
-}
-```
-
-### Criar evento preventivo
-
-```json
-{
-  "petId": 1,
-  "tipo": "CHECKUP",
-  "descricao": "Retorno preventivo pós-alerta",
-  "dataPrevista": "2026-12-20",
-  "realizado": false
-}
-```
+*Gera automaticamente um `AlertaSaude` de nível `MEDIO` (bateria < 20%) e atualiza o Score de Saúde para categoria de risco correspondente.*
 
 ---
 
-## Regra do Score de Saúde
-
-A API começa com 100 pontos e subtrai pontos conforme os riscos:
-
-| Condição | Penalidade |
-|---|---:|
-| Bateria da coleira abaixo de 20% | -20 |
-| Ração abaixo de 20% | -10 |
-| Consumo alimentar muito baixo | -20 |
-| Temperatura fora da faixa | -15 |
-| Umidade fora da faixa | -10 |
-| Qualidade do ar ruim | -15 |
-| Alerta grave ativo | -10 |
-
-Categorias:
-
-| Score | Categoria |
-|---|---|
-| 80 a 100 | VERDE |
-| 50 a 79 | AMARELO |
-| 0 a 49 | VERMELHO |
-
-Quando o score cai abaixo de 50, a API cria automaticamente um alerta do tipo `SCORE_CRITICO`.
-
----
-
-## Organização do projeto
+## 📂 Estrutura de Pacotes do Projeto
 
 ```txt
 src/main/java/fiap/com/br/petcarehub
-├── config              # DataLoader (seed) + SwaggerConfig
-├── controller          # REST controllers
-├── dto
-│   ├── request         # DTOs de entrada (com validação)
-│   └── response        # DTOs de saída
-├── entity              # Entidades JPA
-├── enums               # Enums do domínio
-├── exception           # GlobalExceptionHandler + ErroResponse
-├── repository          # Spring Data JPA repositories
-├── service             # Serviços de domínio
-├── specification       # JPA Specifications (filtros dinâmicos)
-└── validation          # @MaxAge customizado
+├── auth                    # Configurações de Segurança, JWT RSA, AuthService, TokenService
+│   ├── AuthController.java
+│   ├── AuthService.java
+│   ├── SecurityConfig.java
+│   └── TokenService.java
+├── config                  # DataLoader, SwaggerConfig, JPA Converters
+├── controller              # Controladores REST da API
+├── dto                     # Data Transfer Objects
+│   ├── request             # Requisições com Bean Validation e @MaxAge
+│   └── response            # Respostas formatadas e paginadas
+├── entity                  # Entidades mapeadas para o banco
+├── enums                   # Enums do domínio (Role, StatusAcesso, NivelAlerta, etc.)
+├── exception               # GlobalExceptionHandler com ErroResponse padronizado
+├── projection              # Projeções Spring Data JPA
+├── repository              # Repositórios JPA com queries customizadas
+├── service                 # Regras de negócio, Score de Saúde, Alertas e Cache
+├── specification           # Especificações JPA (filtros dinâmicos Criteria API)
+└── validation              # Validações customizadas (@MaxAge / MaxAgeValidator)
+
+src/main/resources
+├── Keys                    # Par de chaves RSA (private_key.pem, public_key.pem)
+├── db/migration            # Migrações Flyway (v1 a v8 em SQL)
+├── application.properties  # Configurações do Spring Boot, Cache e Flyway
+└── logback-spring.xml      # Configuração de logs estruturados
 ```
 
 ---
-
-## Documentação complementar
-
-A pasta `docs/` contém:
-
-```txt
-docs/
-├── arquitetura.md
-├── arquitetura.png
-├── classes-dominio.md
-├── cronograma.md
-├── der.png
-├── diagrama-classes.png
-└── petcarehub_insomnia_collection.json
-```
-
----
-
-## Collection Insomnia
-
-Arquivo principal na pasta `docs/`:
-
-```txt
-docs/petcarehub_insomnia_collection.json
-```
-
-A collection cobre todos os endpoints da API e inclui casos de teste para validação Bean Validation (ex: rejeição de pet com idade superior a 25 anos).
-
-Para importar no Insomnia:
-
-1. `Application` → `Preferences` → `Data` → `Import Data` → `From File`
-2. Selecione o arquivo `petcarehub_insomnia_collection.json`
-3. As requisições virão organizadas por entidade
-
----
-
-## Integração com o Challenge
-
-A API Java cobre o núcleo da solução:
-
-- continuidade do cuidado do pet;
-- histórico longitudinal;
-- geração de alertas preventivos;
-- cálculo de score de saúde;
-- dados estruturados para app mobile e dashboard clínico;
-- base para integração com IoT via MQTT nas próximas sprints.
 
 ## 👥 Integrantes da Equipe
 
 | Nome | RM | Turma | GitHub | LinkedIn |
 |---|---|---|---|---|
-| Alexander Dennis Isidro Mamani | 565554 | 2TDSPG | [alex-isidro](https://github.com/alex-isidro) | [LinkedIn](https://www.linkedin.com/in/alexander-dennis-a3b48824b/) |
-| Kelson Zhang | 563748 | 2TDSPG | [KelsonZh0](https://github.com/KelsonZh0) | [LinkedIn](https://www.linkedin.com/in/kelson-zhang-211456323/) |
+| **Alexander Dennis Isidro Mamani** | 565554 | 2TDSPG | [alex-isidro](https://github.com/alex-isidro) | [LinkedIn](https://www.linkedin.com/in/alexander-dennis-a3b48824b/) |
+| **Kelson Zhang** | 563748 | 2TDSPG | [KelsonZh0](https://github.com/KelsonZh0) | [LinkedIn](https://www.linkedin.com/in/kelson-zhang-211456323/) |
 
 ---
