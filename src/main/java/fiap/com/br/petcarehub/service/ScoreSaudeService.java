@@ -137,7 +137,9 @@ public class ScoreSaudeService {
                     petId,
                     TipoAlerta.SCORE_CRITICO,
                     NivelAlerta.CRITICO,
-                    "Score de saúde em nível vermelho. Recomenda-se contato preventivo com a clínica."
+                    "Score de saúde em nível vermelho. Recomenda-se contato preventivo com a clínica.",
+                    new BigDecimal(score),
+                    new BigDecimal(50)
             );
         }
 

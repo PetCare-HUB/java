@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import java.math.BigDecimal;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,22 +50,28 @@ public class AlertaSaudeService {
 
     @Transactional
     public AlertaSaudeResponse criar(AlertaSaudeRequest request) {
-        return DtoMapper.toResponse(criarInterno(request.petId(), request.tipo(), request.nivel(), request.mensagem()));
+        return DtoMapper.toResponse(criarInterno(
+                request.petId(), request.tipo(), request.nivel(), request.mensagem(),
+                request.valorDetectado(), request.limiteReferencia()
+        ));
     }
 
     @Transactional
-    public AlertaSaude criarInterno(Long petId, TipoAlerta tipo, NivelAlerta nivel, String mensagem) {
+    public AlertaSaude criarInterno(Long petId, TipoAlerta tipo, NivelAlerta nivel, String mensagem,
+                                    BigDecimal valorDetectado, BigDecimal limiteReferencia) {
         Pet pet = petService.findEntityById(petId);
         AlertaSaude alerta = AlertaSaude.builder()
                 .pet(pet)
                 .tipo(tipo)
                 .nivel(nivel)
                 .mensagem(mensagem)
+                .valorDetectado(valorDetectado)
+                .limiteReferencia(limiteReferencia)
                 .resolvido(false)
+                .dataAlerta(LocalDateTime.now())
                 .build();
         return repository.save(alerta);
     }
-
     @Transactional
     public AlertaSaudeResponse resolver(Long id) {
         AlertaSaude alerta = findEntityById(id);

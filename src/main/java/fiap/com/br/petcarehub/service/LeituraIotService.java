@@ -41,7 +41,9 @@ public class LeituraIotService {
                     request.petId(),
                     TipoAlerta.BATERIA_COLEIRA_BAIXA,
                     NivelAlerta.MEDIO,
-                    "Bateria da coleira abaixo de 20%. Recarregue o dispositivo."
+                    "Bateria da coleira abaixo de 20%. Recarregue o dispositivo.",
+                    BigDecimal.valueOf(request.nivelBateria()),
+                    BigDecimal.valueOf(20)
             );
         }
         scoreSaudeService.calcular(request.petId());
@@ -64,7 +66,9 @@ public class LeituraIotService {
                     request.petId(),
                     TipoAlerta.RACAO_BAIXA,
                     NivelAlerta.MEDIO,
-                    "Nível de ração abaixo de 20%. Necessário reabastecer o comedouro."
+                    "Nível de ração abaixo de 20%. Necessário reabastecer o comedouro.",
+                    BigDecimal.valueOf(request.nivelRacaoPct()),
+                    BigDecimal.valueOf(20)
             );
         }
         if (request.pesoConsumidoG().compareTo(new BigDecimal("30")) < 0) {
@@ -72,7 +76,9 @@ public class LeituraIotService {
                     request.petId(),
                     TipoAlerta.BAIXA_ALIMENTACAO,
                     NivelAlerta.ALTO,
-                    "Consumo alimentar abaixo do esperado para a última refeição."
+                    "Consumo alimentar abaixo do esperado para a última refeição.",
+                    request.pesoConsumidoG(),
+                    new BigDecimal("30")
             );
         }
         scoreSaudeService.calcular(request.petId());
@@ -97,23 +103,32 @@ public class LeituraIotService {
                     request.petId(),
                     TipoAlerta.AMBIENTE_RUIM,
                     NivelAlerta.ALTO,
-                    "Qualidade do ar acima de 1000 ppm. Verifique ventilação do ambiente."
+                    "Qualidade do ar acima de 1000 ppm. Verifique ventilação do ambiente.",
+                    BigDecimal.valueOf(request.qualidadeArPpm()),
+                    BigDecimal.valueOf(1000)
             );
         }
         if (request.temperaturaAmbiente().compareTo(new BigDecimal("10")) < 0 || request.temperaturaAmbiente().compareTo(new BigDecimal("32")) > 0) {
+            BigDecimal limite = request.temperaturaAmbiente().compareTo(new BigDecimal("10")) < 0
+                    ? new BigDecimal("10") : new BigDecimal("32");
             alertaSaudeService.criarInterno(
                     request.petId(),
                     TipoAlerta.TEMPERATURA_FORA_DA_FAIXA,
                     NivelAlerta.MEDIO,
-                    "Temperatura ambiente fora da faixa segura."
+                    "Temperatura ambiente fora da faixa segura.",
+                    request.temperaturaAmbiente(),
+                    limite
             );
         }
         if (request.umidadePct() < 30 || request.umidadePct() > 75) {
+            int limite = request.umidadePct() < 30 ? 30 : 75;
             alertaSaudeService.criarInterno(
                     request.petId(),
                     TipoAlerta.UMIDADE_FORA_DA_FAIXA,
                     NivelAlerta.MEDIO,
-                    "Umidade ambiente fora da faixa ideal."
+                    "Umidade ambiente fora da faixa ideal.",
+                    BigDecimal.valueOf(request.umidadePct()),
+                    BigDecimal.valueOf(limite)
             );
         }
         scoreSaudeService.calcular(request.petId());
