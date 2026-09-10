@@ -1,0 +1,5 @@
+Backend (Java / Spring Boot):
+https://github.com/PetCare-HUB/java
+
+Frontend (Mobile App):
+https://github.com/PetCare-HUB/Mobile

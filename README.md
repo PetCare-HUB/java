@@ -6,6 +6,7 @@
   <img src="https://img.shields.io/badge/Spring%20Security-JWT%20RSA-blue?style=for-the-badge&logo=springsecurity" alt="Spring Security" />
   <img src="https://img.shields.io/badge/Flyway-Migrations-red?style=for-the-badge&logo=flyway" alt="Flyway" />
   <img src="https://img.shields.io/badge/Database-Oracle-red?style=for-the-badge&logo=oracle" alt="Database" />
+  <img src="https://img.shields.io/badge/Frontend-Mobile%20App-purple?style=for-the-badge&logo=react" alt="Mobile App" />
   <img src="https://img.shields.io/badge/Swagger-OpenAPI%203.0-green?style=for-the-badge&logo=swagger" alt="Swagger" />
 </p>
 
@@ -13,28 +14,33 @@
 
 ## 📌 Sumário Executivo
 
-O **PetCare Hub** é uma solução para a continuidade do cuidado preventivo de animais de estimação. A aplicação central em **Java 17 + Spring Boot** atua como o **core de domínio, telemetria e inteligência em saúde**, provendo:
+O **PetCare Hub** é um ecossistema completo para a continuidade do cuidado preventivo e monitoramento inteligente de animais de estimação. A aplicação central em **Java 17 + Spring Boot** atua como o **core de domínio, telemetria e inteligência em saúde**, provendo integração com o aplicativo frontend mobile, controle de versões de banco com Flyway, autenticação e autorização robusta via Spring Security com RBAC, e fluxos de negócio inteligentes além de operações de CRUD.
 
-1. **Camada de Visualização & Interatividade**: Interface Swagger UI interativa com documentação OpenAPI 3.0 e integração com a camada web/dashboard do ecossistema.
-2. **Controle de Versão de Banco com Flyway**: Pipeline de migrações estruturadas (V1 a V8) garantindo integridade de tabelas, sequences, triggers e índices em Oracle e H2.
-3. **Autenticação e Autorização com Spring Security**: Arquitetura OAuth2 Resource Server com tokens **JWT assinados assimetricamente via par de chaves RSA**, com controle granular de perfis (**CLINICA** e **TUTOR**) e fluxo seguro de ativação de conta.
-4. **Fluxos de Negócio Completos (Além do CRUD)**:
-   - Ingestão de telemetria IoT com detecção automática de anomalias e geração proativa de alertas.
-   - Motor de cálculo algorítmico do Score de Saúde (0 a 100) com classificação em semáforos e histórico.
-   - Gestão de plano preventivo com cache de alta performance (Caffeine) e timeline clínica longitudinal unificada.
-5. **Validações Robustas de Dados**: Validações Bean Validation combinadas com `ConstraintValidator` customizado (`@MaxAge`).
+
+---
+
+## 📱 Camada de Visualização & Integração Frontend
+
+A camada de visualização do ecossistema PetCare Hub é composta por uma aplicação **Mobile**.
+
+### 🔗 Repositório do Frontend / Mobile
+> 📲 **Acesse o repositório do aplicativo mobile:**  
+> **[https://github.com/PetCare-HUB/Mobile](https://github.com/PetCare-HUB/Mobile)**
+
+
 
 ---
 
 ## 🏛️ Arquitetura e Tecnologias
 
 - **Linguagem & Framework**: Java 17, Spring Boot 3.3.5
-- **Segurança**: Spring Security, Spring OAuth2 Resource Server, Nimbus Jose JWT, BCrypt Password Encoder, RSA Asymmetric Keys (2048-bit)
+- **Segurança**: Spring Security, Spring OAuth2 Resource Server, Nimbus Jose JWT, BCrypt Password Encoder, Par de Chaves Assimétricas RSA (2048-bit)
 - **Persistência & Migração**: Spring Data JPA, Hibernate, Flyway Migration (`flyway-core`, `flyway-database-oracle`), JPA Criteria API / Specifications
 - **Bancos de Dados**: Oracle Database 23c / 19c (perfil `oracle`), H2 Database em memória (desenvolvimento e testes)
 - **Cache & Performance**: Spring Cache com Caffeine Cache (evicção por tempo e capacidade máxima)
 - **Validação**: Jakarta Bean Validation (`hibernate-validator`) + `@MaxAge` Custom Validator
 - **Documentação da API**: SpringDoc OpenAPI 3.0 / Swagger UI
+- **Frontend / Mobile**: Consumo de API RESTful pelo App ([PetCare-HUB/Mobile](https://github.com/PetCare-HUB/Mobile))
 - **Utilitários**: Lombok, Logback com logging estruturado em JSON e console
 
 ---

@@ -15,13 +15,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "LEITURA_COlEIRA")
+@Table(name = "LEITURA_COLEIRA")
 public class LeituraColeira {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_LEITURA_COlEIRA")
-    @SequenceGenerator(name = "SEQ_LEITURA_COlEIRA", sequenceName = "SEQ_LEITURA_COlEIRA", allocationSize = 1)
-    @Column(name = "ID_LEITURA_COlEIRA")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_LEITURA_COLEIRA")
+    @SequenceGenerator(name = "SEQ_LEITURA_COLEIRA", sequenceName = "SEQ_LEITURA_COLEIRA", allocationSize = 1)
+    @Column(name = "ID_LEITURA_COLEIRA")
     private Long id;
 
     @NotNull
