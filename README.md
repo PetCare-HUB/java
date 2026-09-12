@@ -173,7 +173,33 @@ graph TD
 
 ---
 
-### 🛡️ Fluxo 2: Gestão Preventiva & Timeline Longitudinal com Cache
+### 🔑 Fluxo 2: Pré-cadastro ➔ Ativação ➔ Login
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as Clínica Veterinária
+    actor T as Tutor do Pet
+    participant API as PetCare Hub API
+    participant DB as Banco de Dados
+    participant SEC as Spring Security / RSA
+
+    C->>API: POST /tutor (Pré-cadastro com status PRE_CADASTRADO)
+    API->>DB: Salva Tutor (sem senha inicial, clínica já vinculada)
+    T->>API: POST /auth/ativar-conta (Valida nome, CPF e e-mail contra o pré-cadastro)
+    API->>DB: Atualiza status para ATIVO e salva senha com hash BCrypt
+    API->>SEC: Gera JWT assinado com chave privada RSA (role: ROLE_TUTOR)
+    API-->>T: Retorna Token JWT e dados do Tutor
+    T->>API: GET /pets (com Authorization: Bearer {token})
+    API->>SEC: Valida assinatura com chave pública RSA e checa ROLE_TUTOR
+    API-->>T: Retorna só os pets do próprio Tutor
+```
+
+Esse é o fluxo completo de onboarding: a clínica pré-cadastra o tutor (sem ele existir como usuário ainda), o tutor ativa a própria conta definindo a senha, e a partir daí usa o token JWT normalmente — inclusive no app mobile.
+
+---
+
+### 🛡️ Gestão Preventiva & Timeline Longitudinal com Cache
 
 1. **Protocolos Preventivos com Cache Caffeine**:
    - Protocolos são agrupados por espécie (`CAO`, `GATO`, `OUTRO`) e tipo (`VACINA`, `VERMIFUGO`, `CHECKUP`).
