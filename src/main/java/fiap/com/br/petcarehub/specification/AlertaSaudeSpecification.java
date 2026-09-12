@@ -12,12 +12,18 @@ public class AlertaSaudeSpecification {
 
     private AlertaSaudeSpecification() {}
 
-    public static Specification<AlertaSaude> filtrar(Long petId, TipoAlerta tipo, Boolean resolvido) {
+    public static Specification<AlertaSaude> filtrar(Long petId, TipoAlerta tipo, Boolean resolvido, Long tutorId) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (petId != null) {
                 predicates.add(cb.equal(root.get("pet").get("id"), petId));
+            }
+
+            // Tutor só vê alertas dos próprios pets - não vem de parâmetro do
+            // cliente, e sim do JWT autenticado (ver AlertaSaudeService.buscar).
+            if (tutorId != null) {
+                predicates.add(cb.equal(root.get("pet").get("tutor").get("id"), tutorId));
             }
 
             if (tipo != null) {

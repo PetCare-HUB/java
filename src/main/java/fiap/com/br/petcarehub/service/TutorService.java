@@ -34,7 +34,9 @@ public class TutorService {
 
     @Transactional(readOnly = true)
     public TutorResponse buscarPorId(Long id) {
-        return DtoMapper.toResponse(findEntityById(id));
+        Tutor tutor = findEntityById(id);
+        verificarPermissao(tutor);
+        return DtoMapper.toResponse(tutor);
     }
 
     @Transactional

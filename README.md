@@ -92,12 +92,16 @@ sequenceDiagram
 | `/auth/ativar-conta` | `POST` | Pública (`permitAll`) | Primeiro acesso do tutor para definir senha. |
 | `/swagger-ui/**`, `/v3/api-docs/**` | `GET` | Pública (`permitAll`) | Documentação interativa da API. |
 | `/tutor` | `POST` | `ROLE_CLINICA` | Pré-cadastro de tutor pela clínica parceira (a clínica é sempre a autenticada, não vem do corpo). |
-| `/tutor/{id}` | `PUT`, `DELETE` | Autenticado + dono | Clínica edita/exclui qualquer tutor; um tutor só edita/exclui o próprio cadastro. |
+| `/tutor`, `/tutor/nome`, `/tutor/email`, `/tutor/cpf` | `GET` | `ROLE_CLINICA` | Listar/buscar tutores é coisa de clínica; um tutor não navega pelo cadastro de outros. |
+| `/tutor/{id}` | `GET`, `PUT`, `DELETE` | Autenticado + dono | Clínica vê/edita/exclui qualquer tutor; um tutor só vê/edita/exclui o próprio cadastro. |
 | `/tutor/me` | `GET` | `ROLE_TUTOR` | Perfil do próprio tutor autenticado, incluindo a clínica do pré-cadastro. |
 | `/clinicas/**` | `GET`, `POST`, `PUT`, `DELETE` | `ROLE_CLINICA` | Gestão de clínicas, métricas e dashboards. |
 | `/protocolos-preventivos` | `POST` | `ROLE_CLINICA` | Criação de novo protocolo preventivo. |
+| `/consultas`, `/consultas/{id}` | `GET` | `ROLE_CLINICA` | Listar tudo ou buscar por id é coisa de clínica; tutor vê as próprias via `/pets/{id}/timeline` ou `/consultas/pet/{petId}`. |
 | `/consultas/**` | `POST`, `PUT`, `DELETE` | `ROLE_CLINICA` | Agendamento/edição/exclusão de consultas. |
 | `/alertas/{id}/resolver` | `PUT` | `ROLE_CLINICA` | Resolução médica de um alerta ativo. |
+| `/alertas/{id}` | `DELETE` | Autenticado + dono | Clínica exclui qualquer alerta; tutor só exclui alerta dos próprios pets. |
+| `/alertas` | `GET` | Autenticado | Sem `petId` informado, tutor só vê alertas dos próprios pets (filtrado pelo token). |
 | `/pets` | `GET` | Autenticado | Tutor só vê os próprios pets (filtrado pelo token); clínica vê todos. |
 | `/pets` | `POST` | `ROLE_TUTOR` | Cadastro de novo pet — o dono é sempre o tutor autenticado. |
 | `/pets/{id}` | `PUT`, `DELETE` | `ROLE_TUTOR` + dono | Só o tutor dono do pet pode atualizar ou excluir. |
@@ -324,10 +328,10 @@ O Flyway executará automaticamente as migrações `V1` a `V9` no banco Oracle.
 
 | Método | Endpoint | Acesso | Descrição |
 |---|---|---|---|
-| `GET` | `/alertas` | Autenticado | Busca alertas com filtros dinâmicos (Specification). |
-| `POST` | `/alertas` | Autenticado | Cria alerta manual de saúde. |
+| `GET` | `/alertas` | Autenticado | Busca alertas com filtros dinâmicos. Tutor sem `petId` só vê os próprios. |
+| `POST` | `/alertas` | Autenticado | Cria alerta manual — o pet precisa ser do tutor autenticado. |
 | `PUT` | `/alertas/{id}/resolver` | `ROLE_CLINICA` | Marca alerta como resolvido pela clínica. |
-| `DELETE` | `/alertas/{id}` | Autenticado | Exclui alerta. |
+| `DELETE` | `/alertas/{id}` | Autenticado + dono | Clínica exclui qualquer alerta; tutor só exclui alerta dos próprios pets. |
 
 ### 💉 Protocolos & Eventos Preventivos
 
@@ -346,9 +350,11 @@ O Flyway executará automaticamente as migrações `V1` a `V9` no banco Oracle.
 | Método | Endpoint | Acesso | Descrição |
 |---|---|---|---|
 | `POST` | `/tutor` | `ROLE_CLINICA` | Pré-cadastro do tutor pela clínica autenticada (define a clínica automaticamente). |
+| `GET` | `/tutor`, `/tutor/nome`, `/tutor/email`, `/tutor/cpf` | `ROLE_CLINICA` | Listar/buscar tutores — só a clínica navega pelo cadastro de vários tutores. |
+| `GET` | `/tutor/{id}` | Autenticado + dono | Clínica vê qualquer tutor; tutor só vê o próprio cadastro. |
 | `GET` | `/tutor/me` | `ROLE_TUTOR` | Perfil do próprio tutor, incluindo a clínica do pré-cadastro — útil antes de ter qualquer pet. |
-| `PUT` | `/tutor/{id}` | Autenticado | Clínica edita qualquer tutor; tutor só edita o próprio cadastro. |
-| `DELETE` | `/tutor/{id}` | Autenticado | Clínica exclui qualquer tutor; tutor só exclui o próprio cadastro. |
+| `PUT` | `/tutor/{id}` | Autenticado + dono | Clínica edita qualquer tutor; tutor só edita o próprio cadastro. |
+| `DELETE` | `/tutor/{id}` | Autenticado + dono | Clínica exclui qualquer tutor; tutor só exclui o próprio cadastro. |
 
 ---
 

@@ -1,5 +1,6 @@
 package fiap.com.br.petcarehub.service;
 
+import fiap.com.br.petcarehub.auth.CurrentUser;
 import fiap.com.br.petcarehub.dto.request.AlertaSaudeRequest;
 import fiap.com.br.petcarehub.dto.response.AlertaSaudeResponse;
 import fiap.com.br.petcarehub.entity.AlertaSaude;
@@ -31,7 +32,13 @@ public class AlertaSaudeService {
 
     @Transactional(readOnly = true)
     public Page<AlertaSaudeResponse> buscar(Long petId, TipoAlerta tipo, Boolean resolvido, Pageable pageable) {
-        var spec = AlertaSaudeSpecification.filtrar(petId, tipo, resolvido);
+        if (petId != null) {
+            petService.findEntityByIdAutorizado(petId);
+        }
+        // Sem petId informado, um TUTOR só pode ver alertas dos próprios pets -
+        // nunca a lista completa de todos os pets de todos os tutores.
+        Long tutorId = CurrentUser.isTutor() ? CurrentUser.tutorId() : null;
+        var spec = AlertaSaudeSpecification.filtrar(petId, tipo, resolvido, tutorId);
         return repository.findAll(spec, pageable).map(DtoMapper::toResponse);
     }
 
@@ -39,6 +46,15 @@ public class AlertaSaudeService {
     public AlertaSaude findEntityById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Alerta não encontrado: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public AlertaSaude findEntityByIdAutorizado(Long id) {
+        AlertaSaude alerta = findEntityById(id);
+        if (CurrentUser.isTutor() && !alerta.getPet().getTutor().getId().equals(CurrentUser.tutorId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você só pode alterar alertas dos próprios pets.");
+        }
+        return alerta;
     }
 
     @Transactional(readOnly = true)
@@ -74,7 +90,7 @@ public class AlertaSaudeService {
     }
     @Transactional
     public AlertaSaudeResponse resolver(Long id) {
-        AlertaSaude alerta = findEntityById(id);
+        AlertaSaude alerta = findEntityByIdAutorizado(id);
         alerta.setResolvido(true);
         alerta.setDataResolucao(LocalDateTime.now());
         return DtoMapper.toResponse(repository.save(alerta));
@@ -82,7 +98,7 @@ public class AlertaSaudeService {
 
     @Transactional
     public void deletar(Long id) {
-        AlertaSaude alerta = findEntityById(id);
+        AlertaSaude alerta = findEntityByIdAutorizado(id);
         repository.delete(alerta);
     }
 

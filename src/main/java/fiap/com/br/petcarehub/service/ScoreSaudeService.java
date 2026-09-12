@@ -9,7 +9,6 @@ import fiap.com.br.petcarehub.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +31,10 @@ public class ScoreSaudeService {
     private final AlertaSaudeRepository alertaSaudeRepository;
     private final AlertaSaudeService alertaSaudeService;
 
-    @Cacheable(value = "scores", key = "#petId")
+    // Sem @Cacheable de propósito: o cache era só por petId, e um Cacheable
+    // nesse próprio método faria a checagem de dono (dentro do método) ser
+    // pulada inteira num cache hit - um tutor B reaproveitaria o resultado
+    // cacheado por um acesso legítimo do tutor A e passaria pela validação.
     @Transactional
     public ScoreSaudeResponse scoreAtual(Long petId) {
         petService.findEntityByIdAutorizado(petId);

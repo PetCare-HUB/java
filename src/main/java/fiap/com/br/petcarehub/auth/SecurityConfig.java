@@ -49,6 +49,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/tutor")
                         .hasRole("CLINICA")
 
+                        // Listar/buscar tutores é coisa de clínica (ver os próprios
+                        // pacientes) - um tutor não tem porque navegar pelo cadastro
+                        // de outros tutores. Ver o próprio perfil é só via /tutor/me.
+                        .requestMatchers(HttpMethod.GET, "/tutor", "/tutor/nome", "/tutor/email", "/tutor/cpf")
+                        .hasRole("CLINICA")
+
                         .requestMatchers(HttpMethod.PUT, "/alertas/*/resolver")
                         .hasRole("CLINICA")
 
@@ -58,9 +64,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/protocolos-preventivos")
                         .hasRole("CLINICA")
 
-                        // Consultas sao agendadas/gerenciadas pela clinica; leitura
-                        // continua liberada pra qualquer autenticado (regra padrao
-                        // no final da cadeia).
+                        // Consultas sao agendadas/gerenciadas pela clinica. Listar
+                        // tudo (/consultas) ou buscar por id sem dono (/consultas/{id})
+                        // tambem fica so pra clinica; um tutor ve as proprias consultas
+                        // via /pets/{id}/timeline (ja filtrado pelo dono do pet) ou
+                        // /consultas/pet/{petId} (que confere o dono do pet).
+                        .requestMatchers(HttpMethod.GET, "/consultas", "/consultas/*")
+                        .hasRole("CLINICA")
+
                         .requestMatchers(HttpMethod.POST, "/consultas/**")
                         .hasRole("CLINICA")
 
