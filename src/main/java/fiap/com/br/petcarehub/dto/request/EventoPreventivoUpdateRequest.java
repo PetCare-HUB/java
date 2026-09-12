@@ -7,6 +7,6 @@ import java.time.LocalDate;
 
 public record EventoPreventivoUpdateRequest(
         @NotNull TipoEventoPreventivo tipo,
-        @NotBlank @Size(max = 500) String descricao,
+        @NotBlank @Size(max = 300) String descricao,
         @NotNull @FutureOrPresent LocalDate dataPrevista
 ) {}

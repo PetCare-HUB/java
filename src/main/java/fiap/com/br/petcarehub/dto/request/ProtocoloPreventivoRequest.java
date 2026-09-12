@@ -6,9 +6,9 @@ import jakarta.validation.constraints.*;
 
 public record ProtocoloPreventivoRequest(
         @NotNull EspeciePet especie,
-        @Size(max = 100) String raca,
+        @Size(max = 80) String raca,
         @NotNull TipoEventoPreventivo tipo,
-        @NotBlank @Size(max = 500) String descricao,
+        @NotBlank @Size(max = 300) String descricao,
         @NotNull @Min(0) Integer idadeMesesRecomendada,
         @Min(1) Integer intervaloDias
 ) {}
