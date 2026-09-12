@@ -11,5 +11,6 @@ public record TutorResponse(
         String email,
         String telefone,
         String cpf,
-        LocalDateTime dataCadastro
+        LocalDateTime dataCadastro,
+        ClinicaResumoResponse clinica
 ) {}

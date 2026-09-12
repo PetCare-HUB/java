@@ -1,7 +1,9 @@
 package fiap.com.br.petcarehub.service;
 
+import fiap.com.br.petcarehub.auth.CurrentUser;
 import fiap.com.br.petcarehub.dto.request.TutorRequest;
 import fiap.com.br.petcarehub.dto.response.TutorResponse;
+import fiap.com.br.petcarehub.entity.Clinica;
 import fiap.com.br.petcarehub.entity.Tutor;
 import fiap.com.br.petcarehub.enums.StatusAcesso;
 import fiap.com.br.petcarehub.repository.TutorRepository;
@@ -18,6 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class TutorService {
     private final TutorRepository repository;
+    private final ClinicaService clinicaService;
 
     @Transactional(readOnly = true)
     public Page<TutorResponse> listar(Pageable pageable) {
@@ -37,20 +40,36 @@ public class TutorService {
     @Transactional
     public TutorResponse criar(TutorRequest request) {
 
+        // POST /tutor so pode ser chamado por uma CLINICA autenticada (ver
+        // SecurityConfig) - a clinica do pre-cadastro e sempre a de quem esta
+        // logado, nunca algo vindo do corpo da requisicao.
+        Clinica clinica = clinicaService.findEntityById(CurrentUser.clinicaId());
+
         Tutor tutor = Tutor.builder()
                 .nome(request.nome())
                 .email(request.email())
                 .telefone(request.telefone())
                 .cpf(request.cpf())
                 .statusAcesso(StatusAcesso.PRE_CADASTRADO)
+                .clinica(clinica)
                 .build();
 
         return DtoMapper.toResponse(repository.save(tutor));
     }
 
+    @Transactional(readOnly = true)
+    public TutorResponse buscarPerfilAutenticado() {
+        Long tutorId = CurrentUser.tutorId();
+        if (tutorId == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Apenas tutores têm perfil próprio.");
+        }
+        return buscarPorId(tutorId);
+    }
+
     @Transactional
     public TutorResponse atualizar(Long id, TutorRequest request) {
         Tutor tutor = findEntityById(id);
+        verificarPermissao(tutor);
         tutor.setNome(request.nome());
         tutor.setEmail(request.email());
         tutor.setTelefone(request.telefone());
@@ -61,7 +80,14 @@ public class TutorService {
     @Transactional
     public void deletar(Long id) {
         Tutor tutor = findEntityById(id);
+        verificarPermissao(tutor);
         repository.delete(tutor);
+    }
+
+    private void verificarPermissao(Tutor tutor) {
+        if (CurrentUser.isTutor() && !tutor.getId().equals(CurrentUser.tutorId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você só pode alterar o próprio cadastro.");
+        }
     }
 
     @Transactional(readOnly = true)

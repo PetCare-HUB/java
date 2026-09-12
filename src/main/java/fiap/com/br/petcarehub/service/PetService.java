@@ -1,5 +1,6 @@
 package fiap.com.br.petcarehub.service;
 
+import fiap.com.br.petcarehub.auth.CurrentUser;
 import fiap.com.br.petcarehub.dto.request.PetRequest;
 import fiap.com.br.petcarehub.dto.response.PetResponse;
 import fiap.com.br.petcarehub.entity.Clinica;
@@ -32,6 +33,9 @@ public class PetService {
 
     @Transactional(readOnly = true)
     public Page<PetResponse> listar(Pageable pageable) {
+        if (CurrentUser.isTutor()) {
+            return repository.findByTutorId(CurrentUser.tutorId(), pageable).map(DtoMapper::toResponse);
+        }
         return repository.findAll(pageable).map(DtoMapper::toResponse);
     }
 
@@ -50,7 +54,10 @@ public class PetService {
     @CacheEvict(value = {"pets", "scores"}, allEntries = true)
     @Transactional
     public PetResponse criar(PetRequest request) {
-        Tutor tutor = tutorService.findEntityById(request.tutorId());
+        // O dono do pet e sempre o tutor autenticado - nunca o tutorId que vier
+        // no corpo da requisicao, senao um tutor consegue cadastrar pet em nome
+        // de outro so trocando esse campo.
+        Tutor tutor = tutorService.findEntityById(CurrentUser.tutorId());
         Clinica clinica = clinicaService.findEntityById(request.clinicaId());
 
         Pet pet = Pet.builder()
@@ -73,7 +80,7 @@ public class PetService {
     @Transactional
     public PetResponse atualizar(Long id, PetRequest request) {
         Pet pet = findEntityById(id);
-        Tutor tutor = tutorService.findEntityById(request.tutorId());
+        verificarPermissao(pet);
         Clinica clinica = clinicaService.findEntityById(request.clinicaId());
 
         pet.setNome(request.nome());
@@ -84,7 +91,8 @@ public class PetService {
         pet.setSexo(request.sexo());
         pet.setCondicoesCronicas(request.condicoesCronicas());
         pet.setAtivo(request.ativo() != null ? request.ativo() : pet.getAtivo()); // ← bug corrigido
-        pet.setTutor(tutor);
+        // o dono (tutor) do pet nao muda por aqui - so pela propria checagem de
+        // permissao acima ja garante que so o dono atual esta editando
         pet.setClinica(clinica);
 
         return DtoMapper.toResponse(repository.save(pet));
@@ -94,7 +102,14 @@ public class PetService {
     @Transactional
     public void deletar(Long id) {
         Pet pet = findEntityById(id);
+        verificarPermissao(pet);
         repository.delete(pet);
+    }
+
+    private void verificarPermissao(Pet pet) {
+        if (CurrentUser.isTutor() && !pet.getTutor().getId().equals(CurrentUser.tutorId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você só pode alterar os próprios pets.");
+        }
     }
 
     @Transactional(readOnly = true)

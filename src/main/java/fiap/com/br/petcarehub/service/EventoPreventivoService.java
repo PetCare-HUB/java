@@ -1,6 +1,8 @@
 package fiap.com.br.petcarehub.service;
 
+import fiap.com.br.petcarehub.auth.CurrentUser;
 import fiap.com.br.petcarehub.dto.request.EventoPreventivoRequest;
+import fiap.com.br.petcarehub.dto.request.EventoPreventivoUpdateRequest;
 import fiap.com.br.petcarehub.dto.response.EventoPreventivoResponse;
 import fiap.com.br.petcarehub.entity.EventoPreventivo;
 import fiap.com.br.petcarehub.entity.Pet;
@@ -45,6 +47,9 @@ public class EventoPreventivoService {
     public EventoPreventivoResponse criar(EventoPreventivoRequest request) {
 
         Pet pet = petService.findEntityById(request.petId());
+        if (CurrentUser.isTutor() && !pet.getTutor().getId().equals(CurrentUser.tutorId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você só pode criar lembretes para os próprios pets.");
+        }
 
         EventoPreventivo evento = EventoPreventivo.builder()
                 .pet(pet)
@@ -61,10 +66,45 @@ public class EventoPreventivoService {
     public EventoPreventivoResponse marcarComoRealizado(Long id) {
 
         EventoPreventivo evento = findEntityById(id);
+        verificarPermissao(evento);
 
         evento.setStatus(StatusEventoPreventivo.REALIZADO);
         evento.setDataRealizacao(LocalDate.now());
 
         return DtoMapper.toResponse(repository.save(evento));
+    }
+
+    @Transactional
+    public EventoPreventivoResponse atualizar(Long id, EventoPreventivoUpdateRequest request) {
+        EventoPreventivo evento = findEntityById(id);
+        verificarPermissao(evento);
+        verificarNaoRealizado(evento);
+
+        evento.setTipo(request.tipo());
+        evento.setDescricao(request.descricao());
+        evento.setDataPrevista(request.dataPrevista());
+
+        return DtoMapper.toResponse(repository.save(evento));
+    }
+
+    @Transactional
+    public void deletar(Long id) {
+        EventoPreventivo evento = findEntityById(id);
+        verificarPermissao(evento);
+        verificarNaoRealizado(evento);
+
+        repository.delete(evento);
+    }
+
+    private void verificarPermissao(EventoPreventivo evento) {
+        if (CurrentUser.isTutor() && !evento.getPet().getTutor().getId().equals(CurrentUser.tutorId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você só pode alterar lembretes dos próprios pets.");
+        }
+    }
+
+    private void verificarNaoRealizado(EventoPreventivo evento) {
+        if (evento.getStatus() == StatusEventoPreventivo.REALIZADO) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Um lembrete já realizado não pode ser editado ou excluído.");
+        }
     }
 }

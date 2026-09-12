@@ -36,7 +36,7 @@ A camada de visualização do ecossistema PetCare Hub é composta por uma aplica
 - **Linguagem & Framework**: Java 17, Spring Boot 3.3.5
 - **Segurança**: Spring Security, Spring OAuth2 Resource Server, Nimbus Jose JWT, BCrypt Password Encoder, Par de Chaves Assimétricas RSA (2048-bit)
 - **Persistência & Migração**: Spring Data JPA, Hibernate, Flyway Migration (`flyway-core`, `flyway-database-oracle`), JPA Criteria API / Specifications
-- **Bancos de Dados**: Oracle Database 23c / 19c (perfil `oracle`), H2 Database em memória (desenvolvimento e testes)
+- **Bancos de Dados**: Oracle Database 23c / 19c
 - **Cache & Performance**: Spring Cache com Caffeine Cache (evicção por tempo e capacidade máxima)
 - **Validação**: Jakarta Bean Validation (`hibernate-validator`) + `@MaxAge` Custom Validator
 - **Documentação da API**: SpringDoc OpenAPI 3.0 / Swagger UI
@@ -91,14 +91,20 @@ sequenceDiagram
 | `/auth/login` | `POST` | Pública (`permitAll`) | Autenticação de Clínica ou Tutor com e-mail e senha. |
 | `/auth/ativar-conta` | `POST` | Pública (`permitAll`) | Primeiro acesso do tutor para definir senha. |
 | `/swagger-ui/**`, `/v3/api-docs/**` | `GET` | Pública (`permitAll`) | Documentação interativa da API. |
-| `/tutor` | `POST` | `ROLE_CLINICA` | Pré-cadastro de tutor pela clínica parceira. |
+| `/tutor` | `POST` | `ROLE_CLINICA` | Pré-cadastro de tutor pela clínica parceira (a clínica é sempre a autenticada, não vem do corpo). |
+| `/tutor/{id}` | `PUT`, `DELETE` | Autenticado + dono | Clínica edita/exclui qualquer tutor; um tutor só edita/exclui o próprio cadastro. |
+| `/tutor/me` | `GET` | `ROLE_TUTOR` | Perfil do próprio tutor autenticado, incluindo a clínica do pré-cadastro. |
 | `/clinicas/**` | `GET`, `POST`, `PUT`, `DELETE` | `ROLE_CLINICA` | Gestão de clínicas, métricas e dashboards. |
+| `/protocolos-preventivos` | `POST` | `ROLE_CLINICA` | Criação de novo protocolo preventivo. |
+| `/consultas/**` | `POST`, `PUT`, `DELETE` | `ROLE_CLINICA` | Agendamento/edição/exclusão de consultas. |
 | `/alertas/{id}/resolver` | `PUT` | `ROLE_CLINICA` | Resolução médica de um alerta ativo. |
-| `/pets` | `POST` | `ROLE_TUTOR` | Cadastro de novo pet pelo tutor. |
-| `/pets/{id}` | `PUT`, `DELETE` | `ROLE_TUTOR` | Atualização ou inativação do pet pelo tutor. |
+| `/pets` | `GET` | Autenticado | Tutor só vê os próprios pets (filtrado pelo token); clínica vê todos. |
+| `/pets` | `POST` | `ROLE_TUTOR` | Cadastro de novo pet — o dono é sempre o tutor autenticado. |
+| `/pets/{id}` | `PUT`, `DELETE` | `ROLE_TUTOR` + dono | Só o tutor dono do pet pode atualizar ou excluir. |
 | `/leituras/**` | `POST` | `ROLE_TUTOR` | Envio de telemetria dos dispositivos IoT do pet. |
-| `/eventos-preventivos` | `POST` | `ROLE_TUTOR` | Agendamento de evento preventivo pelo tutor. |
-| `/eventos-preventivos/{id}/realizar` | `PUT` | `ROLE_TUTOR` | Confirmação de realização de vacina/check-up. |
+| `/eventos-preventivos` | `POST` | `ROLE_TUTOR` + dono do pet | Agendamento de evento preventivo pelo tutor. |
+| `/eventos-preventivos/{id}` | `PUT`, `DELETE` | `ROLE_TUTOR` + dono | Edita (tipo/descrição/data) ou exclui um lembrete ainda não realizado. |
+| `/eventos-preventivos/{id}/realizar` | `PUT` | `ROLE_TUTOR` + dono | Confirmação de realização de vacina/check-up. |
 | `/pets/{id}/**` | `GET` | `ROLE_TUTOR`, `ROLE_CLINICA` | Consulta de timeline, scores, alertas e telemetria. |
 | Demais rotas | `*` | Autenticado | Exige token JWT válido. |
 
@@ -200,28 +206,27 @@ private LocalDate dataNascimento;
 ### Pré-requisitos
 - **Java 17 JDK** instalado e configurado nas variáveis de ambiente (`JAVA_HOME`).
 - **Maven 3.8+** (ou utilizar o wrapper `./mvnw` incluso).
+- **Banco Oracle Database** acessível (não há mais suporte a H2 em memória — as migrações Flyway usam sintaxe específica do Oracle, ex. `flyway-database-oracle`, sequences e outros recursos não compatíveis com H2).
+- **Par de chaves RSA** (2048-bit) para assinatura dos tokens JWT — veja como gerar abaixo.
 
-### 1. Execução Local (Perfil Padrão com Banco H2 em Memória)
+### 1. Gere o par de chaves RSA (uma única vez)
 
-No Linux / macOS:
 ```bash
-./mvnw clean spring-boot:run
+openssl genrsa -out private_key.pem 2048
+openssl rsa -in private_key.pem -pubout -out public_key.pem
 ```
 
-No Windows (PowerShell / CMD):
+Essas chaves **não são versionadas no repositório** por segurança. Aponte a aplicação para elas via variáveis de ambiente (aceitam o conteúdo PEM direto ou um caminho `file:`):
+
 ```bash
-mvnw.cmd clean spring-boot:run
+# Linux/macOS
+export RSA_PRIVATE_KEY="file:/caminho/para/private_key.pem"
+export RSA_PUBLIC_KEY="file:/caminho/para/public_key.pem"
+
+# Windows (PowerShell)
+$env:RSA_PRIVATE_KEY="file:C:/caminho/para/private_key.pem"
+$env:RSA_PUBLIC_KEY="file:C:/caminho/para/public_key.pem"
 ```
-
-- **API Base**: `http://localhost:8080`
-- **Swagger UI (Frontend Interativo)**: `http://localhost:8080/swagger-ui.html`
-- **OpenAPI JSON Docs**: `http://localhost:8080/v3/api-docs`
-- **H2 Web Console**: `http://localhost:8080/h2-console`
-  - *JDBC URL*: `jdbc:h2:mem:petcarehub`
-  - *User*: `sa`
-  - *Password*: *(vazio)*
-
----
 
 ### 2. Execução com Banco Oracle Database
 
@@ -239,12 +244,23 @@ $env:DB_USERNAME="PETCARE"
 $env:DB_PASSWORD="sua_senha_oracle"
 ```
 
-Inicie com o perfil de execução:
+Inicie a aplicação:
+
+No Linux / macOS:
 ```bash
-mvnw.cmd spring-boot:run
+./mvnw clean spring-boot:run
+```
+
+No Windows (PowerShell / CMD):
+```bash
+mvnw.cmd clean spring-boot:run
 ```
 
 O Flyway executará automaticamente as migrações `V1` a `V8` no banco Oracle.
+
+- **API Base**: `http://localhost:8080`
+- **Swagger UI (Frontend Interativo)**: `http://localhost:8080/swagger-ui.html`
+- **OpenAPI JSON Docs**: `http://localhost:8080/v3/api-docs`
 
 ---
 
@@ -276,13 +292,13 @@ O Flyway executará automaticamente as migrações `V1` a `V8` no banco Oracle.
 
 | Método | Endpoint | Acesso | Descrição |
 |---|---|---|---|
-| `GET` | `/pets` | Autenticado | Lista pets paginados com suporte a filtros. |
+| `GET` | `/pets` | Autenticado | Lista pets paginados — tutor só vê os próprios (filtrado no servidor pelo token); clínica vê todos. |
 | `GET` | `/pets/{id}` | Autenticado | Detalhes do pet. |
 | `GET` | `/pets/nome?nome={nome}` | Autenticado | Busca pets por nome. |
 | `GET` | `/pets/busca?especie=CAO&raca=Golden` | Autenticado | Busca combinada dinâmica com JPA Specifications. |
-| `POST` | `/pets` | `ROLE_TUTOR` | Cadastra novo pet. |
-| `PUT` | `/pets/{id}` | `ROLE_TUTOR` | Atualiza dados do pet. |
-| `DELETE` | `/pets/{id}` | `ROLE_TUTOR` | Desativa pet. |
+| `POST` | `/pets` | `ROLE_TUTOR` | Cadastra novo pet — o dono é sempre o tutor autenticado, não o `tutorId` do corpo. |
+| `PUT` | `/pets/{id}` | `ROLE_TUTOR` | Atualiza dados do pet. Só o tutor dono pode. |
+| `DELETE` | `/pets/{id}` | `ROLE_TUTOR` | Remove o pet. Só o tutor dono pode. |
 | `GET` | `/pets/{id}/score-saude` | Autenticado | Retorna o score de saúde atual e categoria. |
 | `POST` | `/pets/{id}/score-saude/calcular` | Autenticado | Força recálculo algorítmico do score. |
 | `GET` | `/pets/{id}/score-saude/historico` | Autenticado | Histórico de evolução do score do pet. |
@@ -317,8 +333,19 @@ O Flyway executará automaticamente as migrações `V1` a `V8` no banco Oracle.
 | `GET` | `/protocolos-preventivos` | Autenticado | Lista protocolos (Cache Caffeine). |
 | `GET` | `/protocolos-preventivos/por-especie` | Autenticado | Lista protocolos filtrados por espécie. |
 | `POST` | `/protocolos-preventivos` | `ROLE_CLINICA` | Cria novo protocolo de saúde. |
-| `POST` | `/eventos-preventivos` | `ROLE_TUTOR` | Agenda evento preventivo para um pet. |
+| `POST` | `/eventos-preventivos` | `ROLE_TUTOR` | Agenda evento preventivo para um pet (precisa ser pet do próprio tutor). |
+| `PUT` | `/eventos-preventivos/{id}` | `ROLE_TUTOR` | Edita tipo, descrição e data prevista. Bloqueado se já realizado. |
 | `PUT` | `/eventos-preventivos/{id}/realizar` | `ROLE_TUTOR` | Conclui evento preventivo agendado. |
+| `DELETE` | `/eventos-preventivos/{id}` | `ROLE_TUTOR` | Exclui o lembrete. Bloqueado se já realizado. |
+
+### 👤 Tutor (`/tutor`)
+
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| `POST` | `/tutor` | `ROLE_CLINICA` | Pré-cadastro do tutor pela clínica autenticada (define a clínica automaticamente). |
+| `GET` | `/tutor/me` | `ROLE_TUTOR` | Perfil do próprio tutor, incluindo a clínica do pré-cadastro — útil antes de ter qualquer pet. |
+| `PUT` | `/tutor/{id}` | Autenticado | Clínica edita qualquer tutor; tutor só edita o próprio cadastro. |
+| `DELETE` | `/tutor/{id}` | Autenticado | Clínica exclui qualquer tutor; tutor só exclui o próprio cadastro. |
 
 ---
 
@@ -345,12 +372,15 @@ O Flyway executará automaticamente as migrações `V1` a `V8` no banco Oracle.
 ```json
 {
   "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "role": "ROLE_TUTOR",
-  "expiresIn": 86400,
-  "nome": "Kelson Silva",
-  "email": "kelson.petcare@example.com"
+  "tipo": "Bearer",
+  "expiraEm": "2026-09-12T19:23:36.412Z",
+  "role": "TUTOR",
+  "tutorId": 1,
+  "clinicaId": null
 }
 ```
+
+> `expiraEm` é o instante (ISO-8601) em que o token vence — o token dura 30 minutos a partir do login, não 24h. `tutorId` só vem preenchido pra quem logou como tutor; `clinicaId` só pra quem logou como clínica.
 
 ### 3. Cadastro de Pet com Validação (`POST /pets`)
 ```json

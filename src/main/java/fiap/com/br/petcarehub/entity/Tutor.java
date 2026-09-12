@@ -66,4 +66,11 @@ public class Tutor {
     @Builder.Default
     @OneToMany(mappedBy = "tutor")
     private List<Pet> pets = new ArrayList<>();
+
+    // Clinica que fez o pre-cadastro deste tutor. Nulo pra tutores criados
+    // antes dessa coluna existir. Permite ao tutor saber sua clinica mesmo
+    // antes de ter qualquer pet cadastrado.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ID_CLINICA")
+    private Clinica clinica;
 }

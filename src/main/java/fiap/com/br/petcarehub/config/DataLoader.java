@@ -1,174 +1,53 @@
 package fiap.com.br.petcarehub.config;
 
-import fiap.com.br.petcarehub.entity.*;
-import fiap.com.br.petcarehub.enums.*;
-import fiap.com.br.petcarehub.repository.*;
+import fiap.com.br.petcarehub.entity.Clinica;
+import fiap.com.br.petcarehub.entity.Tutor;
+import fiap.com.br.petcarehub.enums.StatusAcesso;
+import fiap.com.br.petcarehub.repository.ClinicaRepository;
+import fiap.com.br.petcarehub.repository.TutorRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 @Configuration
 public class DataLoader {
 
-//    @Bean
-//    CommandLineRunner seedDatabase(
-//            TutorRepository tutorRepository,
-//            ClinicaRepository clinicaRepository,
-//            PetRepository petRepository,
-//            ConsultaRepository consultaRepository,
-//            ProtocoloPreventivoRepository protocoloRepository,
-//            EventoPreventivoRepository eventoRepository,
-//            LeituraColeiraRepository leituraColeiraRepository,
-//            LeituraComedouroRepository leituraComedouroRepository,
-//            LeituraAmbienteRepository leituraAmbienteRepository,
-//            AlertaSaudeRepository alertaRepository,
-//            ScoreSaudeRepository scoreRepository,
-//            PasswordEncoder passwordEncoder
-//    ) {
-//        return args -> {
-//            if (tutorRepository.count() > 0) {
-//                return;
-//            }
-//
-//            Tutor kelson = tutorRepository.save(Tutor.builder()
-//                    .nome("Kelson Silva")
-//                    .email("kelson.petcare@example.com")
-//                    .telefone("11999990000")
-//                    .cpf("12345678901")
-//                    .role(Role.TUTOR)
-//                    .statusAcesso(StatusAcesso.PRE_CADASTRADO)
-//                    .build());
-//
-//            Tutor ana = tutorRepository.save(Tutor.builder()
-//                    .nome("Ana Pereira")
-//                    .email("ana.petcare@example.com")
-//                    .telefone("11988887777")
-//                    .cpf("98765432100")
-//                    .role(Role.TUTOR)
-//                    .statusAcesso(StatusAcesso.PRE_CADASTRADO)
-//                    .build());
-//
-//            Clinica clyvo = clinicaRepository.save(Clinica.builder()
-//                    .nome("Clyvo Vet Unidade Paulista")
-//                    .cnpj("12.345.678/0001-90")
-//                    .email("UnidadePaulista.petcare@email.com")
-//                    .endereco("Av. Paulista, 1000 - São Paulo")
-//                    .telefone("1133334444")
-//                    .senha(passwordEncoder.encode("12345678"))
-//                    .build());
-//
-//            Pet rex = petRepository.save(Pet.builder()
-//                    .nome("Rex")
-//                    .especie(EspeciePet.CAO)
-//                    .raca("Golden Retriever")
-//                    .dataNascimento(LocalDate.now().minusYears(4))
-//                    .pesoKg(new BigDecimal("28.50"))
-//                    .sexo(SexoPet.M)
-//                    .condicoesCronicas("Tendência a obesidade")
-//                    .ativo(true)
-//                    .scoreAtual(76)
-//                    .tutor(kelson)
-//                    .clinica(clyvo)
-//                    .build());
-//
-//            Pet nina = petRepository.save(Pet.builder()
-//                    .nome("Nina")
-//                    .especie(EspeciePet.GATO)
-//                    .raca("SRD")
-//                    .dataNascimento(LocalDate.now().minusYears(2))
-//                    .pesoKg(new BigDecimal("4.20"))
-//                    .sexo(SexoPet.F)
-//                    .condicoesCronicas("Sem condições crônicas")
-//                    .ativo(true)
-//                    .scoreAtual(92)
-//                    .tutor(ana)
-//                    .clinica(clyvo)
-//                    .build());
-//
-//            consultaRepository.save(Consulta.builder()
-//                    .pet(rex)
-//                    .clinica(clyvo)
-//                    .dataConsulta(LocalDateTime.now().plusDays(15))
-//                    .tipo(TipoConsulta.CHECKUP)
-//                    .observacoes("Check-up preventivo agendado")
-//                    .valor(new BigDecimal("180.00"))
-//                    .build());
-//
-//            protocoloRepository.save(ProtocoloPreventivo.builder()
-//                    .especie(EspeciePet.CAO)
-//                    .tipo(TipoEventoPreventivo.VACINA)
-//                    .nome("V10")
-//                    .descricao("Vacina polivalente anual para cães")
-//                    .idadeMesesAplicacao(2)
-//                    .intervaloReforcoDias(365)
-//                    .build());
-//
-//            protocoloRepository.save(ProtocoloPreventivo.builder()
-//                    .especie(EspeciePet.GATO)
-//                    .tipo(TipoEventoPreventivo.VACINA)
-//                    .nome("V4")
-//                    .descricao("Vacina polivalente anual para gatos")
-//                    .idadeMesesAplicacao(2)
-//                    .intervaloReforcoDias(365)
-//                    .build());
-//
-//            eventoRepository.save(EventoPreventivo.builder()
-//                    .pet(rex)
-//                    .tipo(TipoEventoPreventivo.CHECKUP)
-//                    .descricao("Check-up preventivo trimestral")
-//                    .dataPrevista(LocalDate.now().plusDays(15))
-//                    .realizado(false)
-//                    .build());
-//
-//            leituraColeiraRepository.save(LeituraColeira.builder()
-//                    .pet(rex)
-//                    .statusAtividade(StatusAtividade.ATIVO)
-//                    .nivelBateria(18)
-//                    .timestampLeitura(LocalDateTime.now().minusHours(1))
-//                    .build());
-//
-//            leituraComedouroRepository.save(LeituraComedouro.builder()
-//                    .pet(rex)
-//                    .nivelRacaoPct(15)
-//                    .pesoConsumidoG(new BigDecimal("25.00"))
-//                    .timestampLeitura(LocalDateTime.now().minusMinutes(40))
-//                    .build());
-//
-//            leituraAmbienteRepository.save(LeituraAmbiente.builder()
-//                    .pet(rex)
-//                    .temperaturaAmbiente(new BigDecimal("24.50"))
-//                    .umidadePct(55)
-//                    .qualidadeArPpm(850)
-//                    .petPresente(true)
-//                    .timestampLeitura(LocalDateTime.now().minusMinutes(30))
-//                    .build());
-//
-//            alertaRepository.save(AlertaSaude.builder()
-//                    .pet(rex)
-//                    .tipo(TipoAlerta.BATERIA_COLEIRA_BAIXA)
-//                    .nivel(NivelAlerta.MEDIO)
-//                    .mensagem("Bateria da coleira abaixo de 20%")
-//                    .resolvido(false)
-//                    .build());
-//
-//            scoreRepository.save(ScoreSaude.builder()
-//                    .pet(rex)
-//                    .score(76)
-//                    .categoria(CategoriaScore.AMARELO)
-//                    .observacao("Score inicial com alerta de bateria e ração baixa.")
-//                    .build());
-//
-//            scoreRepository.save(ScoreSaude.builder()
-//                    .pet(nina)
-//                    .score(92)
-//                    .categoria(CategoriaScore.VERDE)
-//                    .observacao("Score inicial saudável.")
-//                    .build());
-//        };
-//    }
+    // So roda se app.seed.enabled=true (ligado por padrao em application.properties).
+    // Nao insere nada se ja existir alguma clinica - seguro de deixar ligado
+    // mesmo apontando pro banco de producao, so serve pra destravar o
+    // primeiro acesso quando o schema esta genuinamente vazio.
+    @Bean
+    @ConditionalOnProperty(prefix = "app.seed", name = "enabled", havingValue = "true")
+    CommandLineRunner seedDatabase(
+            ClinicaRepository clinicaRepository,
+            TutorRepository tutorRepository,
+            PasswordEncoder passwordEncoder
+    ) {
+        return args -> {
+            if (clinicaRepository.count() > 0) {
+                return;
+            }
+
+            Clinica clinica = clinicaRepository.save(Clinica.builder()
+                    .nome("Clinica Vida Pet")
+                    .email("contato@clinicavidapet.test")
+                    .senha(passwordEncoder.encode("Senha123"))
+                    .cnpj("11111111000111")
+                    .endereco("Av. Paulista, 1000 - Sao Paulo")
+                    .telefone("1133334444")
+                    .ativo('S')
+                    .build());
+
+            tutorRepository.save(Tutor.builder()
+                    .nome("Tutor Teste")
+                    .email("tutor.teste@petcarehub.test")
+                    .telefone("11999990000")
+                    .cpf("12345678901")
+                    .statusAcesso(StatusAcesso.PRE_CADASTRADO)
+                    .clinica(clinica)
+                    .build());
+        };
+    }
 }

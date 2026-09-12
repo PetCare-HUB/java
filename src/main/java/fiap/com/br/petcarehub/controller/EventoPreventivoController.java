@@ -1,6 +1,7 @@
 package fiap.com.br.petcarehub.controller;
 
 import fiap.com.br.petcarehub.dto.request.EventoPreventivoRequest;
+import fiap.com.br.petcarehub.dto.request.EventoPreventivoUpdateRequest;
 import fiap.com.br.petcarehub.dto.response.EventoPreventivoResponse;
 import fiap.com.br.petcarehub.service.EventoPreventivoService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,9 +24,22 @@ public class EventoPreventivoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(request));
     }
 
+    @PutMapping("/{id}")
+    @Operation(summary = "Atualizar evento preventivo", description = "Edita tipo, descrição e data prevista. Não permitido para eventos já realizados.")
+    public EventoPreventivoResponse atualizar(@PathVariable Long id, @RequestBody @Valid EventoPreventivoUpdateRequest request) {
+        return service.atualizar(id, request);
+    }
+
     @PutMapping("/{id}/realizar")
     @Operation(summary = "Marcar evento preventivo como realizado")
     public EventoPreventivoResponse marcarComoRealizado(@PathVariable Long id) {
         return service.marcarComoRealizado(id);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Excluir evento preventivo", description = "Não permitido para eventos já realizados.")
+    public void deletar(@PathVariable Long id) {
+        service.deletar(id);
     }
 }

@@ -16,7 +16,8 @@ public final class DtoMapper {
                 tutor.getEmail(),
                 tutor.getTelefone(),
                 tutor.getCpf(),
-                tutor.getDataCadastro()
+                tutor.getDataCadastro(),
+                tutor.getClinica() != null ? toResumo(tutor.getClinica()) : null
         );
     }
 

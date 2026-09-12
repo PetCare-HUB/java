@@ -55,6 +55,21 @@ public class SecurityConfig {
                         .requestMatchers("/clinicas/**")
                         .hasRole("CLINICA")
 
+                        .requestMatchers(HttpMethod.POST, "/protocolos-preventivos")
+                        .hasRole("CLINICA")
+
+                        // Consultas sao agendadas/gerenciadas pela clinica; leitura
+                        // continua liberada pra qualquer autenticado (regra padrao
+                        // no final da cadeia).
+                        .requestMatchers(HttpMethod.POST, "/consultas/**")
+                        .hasRole("CLINICA")
+
+                        .requestMatchers(HttpMethod.PUT, "/consultas/**")
+                        .hasRole("CLINICA")
+
+                        .requestMatchers(HttpMethod.DELETE, "/consultas/**")
+                        .hasRole("CLINICA")
+
                         // Apenas TUTOR
                         .requestMatchers(
                                 HttpMethod.POST,
@@ -66,12 +81,14 @@ public class SecurityConfig {
                         .requestMatchers(
                                 HttpMethod.PUT,
                                 "/pets/*",
+                                "/eventos-preventivos/*",
                                 "/eventos-preventivos/*/realizar"
                         ).hasRole("TUTOR")
 
                         .requestMatchers(
                                 HttpMethod.DELETE,
-                                "/pets/*"
+                                "/pets/*",
+                                "/eventos-preventivos/*"
                         ).hasRole("TUTOR")
 
                         // TUTOR e CLINICA

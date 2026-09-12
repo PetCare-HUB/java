@@ -33,6 +33,12 @@ public class TutorController {
         return service.buscarPorId(id);
     }
 
+    @GetMapping("/me")
+    @Operation(summary = "Buscar o próprio perfil", description = "Retorna os dados do tutor autenticado, incluindo a clínica do pré-cadastro (útil antes de ter qualquer pet cadastrado).")
+    public TutorResponse me() {
+        return service.buscarPerfilAutenticado();
+    }
+
     @PostMapping
     @Operation(summary = "Criar responsável")
     public ResponseEntity<TutorResponse> criar(@RequestBody @Valid TutorRequest request) {
