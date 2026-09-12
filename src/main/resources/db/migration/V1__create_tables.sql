@@ -101,7 +101,10 @@ CREATE TABLE RESPONSAVEL (
 ------------------------------------------------------------
 
 CREATE TABLE CLINICA (
-    id_clinica  NUMBER(10)  DEFAULT seq_clinica.NEXTVAL  NOT NULL,
+    -- sem DEFAULT aqui: seq_clinica so existe depois (V2). O default e
+    -- adicionado na V4 (ALTER TABLE ... MODIFY), depois que a sequence ja
+    -- existe.
+    id_clinica  NUMBER(10)  NOT NULL,
     nome           VARCHAR2(120)   NOT NULL,
     cnpj           VARCHAR2(14)    NOT NULL,
     email          VARCHAR2(120),

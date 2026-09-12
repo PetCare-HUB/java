@@ -116,14 +116,17 @@ O versionamento do banco é gerenciado de forma incremental e idempotente pelo F
 
 | Versão | Script SQL | Responsabilidade e Impacto |
 |---|---|---|
-| **V1** | `v1_create_tables.sql` | Criação das tabelas centrais do domínio: `CLINICA`, `TUTOR`, `PET`, `CONSULTA`, `PROTOCOLO_PREVENTIVO`, `EVENTO_PREVENTIVO`, `LEITURA_COLEIRA`, `LEITURA_COMEDOURO`, `LEITURA_AMBIENTE`, `ALERTA_SAUDE`, `SCORE_SAUDE`. |
-| **V2** | `v2_create_sequences.sql` | Criação de sequences de auto-incremento para identificadores das entidades no Oracle Database. |
-| **V3** | `v3_create_indexes.sql` | Criação de índices de chave estrangeira e busca rápida (CPF, E-mail, data de leitura, busca combinada de pets). |
-| **V4** | `v4_add_defaults_sequences.sql` | Definição de valores default para colunas e integração de triggers de sequence. |
-| **V5** | `v5_rename_responsavel_to_tutor.sql` | Refatoração de domínio para padronização de nomenclatura de `RESPONSAVEL` para `TUTOR`. |
-| **V6** | `v6_add_auth_fields.sql` | Adição de colunas `senha_hash` e `status_acesso` com constraint de check (`PRE_CADASTRADO`, `ATIVO`, `BLOQUEADO`, `INATIVO`) para o Spring Security. |
-| **V7** | `v7_fix_defaults_sequences.sql` | Ajustes de constraints, defaults e integridade referencial de sequences. |
-| **V8** | `v8_split_leitura_sensor.sql` | Especialização e segregação das leituras IoT em tabelas dedicadas: coleira, comedouro e ambiente para escalabilidade. |
+| **V1** | `V1__create_tables.sql` | Criação das tabelas centrais do domínio: `CLINICA`, `TUTOR`, `PET`, `CONSULTA`, `PROTOCOLO_PREVENTIVO`, `EVENTO_PREVENTIVO`, `LEITURA_COLEIRA`, `LEITURA_COMEDOURO`, `LEITURA_AMBIENTE`, `ALERTA_SAUDE`, `SCORE_SAUDE`. |
+| **V2** | `V2__create_sequences.sql` | Criação de sequences de auto-incremento para identificadores das entidades no Oracle Database. |
+| **V3** | `V3__create_indexes.sql` | Criação de índices de chave estrangeira e busca rápida (CPF, E-mail, data de leitura, busca combinada de pets). |
+| **V4** | `V4__add_defaults_sequences.sql` | Definição de valores default para colunas e integração de triggers de sequence. |
+| **V5** | `V5__rename_responsavel_to_tutor.sql` | Refatoração de domínio para padronização de nomenclatura de `RESPONSAVEL` para `TUTOR`. |
+| **V6** | `V6__add_auth_fields.sql` | Adição de colunas `senha_hash` e `status_acesso` com constraint de check (`PRE_CADASTRADO`, `ATIVO`, `BLOQUEADO`, `INATIVO`) para o Spring Security. |
+| **V7** | `V7__fix_defaults_sequences.sql` | Ajustes de constraints, defaults e integridade referencial de sequences. |
+| **V8** | `V8__split_leitura_sensor.sql` | Especialização e segregação das leituras IoT em tabelas dedicadas: coleira, comedouro e ambiente para escalabilidade. |
+| **V9** | `V9__add_tutor_clinica.sql` | Adiciona `TUTOR.id_clinica` (FK pra `CLINICA`), preenchido no pré-cadastro. |
+
+> Os nomes seguem a convenção padrão do Flyway (`V<versão>__descricao.sql`, com `V` maiúsculo e underscore duplo) — só assim o Flyway reconhece e aplica as migrações automaticamente.
 
 ---
 
