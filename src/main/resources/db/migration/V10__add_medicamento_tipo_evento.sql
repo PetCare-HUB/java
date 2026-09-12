@@ -1,5 +1,3 @@
-SET SERVEROUTPUT ON;
-
 ------------------------------------------------------------
 -- O enum TipoEventoPreventivo (Java) inclui MEDICAMENTO desde sempre,
 -- mas as constraints de CHECK criadas na V1 nunca foram atualizadas -

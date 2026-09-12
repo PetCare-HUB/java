@@ -1,5 +1,3 @@
-SET SERVEROUTPUT ON;
-
 ------------------------------------------------------------
 -- TUTOR passa a guardar a clinica que fez o pre-cadastro dele.
 -- Sem isso, um tutor recem-ativado que ainda nao tem nenhum PET
