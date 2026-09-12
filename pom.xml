@@ -50,7 +50,9 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>runtime</scope>
+            <!-- Só usado pelo profile de teste (src/test/resources) - nunca
+                 entra no runtime da aplicação de verdade, que é Oracle-only. -->
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
