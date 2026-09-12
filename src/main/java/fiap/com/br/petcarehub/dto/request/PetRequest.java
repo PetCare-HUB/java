@@ -9,13 +9,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record PetRequest(
-        @NotBlank @Size(max = 100) String nome,
+        @NotBlank @Size(max = 80) String nome,
         @NotNull EspeciePet especie,
-        @Size(max = 100) String raca,
+        @Size(max = 80) String raca,
         @PastOrPresent @MaxAge(25) LocalDate dataNascimento,
-        @Positive BigDecimal pesoKg,
+        @NotNull @Positive BigDecimal pesoKg,
         SexoPet sexo,
-        @Size(max = 500) String condicoesCronicas,
+        @Size(max = 300) String condicoesCronicas,
         Boolean ativo,
         @NotNull Long tutorId,
         @NotNull Long clinicaId

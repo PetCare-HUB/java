@@ -12,6 +12,8 @@ public interface PetRepository extends JpaRepository<Pet, Long>, JpaSpecificatio
 
     Page<Pet> findByTutorId(Long tutorId, Pageable pageable);
 
+    Page<Pet> findByTutorIdAndNomeContainingIgnoreCase(Long tutorId, String nome, Pageable pageable);
+
     long countByClinicaId(Long clinicaId);
 
     long countByClinicaIdAndAtivoTrue(Long clinicaId);

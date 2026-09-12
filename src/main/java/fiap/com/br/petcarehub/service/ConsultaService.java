@@ -89,11 +89,13 @@ public class ConsultaService {
 
     @Transactional(readOnly = true)
     public Page<ConsultaResponse> buscarPorPet(Long petId, Pageable pageable) {
+        petService.findEntityByIdAutorizado(petId);
         return repository.findByPetId(petId, pageable).map(DtoMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
     public List<ConsultaResponse> ultimasPorPet(Long petId) {
+        petService.findEntityByIdAutorizado(petId);
         return repository.findTop10ByPetIdOrderByDataConsultaDesc(petId).stream().map(DtoMapper::toResponse).toList();
     }
 }

@@ -43,7 +43,7 @@ public class AlertaSaudeService {
 
     @Transactional(readOnly = true)
     public List<AlertaSaudeResponse> alertasAtivosDoPet(Long petId) {
-        petService.findEntityById(petId);
+        petService.findEntityByIdAutorizado(petId);
         return repository.findByPetIdAndResolvidoFalseOrderByDataAlertaDesc(petId).stream()
                 .map(DtoMapper::toResponse).toList();
     }
@@ -59,7 +59,7 @@ public class AlertaSaudeService {
     @Transactional
     public AlertaSaude criarInterno(Long petId, TipoAlerta tipo, NivelAlerta nivel, String mensagem,
                                     BigDecimal valorDetectado, BigDecimal limiteReferencia) {
-        Pet pet = petService.findEntityById(petId);
+        Pet pet = petService.findEntityByIdAutorizado(petId);
         AlertaSaude alerta = AlertaSaude.builder()
                 .pet(pet)
                 .tipo(tipo)
@@ -93,6 +93,7 @@ public class AlertaSaudeService {
 
     @Transactional(readOnly = true)
     public List<AlertaSaudeResponse> ultimosPorPet(Long petId) {
+        petService.findEntityByIdAutorizado(petId);
         return repository.findTop10ByPetIdOrderByDataAlertaDesc(petId).stream()
                 .map(DtoMapper::toResponse).toList();
     }

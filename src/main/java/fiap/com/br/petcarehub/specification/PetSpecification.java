@@ -18,10 +18,17 @@ public class PetSpecification {
             String raca,
             Long clinicaId,
             Integer scoreMin,
-            Integer scoreMax
+            Integer scoreMax,
+            Long tutorId
     ) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
+
+            // Tutor só busca entre os próprios pets - não vem de parâmetro do
+            // cliente, e sim do JWT autenticado (ver PetService.buscarComFiltros).
+            if (tutorId != null) {
+                predicates.add(cb.equal(root.get("tutor").get("id"), tutorId));
+            }
 
             if (especie != null) {
                 predicates.add(cb.equal(root.get("especie"), especie));

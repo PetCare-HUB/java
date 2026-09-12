@@ -27,7 +27,7 @@ public class LeituraIotService {
 
     @Transactional
     public LeituraColeiraResponse registrarColeira(LeituraColeiraRequest request) {
-        Pet pet = petService.findEntityById(request.petId());
+        Pet pet = petService.findEntityByIdAutorizado(request.petId());
         LeituraColeira leitura = LeituraColeira.builder()
                 .pet(pet)
                 .statusAtividade(request.statusAtividade())
@@ -52,7 +52,7 @@ public class LeituraIotService {
 
     @Transactional
     public LeituraComedouroResponse registrarComedouro(LeituraComedouroRequest request) {
-        Pet pet = petService.findEntityById(request.petId());
+        Pet pet = petService.findEntityByIdAutorizado(request.petId());
         LeituraComedouro leitura = LeituraComedouro.builder()
                 .pet(pet)
                 .nivelRacaoPct(request.nivelRacaoPct())
@@ -87,7 +87,7 @@ public class LeituraIotService {
 
     @Transactional
     public LeituraAmbienteResponse registrarAmbiente(LeituraAmbienteRequest request) {
-        Pet pet = petService.findEntityById(request.petId());
+        Pet pet = petService.findEntityByIdAutorizado(request.petId());
         LeituraAmbiente leitura = LeituraAmbiente.builder()
                 .pet(pet)
                 .temperaturaAmbiente(request.temperaturaAmbiente())
@@ -137,37 +137,40 @@ public class LeituraIotService {
 
     @Transactional(readOnly = true)
     public List<LeituraColeiraResponse> buscarColeira(Long petId, LocalDateTime de, LocalDateTime ate) {
-        petService.findEntityById(petId);
+        petService.findEntityByIdAutorizado(petId);
         return leituraColeiraRepository.findByPetIdAndTimestampLeituraBetweenOrderByTimestampLeituraDesc(petId, ajustarDe(de), ajustarAte(ate))
                 .stream().map(DtoMapper::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public List<LeituraComedouroResponse> buscarComedouro(Long petId, LocalDateTime de, LocalDateTime ate) {
-        petService.findEntityById(petId);
+        petService.findEntityByIdAutorizado(petId);
         return leituraComedouroRepository.findByPetIdAndTimestampLeituraBetweenOrderByTimestampLeituraDesc(petId, ajustarDe(de), ajustarAte(ate))
                 .stream().map(DtoMapper::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public List<LeituraAmbienteResponse> buscarAmbiente(Long petId, LocalDateTime de, LocalDateTime ate) {
-        petService.findEntityById(petId);
+        petService.findEntityByIdAutorizado(petId);
         return leituraAmbienteRepository.findByPetIdAndTimestampLeituraBetweenOrderByTimestampLeituraDesc(petId, ajustarDe(de), ajustarAte(ate))
                 .stream().map(DtoMapper::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public List<LeituraColeiraResponse> ultimasColeira(Long petId) {
+        petService.findEntityByIdAutorizado(petId);
         return leituraColeiraRepository.findTop10ByPetIdOrderByTimestampLeituraDesc(petId).stream().map(DtoMapper::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public List<LeituraComedouroResponse> ultimasComedouro(Long petId) {
+        petService.findEntityByIdAutorizado(petId);
         return leituraComedouroRepository.findTop10ByPetIdOrderByTimestampLeituraDesc(petId).stream().map(DtoMapper::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
     public List<LeituraAmbienteResponse> ultimasAmbiente(Long petId) {
+        petService.findEntityByIdAutorizado(petId);
         return leituraAmbienteRepository.findTop10ByPetIdOrderByTimestampLeituraDesc(petId).stream().map(DtoMapper::toResponse).toList();
     }
 

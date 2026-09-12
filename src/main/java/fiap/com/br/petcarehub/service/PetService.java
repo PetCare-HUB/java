@@ -48,7 +48,20 @@ public class PetService {
 
     @Transactional(readOnly = true)
     public PetResponse buscarPorId(Long id) {
-        return DtoMapper.toResponse(findEntityById(id));
+        return DtoMapper.toResponse(findEntityByIdAutorizado(id));
+    }
+
+    // Igual findEntityById, mas também garante que um TUTOR só acessa o
+    // próprio pet. Fica fora do @Cacheable de propósito: o cache de
+    // findEntityById é só pela entidade (não muda por quem está pedindo),
+    // então a checagem de dono precisa rodar em toda chamada, cache ou não -
+    // senão um tutor B poderia reaproveitar o cache aquecido pelo tutor A
+    // e pular a validação.
+    @Transactional(readOnly = true)
+    public Pet findEntityByIdAutorizado(Long id) {
+        Pet pet = findEntityById(id);
+        verificarPermissao(pet);
+        return pet;
     }
 
     @CacheEvict(value = {"pets", "scores"}, allEntries = true)
@@ -79,8 +92,7 @@ public class PetService {
     @CacheEvict(value = {"pets", "scores"}, key = "#id")
     @Transactional
     public PetResponse atualizar(Long id, PetRequest request) {
-        Pet pet = findEntityById(id);
-        verificarPermissao(pet);
+        Pet pet = findEntityByIdAutorizado(id);
         Clinica clinica = clinicaService.findEntityById(request.clinicaId());
 
         pet.setNome(request.nome());
@@ -101,8 +113,7 @@ public class PetService {
     @CacheEvict(value = {"pets", "scores"}, key = "#id")
     @Transactional
     public void deletar(Long id) {
-        Pet pet = findEntityById(id);
-        verificarPermissao(pet);
+        Pet pet = findEntityByIdAutorizado(id);
         repository.delete(pet);
     }
 
@@ -114,6 +125,10 @@ public class PetService {
 
     @Transactional(readOnly = true)
     public Page<PetResponse> buscarPorNome(String nome, Pageable pageable) {
+        if (CurrentUser.isTutor()) {
+            return repository.findByTutorIdAndNomeContainingIgnoreCase(CurrentUser.tutorId(), nome, pageable)
+                    .map(DtoMapper::toResponse);
+        }
         return repository.findByNomeContainingIgnoreCase(nome, pageable)
                 .map(DtoMapper::toResponse);
     }
@@ -127,7 +142,8 @@ public class PetService {
             Integer scoreMax,
             Pageable pageable
     ) {
-        var spec = PetSpecification.filtrar(especie, raca, clinicaId, scoreMin, scoreMax);
+        Long tutorId = CurrentUser.isTutor() ? CurrentUser.tutorId() : null;
+        var spec = PetSpecification.filtrar(especie, raca, clinicaId, scoreMin, scoreMax, tutorId);
         return repository.findAll(spec, pageable).map(DtoMapper::toResponse);
     }
 

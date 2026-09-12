@@ -47,7 +47,7 @@ A camada de visualização do ecossistema PetCare Hub é composta por uma aplica
 
 ## 🔐 Spring Security & Controle de Acesso (RBAC)
 
-A aplicação utiliza arquitetura de autenticação stateless baseada em **JWT (JSON Web Tokens)** assinados com par de chaves **RSA (chave pública e privada em `src/main/resources/Keys/`)**.
+A aplicação utiliza arquitetura de autenticação stateless baseada em **JWT (JSON Web Tokens)** assinados com um par de chaves **RSA** (2048-bit). As chaves não são versionadas no repositório — cada ambiente aponta pra elas via as variáveis `RSA_PUBLIC_KEY`/`RSA_PRIVATE_KEY` (veja [Gere o par de chaves RSA](#1-gere-o-par-de-chaves-rsa-uma-única-vez)).
 
 ```mermaid
 sequenceDiagram
@@ -176,8 +176,8 @@ graph TD
    - Utiliza `@Cacheable(value = "protocolos")` com expiração de 10 minutos para máxima eficiência de leitura.
 2. **Timeline Longitudinal Unificada**:
    - Endpoint `/pets/{id}/timeline` consolida consultas veterinárias, eventos preventivos realizados/pendentes e histórico de alertas clínicos em ordem cronológica reversa, oferecendo visão 360° do histórico do animal.
-3. **Plano Preventivo Personalizado**:
-   - Endpoint `/pets/{id}/plano-preventivo` cruza a idade atual do animal com os protocolos cadastrados para gerar automaticamente os próximos eventos recomendados.
+3. **Plano Preventivo do Pet**:
+   - Endpoint `/pets/{id}/plano-preventivo` lista os eventos preventivos já cadastrados pro pet (pendentes e realizados), ordenados por data prevista. **Não há geração automática** a partir da idade do pet + `PROTOCOLO_PREVENTIVO` ainda — cada evento precisa ser criado explicitamente via `POST /eventos-preventivos`.
 
 ---
 
@@ -259,7 +259,7 @@ No Windows (PowerShell / CMD):
 mvnw.cmd clean spring-boot:run
 ```
 
-O Flyway executará automaticamente as migrações `V1` a `V8` no banco Oracle.
+O Flyway executará automaticamente as migrações `V1` a `V9` no banco Oracle.
 
 - **API Base**: `http://localhost:8080`
 - **Swagger UI (Frontend Interativo)**: `http://localhost:8080/swagger-ui.html`
@@ -306,7 +306,7 @@ O Flyway executará automaticamente as migrações `V1` a `V8` no banco Oracle.
 | `POST` | `/pets/{id}/score-saude/calcular` | Autenticado | Força recálculo algorítmico do score. |
 | `GET` | `/pets/{id}/score-saude/historico` | Autenticado | Histórico de evolução do score do pet. |
 | `GET` | `/pets/{id}/timeline` | Autenticado | Timeline longitudinal consolidada do animal. |
-| `GET` | `/pets/{id}/plano-preventivo` | Autenticado | Plano preventivo sugerido com base nos protocolos. |
+| `GET` | `/pets/{id}/plano-preventivo` | Autenticado | Lista os eventos preventivos já cadastrados pro pet (sem geração automática). |
 | `GET` | `/pets/{id}/alertas/ativos` | Autenticado | Lista alertas clínicos pendentes de resolução. |
 
 ### 📡 Telemetria IoT (`/leituras`)
@@ -396,7 +396,7 @@ O Flyway executará automaticamente as migrações `V1` a `V8` no banco Oracle.
   "sexo": "M",
   "condicoesCronicas": "Tendência a sobrepeso",
   "ativo": true,
-  "tutoresId": 1,
+  "tutorId": 1,
   "clinicaId": 1
 }
 ```

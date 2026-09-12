@@ -35,7 +35,7 @@ public class ScoreSaudeService {
     @Cacheable(value = "scores", key = "#petId")
     @Transactional
     public ScoreSaudeResponse scoreAtual(Long petId) {
-        petService.findEntityById(petId);
+        petService.findEntityByIdAutorizado(petId);
         return repository.findTopByPetIdOrderByDataCalculoDesc(petId)
                 .map(DtoMapper::toResponse)
                 .orElseGet(() -> calcular(petId));
@@ -44,7 +44,7 @@ public class ScoreSaudeService {
     @CacheEvict(value = "scores", key = "#petId")
     @Transactional
     public ScoreSaudeResponse calcular(Long petId) {
-        Pet pet = petService.findEntityById(petId);
+        Pet pet = petService.findEntityByIdAutorizado(petId);
 
         int score = 100;
         int scoreAtividade = 100;
@@ -154,7 +154,7 @@ public class ScoreSaudeService {
 
     @Transactional(readOnly = true)
     public java.util.List<ScoreSaudeResponse> historico(Long petId) {
-        petService.findEntityById(petId);
+        petService.findEntityByIdAutorizado(petId);
         return repository.findTop10ByPetIdOrderByDataCalculoDesc(petId).stream().map(DtoMapper::toResponse).toList();
     }
 }

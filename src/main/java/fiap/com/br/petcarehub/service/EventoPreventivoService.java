@@ -26,7 +26,7 @@ public class EventoPreventivoService {
 
     @Transactional(readOnly = true)
     public List<EventoPreventivoResponse> planoDoPet(Long petId) {
-        petService.findEntityById(petId);
+        petService.findEntityByIdAutorizado(petId);
 
         return repository.findByPetIdOrderByDataPrevistaAsc(petId)
                 .stream()
@@ -46,10 +46,7 @@ public class EventoPreventivoService {
     @Transactional
     public EventoPreventivoResponse criar(EventoPreventivoRequest request) {
 
-        Pet pet = petService.findEntityById(request.petId());
-        if (CurrentUser.isTutor() && !pet.getTutor().getId().equals(CurrentUser.tutorId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Você só pode criar lembretes para os próprios pets.");
-        }
+        Pet pet = petService.findEntityByIdAutorizado(request.petId());
 
         EventoPreventivo evento = EventoPreventivo.builder()
                 .pet(pet)
