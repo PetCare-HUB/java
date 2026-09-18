@@ -38,9 +38,25 @@ public class ScoreSaudeService {
     @Transactional
     public ScoreSaudeResponse scoreAtual(Long petId) {
         petService.findEntityByIdAutorizado(petId);
-        return repository.findTopByPetIdOrderByDataCalculoDesc(petId)
-                .map(DtoMapper::toResponse)
-                .orElseGet(() -> calcular(petId));
+        Optional<ScoreSaude> ultimoScore = repository.findTopByPetIdOrderByDataCalculoDesc(petId);
+        if (ultimoScore.isEmpty() || existeLeituraMaisRecenteQue(petId, ultimoScore.get().getDataCalculo())) {
+            return calcular(petId);
+        }
+        return DtoMapper.toResponse(ultimoScore.get());
+    }
+
+    // O score só era recalculado quando ainda não existia nenhum score salvo
+    // para o pet (orElseGet antigo). Isso deixava o GET /score-saude devolvendo
+    // sempre o mesmo valor congelado após o primeiro cálculo, mesmo com leituras
+    // IoT novas chegando depois. Agora comparamos a data do último score com a
+    // leitura mais recente de cada sensor e só recalculamos quando há dado novo.
+    private boolean existeLeituraMaisRecenteQue(Long petId, LocalDateTime dataCalculo) {
+        return leituraColeiraRepository.findTopByPetIdOrderByTimestampLeituraDesc(petId)
+                .map(l -> l.getTimestampLeitura().isAfter(dataCalculo)).orElse(false)
+                || leituraComedouroRepository.findTopByPetIdOrderByTimestampLeituraDesc(petId)
+                .map(l -> l.getTimestampLeitura().isAfter(dataCalculo)).orElse(false)
+                || leituraAmbienteRepository.findTopByPetIdOrderByTimestampLeituraDesc(petId)
+                .map(l -> l.getTimestampLeitura().isAfter(dataCalculo)).orElse(false);
     }
 
     @CacheEvict(value = "scores", key = "#petId")
