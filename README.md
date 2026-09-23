@@ -9,6 +9,12 @@
   <img src="https://img.shields.io/badge/Frontend-Mobile%20App-purple?style=for-the-badge&logo=react" alt="Mobile App" />
   <img src="https://img.shields.io/badge/Swagger-OpenAPI%203.0-green?style=for-the-badge&logo=swagger" alt="Swagger" />
 </p>
+---
+
+## 🌐 Aplicação em Produção
+A API do PetCare Hub está disponível em ambiente de produção:
+- **Aplicação:** https://petcare-hub-gokt.onrender.com
+- **Swagger:** https://petcare-hub-gokt.onrender.com/swagger-ui/index.html
 
 ---
 
@@ -28,6 +34,57 @@ A camada de visualização do ecossistema PetCare Hub é composta por uma aplica
 > **[https://github.com/PetCare-HUB/Mobile](https://github.com/PetCare-HUB/Mobile)**
 
 
+
+---
+
+## 🔗 Integração Multidisciplinar
+
+### Java Advanced
+- API REST com Spring Boot
+- Spring Security
+- JWT
+- Flyway
+- JPA/Hibernate
+- Bean Validation
+- Tratamento global de exceções
+- Integração com banco Oracle
+
+### Mobile Application Development
+O aplicativo mobile foi desenvolvido utilizando React Native/Expo e realiza comunicação HTTP com a API Java.
+
+### Mastering Relational and Non-Relational Database
+- Banco Oracle
+- Modelagem relacional
+- Procedures
+- Functions
+- Trigger de auditoria
+- Geração de dados JSON
+- Integração com MongoDB
+
+### DevOps Tools & Cloud Computing
+- GitHub
+- Azure DevOps
+- CI/CD
+- Deploy em ambiente de nuvem
+
+### Disruptive Architectures — IoT e IA
+- Coleira inteligente
+- Comedouro inteligente
+- Sensores
+- Processamento das leituras
+- Score de Saúde
+- Alertas
+- Componente de Inteligência Artificial
+
+---
+
+## 🔄 Principais Fluxos da Aplicação
+
+### 1. Autenticação e ativação da conta
+Clínica realiza o pré-cadastro do tutor → Tutor ativa sua conta → Define sua senha → Realiza login → API gera JWT → Usuário acessa os recursos autorizados.
+
+### 2. Monitoramento da saúde do pet
+Dispositivos IoT enviam leituras → API recebe e armazena os dados → Sistema processa as informações → Score de Saúde é calculado → Alertas são gerados quando necessário → Tutor acompanha as informações pelo aplicativo.
 
 ---
 
@@ -129,6 +186,7 @@ O versionamento do banco é gerenciado de forma incremental e idempotente pelo F
 | **V7** | `V7__fix_defaults_sequences.sql` | Ajustes de constraints, defaults e integridade referencial de sequences. |
 | **V8** | `V8__split_leitura_sensor.sql` | Especialização e segregação das leituras IoT em tabelas dedicadas: coleira, comedouro e ambiente para escalabilidade. |
 | **V9** | `V9__add_tutor_clinica.sql` | Adiciona `TUTOR.id_clinica` (FK pra `CLINICA`), preenchido no pré-cadastro. |
+| **V10** | `V10__add_medicamento_tipo_evento.sql` | Atualiza constraints de CHECK em EVENTO_PREVENTIVO e PROTOCOLO_PREVENTIVO para aceitar MEDICAMENTO. |
 
 > Os nomes seguem a convenção padrão do Flyway (`V<versão>__descricao.sql`, com `V` maiúsculo e underscore duplo) — só assim o Flyway reconhece e aplica as migrações automaticamente.
 
@@ -289,7 +347,7 @@ No Windows (PowerShell / CMD):
 mvnw.cmd clean spring-boot:run
 ```
 
-O Flyway executará automaticamente as migrações `V1` a `V9` no banco Oracle.
+O Flyway executará automaticamente as migrações `V1` a `V10` no banco Oracle.
 
 - **API Base**: `http://localhost:8080`
 - **Swagger UI (Frontend Interativo)**: `http://localhost:8080/swagger-ui.html`
@@ -462,6 +520,7 @@ src/main/java/fiap/com/br/petcarehub
 ├── entity                  # Entidades mapeadas para o banco
 ├── enums                   # Enums do domínio (Role, StatusAcesso, NivelAlerta, etc.)
 ├── exception               # GlobalExceptionHandler com ErroResponse padronizado
+├── keepalive               # Tarefa agendada para manter APi ativa
 ├── projection              # Projeções Spring Data JPA
 ├── repository              # Repositórios JPA com queries customizadas
 ├── service                 # Regras de negócio, Score de Saúde, Alertas e Cache
@@ -469,11 +528,25 @@ src/main/java/fiap/com/br/petcarehub
 └── validation              # Validações customizadas (@MaxAge / MaxAgeValidator)
 
 src/main/resources
-├── Keys                    # Par de chaves RSA (private_key.pem, public_key.pem)
-├── db/migration            # Migrações Flyway (v1 a v8 em SQL)
+├── Keys                    # Diretório local para chaves RSA (não versionado - as chaves devem ser geradas localmente conforme instruções acima para o projeto funcionar)
+├── db/migration            # Migrações Flyway (V1 a V10 em SQL)
 ├── application.properties  # Configurações do Spring Boot, Cache e Flyway
 └── logback-spring.xml      # Configuração de logs estruturados
 ```
+
+---
+
+## 📚 Documentação
+- [Repositório Mobile](https://github.com/PetCare-HUB/Mobile)
+- [Documentação do Banco](https://github.com/PetCare-HUB/Database)
+- [Documentação DevOps](https://github.com/PetCare-HUB/devops)
+- [Documentação IA / IoT](https://github.com/PetCare-HUB/Disruptive-Architectures)
+
+## 🌐 Links
+- **API:** https://petcare-hub-gokt.onrender.com
+- **Swagger:** https://petcare-hub-gokt.onrender.com/swagger-ui/index.html
+- **GitHub:** https://github.com/PetCare-HUB/java
+- **Vídeo:** (A ser adicionado)
 
 ---
 

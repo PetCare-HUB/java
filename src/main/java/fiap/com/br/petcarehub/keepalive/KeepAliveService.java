@@ -9,7 +9,7 @@ public class KeepAliveService {
 
     private final RestClient restClient = RestClient.create();
 
-    @Scheduled(fixedRate = 3000)
+    @Scheduled(fixedRate = 60000)
     public void keepAlive() {
 
         try {
@@ -17,8 +17,6 @@ public class KeepAliveService {
                     .uri("https://petcare-hub-gokt.onrender.com/keepalive")
                     .retrieve()
                     .toBodilessEntity();
-
-            System.out.println("GET /keepalive executado com sucesso.");
 
         } catch (Exception e) {
             System.err.println("Erro no Keep Alive: " + e.getMessage());
