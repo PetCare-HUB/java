@@ -5,6 +5,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -42,6 +43,29 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErroResponse> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest request) {
         return build(HttpStatus.CONFLICT, "Conflito de dados", "Registro viola uma regra de integridade ou unicidade", request.getRequestURI(), List.of());
+    }
+
+    /**
+     * O DaoAuthenticationProvider embrulha QUALQUER excecao vinda do
+     * loadUserByUsername (menos UsernameNotFoundException) dentro de um
+     * InternalAuthenticationServiceException. Sem este handler, as recusas
+     * deliberadas de login - conta pendente de ativacao, clinica em análise,
+     * acesso bloqueado - caiam no handleGeneric e viravam 500 com
+     * "Ocorreu um erro inesperado", escondendo do usuario o motivo real e
+     * poluindo o log como se fosse falha da aplicacao.
+     *
+     * Aqui desembrulhamos a causa: se foi uma recusa nossa, ela responde com
+     * o proprio status e mensagem; qualquer outra coisa continua sendo 500.
+     */
+    @ExceptionHandler(InternalAuthenticationServiceException.class)
+    public ResponseEntity<ErroResponse> handleAuthServiceException(
+            InternalAuthenticationServiceException ex,
+            HttpServletRequest request
+    ) {
+        if (ex.getCause() instanceof ResponseStatusException causa) {
+            return handleResponseStatus(causa, request);
+        }
+        return handleGeneric(ex, request);
     }
 
     @ExceptionHandler(Exception.class)
