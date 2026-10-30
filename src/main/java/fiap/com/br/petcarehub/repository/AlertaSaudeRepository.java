@@ -2,6 +2,7 @@ package fiap.com.br.petcarehub.repository;
 
 import fiap.com.br.petcarehub.entity.AlertaSaude;
 import fiap.com.br.petcarehub.enums.NivelAlerta;
+import fiap.com.br.petcarehub.enums.TipoAlerta;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -9,10 +10,16 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface AlertaSaudeRepository extends JpaRepository<AlertaSaude, Long>, JpaSpecificationExecutor<AlertaSaude> {
 
     List<AlertaSaude> findByPetIdAndResolvidoFalseOrderByDataAlertaDesc(Long petId);
+
+    // Alerta aberto do mesmo tipo para o mesmo pet: usado para atualizar em vez
+    // de empilhar duplicatas. "Pet sedentário" é UM fato, não um por leitura.
+    Optional<AlertaSaude> findTopByPetIdAndTipoAndResolvidoFalseOrderByDataAlertaDesc(
+            Long petId, TipoAlerta tipo);
 
     List<AlertaSaude> findTop10ByPetIdOrderByDataAlertaDesc(Long petId);
 

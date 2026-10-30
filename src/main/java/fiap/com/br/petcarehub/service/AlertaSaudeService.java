@@ -72,20 +72,41 @@ public class AlertaSaudeService {
         ));
     }
 
+    /**
+     * Abre um alerta, ou atualiza o que já estiver aberto para o mesmo pet e
+     * tipo.
+     *
+     * <p>Sem essa checagem, cada leitura IoT fora do limite criava uma linha
+     * nova: um pet sedentário com o simulador mandando leitura a cada 15
+     * minutos gerava quase cem alertas idênticos por dia, e a tela de alertas
+     * do app virava uma parede de repetição. Pior no score — o
+     * {@code scoreAtual} recalcula quando chega leitura nova, então só
+     * <i>consultar</i> o score de um pet doente abria outro SCORE_CRITICO.</p>
+     *
+     * <p>"Pet sedentário" é um fato, não um por leitura recebida. Quando o
+     * alerta já existe, o que muda é a leitura que o sustenta: atualizamos
+     * valor, limite, mensagem, nível e data, mantendo o mesmo id — assim quem
+     * já viu o alerta não recebe outro, e quem abrir vê o dado mais recente.</p>
+     */
     @Transactional
     public AlertaSaude criarInterno(Long petId, TipoAlerta tipo, NivelAlerta nivel, String mensagem,
                                     BigDecimal valorDetectado, BigDecimal limiteReferencia) {
         Pet pet = petService.findEntityByIdAutorizado(petId);
-        AlertaSaude alerta = AlertaSaude.builder()
-                .pet(pet)
-                .tipo(tipo)
-                .nivel(nivel)
-                .mensagem(mensagem)
-                .valorDetectado(valorDetectado)
-                .limiteReferencia(limiteReferencia)
-                .resolvido(false)
-                .dataAlerta(LocalDateTime.now())
-                .build();
+
+        AlertaSaude alerta = repository
+                .findTopByPetIdAndTipoAndResolvidoFalseOrderByDataAlertaDesc(petId, tipo)
+                .orElseGet(() -> AlertaSaude.builder()
+                        .pet(pet)
+                        .tipo(tipo)
+                        .resolvido(false)
+                        .build());
+
+        alerta.setNivel(nivel);
+        alerta.setMensagem(mensagem);
+        alerta.setValorDetectado(valorDetectado);
+        alerta.setLimiteReferencia(limiteReferencia);
+        alerta.setDataAlerta(LocalDateTime.now());
+
         return repository.save(alerta);
     }
     @Transactional
