@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,7 @@ public class ProtocoloPreventivoController {
 
     @GetMapping
     @Operation(summary = "Listar protocolos preventivos")
-    public PageResponse<ProtocoloPreventivoResponse> listar(@PageableDefault(size = 10, sort = "idadeMesesRecomendada", direction = Sort.Direction.ASC) Pageable pageable) {
+    public PageResponse<ProtocoloPreventivoResponse> listar(@ParameterObject @PageableDefault(size = 10, sort = "idadeMesesRecomendada", direction = Sort.Direction.ASC) Pageable pageable) {
         return new PageResponse<>(service.listar(pageable));
     }
 

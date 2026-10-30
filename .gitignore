@@ -34,3 +34,5 @@ build/
 
 # JWT RSA keys
 src/main/resources/Keys/
+# Logs gerados em runtime (logback-spring.xml)
+logs/

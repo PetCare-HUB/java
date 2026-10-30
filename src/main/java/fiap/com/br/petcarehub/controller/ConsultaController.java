@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class ConsultaController {
 
     @GetMapping
     @Operation(summary = "Listar consultas")
-    public PageResponse<ConsultaResponse> listar(@PageableDefault(size = 10, sort = "dataConsulta", direction = Sort.Direction.DESC) Pageable pageable) {
+    public PageResponse<ConsultaResponse> listar(@ParameterObject @PageableDefault(size = 10, sort = "dataConsulta", direction = Sort.Direction.DESC) Pageable pageable) {
         return new PageResponse<>(service.listar(pageable));
     }
 

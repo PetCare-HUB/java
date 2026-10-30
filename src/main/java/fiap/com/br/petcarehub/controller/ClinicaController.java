@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,7 @@ public class ClinicaController {
     @GetMapping
     @Operation(summary = "Listar clínicas", description = "Lista clínicas com paginação e ordenação.")
     public PageResponse<ClinicaResponse> listar(
-            @PageableDefault(size = 10, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 10, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
         return new PageResponse<>(service.listar(pageable));
     }
 
@@ -44,7 +45,7 @@ public class ClinicaController {
     @Operation(summary = "Buscar clínicas por nome")
     public PageResponse<ClinicaResponse> buscarPorNome(
             @RequestParam String nome,
-            @PageableDefault(size = 10, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 10, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
         return new PageResponse<>(service.buscarPorNome(nome, pageable));
     }
 

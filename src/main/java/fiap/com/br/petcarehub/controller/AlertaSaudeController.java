@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class AlertaSaudeController {
             @RequestParam(required = false) Long petId,
             @RequestParam(required = false) TipoAlerta tipo,
             @RequestParam(required = false) Boolean resolvido,
-            @PageableDefault(size = 10, sort = "dataAlerta", direction = Sort.Direction.DESC) Pageable pageable
+            @ParameterObject @PageableDefault(size = 10, sort = "dataAlerta", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return new PageResponse<>(service.buscar(petId, tipo, resolvido, pageable));
     }

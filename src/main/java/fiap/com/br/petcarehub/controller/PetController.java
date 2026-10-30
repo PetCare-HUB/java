@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +34,7 @@ public class PetController {
 
     @GetMapping
     @Operation(summary = "Listar pets", description = "Lista pets com paginação e ordenação.")
-    public PageResponse<PetResponse> listar(@PageableDefault(size = 10, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
+    public PageResponse<PetResponse> listar(@ParameterObject @PageableDefault(size = 10, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable) {
         return new PageResponse<>(service.listar(pageable));
     }
 
@@ -76,7 +77,7 @@ public class PetController {
             @RequestParam(required = false) Long clinicaId,
             @RequestParam(required = false) Integer scoreMin,
             @RequestParam(required = false) Integer scoreMax,
-            @PageableDefault(size = 10, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable
+            @ParameterObject @PageableDefault(size = 10, sort = "nome", direction = Sort.Direction.ASC) Pageable pageable
     ) {
         return new PageResponse<>(service.buscarComFiltros(especie, raca, clinicaId, scoreMin, scoreMax, pageable));
     }
