@@ -4,6 +4,7 @@ import fiap.com.br.petcarehub.dto.response.ScoreSaudeResponse;
 import fiap.com.br.petcarehub.entity.*;
 import fiap.com.br.petcarehub.enums.CategoriaScore;
 import fiap.com.br.petcarehub.enums.NivelAlerta;
+import fiap.com.br.petcarehub.enums.StatusAtividade;
 import fiap.com.br.petcarehub.enums.TipoAlerta;
 import fiap.com.br.petcarehub.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,22 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ScoreSaudeService {
 
+    /** Janela da análise de atividade — a mesma variacao_atividade_7d da especificação. */
+    private static final int DIAS_JANELA_ATIVIDADE = 7;
+
+    /** Abaixo disso a amostra é pequena demais para concluir qualquer coisa. */
+    private static final int MINIMO_LEITURAS_JANELA = 5;
+
+    /** Todo pet dorme: só acima desta fatia de leituras sedentárias há sinal. */
+    private static final int LIMITE_SEDENTARISMO_PCT = 40;
+
+    /** Pesos que a especificação reserva para cada componente do score. */
+    private static final int PESO_ATIVIDADE = 25;
+    private static final int PESO_CONSULTA = 15;
+
+    /** A partir daqui a continuidade do cuidado começa a pesar na nota. */
+    private static final int DIAS_CONSULTA_LIMITE = 180;
+
     private final ScoreSaudeRepository repository;
     private final PetService petService;
     private final LeituraColeiraRepository leituraColeiraRepository;
@@ -30,6 +47,7 @@ public class ScoreSaudeService {
     private final ConsultaRepository consultaRepository;
     private final AlertaSaudeRepository alertaSaudeRepository;
     private final AlertaSaudeService alertaSaudeService;
+    private final PlSqlRepository plSqlRepository;
 
     // Sem @Cacheable de propósito: o cache era só por petId, e um Cacheable
     // nesse próprio método faria a checagem de dono (dentro do método) ser
@@ -73,11 +91,50 @@ public class ScoreSaudeService {
 
         StringBuilder observacao = new StringBuilder("Score calculado com base em leituras IoT, consultas e alertas. ");
 
+        // ATIVIDADE FÍSICA — sensor MPU6050 da coleira.
+        //
+        // Olha a PROPORÇÃO de leituras SEDENTARIO na janela de 7 dias, e não a
+        // última leitura. É o diferencial que o produto promete ("dormindo
+        // demais = risco") e ele só aparece numa janela: uma leitura isolada de
+        // pet parado é só um pet cochilando; uma semana inteira parada é sinal
+        // clínico. É também o que a especificação pede como variacao_atividade_7d.
+        LocalDateTime inicioJanela = LocalDateTime.now().minusDays(DIAS_JANELA_ATIVIDADE);
+        long leiturasNaJanela = leituraColeiraRepository
+                .countByPetIdAndTimestampLeituraAfter(petId, inicioJanela);
+
+        if (leiturasNaJanela < MINIMO_LEITURAS_JANELA) {
+            observacao.append("Poucas leituras da coleira nos últimos ")
+                    .append(DIAS_JANELA_ATIVIDADE)
+                    .append(" dias para avaliar a atividade. ");
+        } else {
+            long sedentarias = leituraColeiraRepository
+                    .countByPetIdAndStatusAtividadeAndTimestampLeituraAfter(
+                            petId, StatusAtividade.SEDENTARIO, inicioJanela);
+            int pctSedentario = (int) Math.round(100.0 * sedentarias / leiturasNaJanela);
+
+            // Até o limite é normal: todo pet dorme boa parte do dia. Acima
+            // dele a penalidade cresce proporcional ao excedente, até consumir
+            // os 25 pontos que a especificação reserva para atividade.
+            if (pctSedentario > LIMITE_SEDENTARISMO_PCT) {
+                int excedente = pctSedentario - LIMITE_SEDENTARISMO_PCT;
+                int penalidade = Math.min(PESO_ATIVIDADE,
+                        excedente * PESO_ATIVIDADE / (100 - LIMITE_SEDENTARISMO_PCT));
+                score -= penalidade;
+                scoreAtividade = 100 - (penalidade * 100 / PESO_ATIVIDADE);
+                observacao.append("Pet sedentário em ").append(pctSedentario)
+                        .append("% das leituras dos últimos ").append(DIAS_JANELA_ATIVIDADE)
+                        .append(" dias. ");
+            }
+        }
+
+        // Bateria é saúde do DISPOSITIVO, não do pet. Penaliza o total, porque
+        // sem coleira carregada o monitoramento para de acontecer, mas fica
+        // fora do scoreAtividade — que o app e o dashboard exibem como
+        // "atividade do pet" e não pode significar "carga da coleira".
         Optional<LeituraColeira> coleira = leituraColeiraRepository.findTopByPetIdOrderByTimestampLeituraDesc(petId);
         if (coleira.isPresent() && coleira.get().getNivelBateria() < 20) {
-            score -= 20;
-            scoreAtividade -= 20;
-            observacao.append("Bateria da coleira abaixo de 20%. ");
+            score -= 5;
+            observacao.append("Bateria da coleira abaixo de 20% — o monitoramento pode ficar incompleto. ");
         }
 
         Optional<LeituraComedouro> comedouro = leituraComedouroRepository.findTopByPetIdOrderByTimestampLeituraDesc(petId);
@@ -114,18 +171,36 @@ public class ScoreSaudeService {
             }
         }
 
-        consultaRepository.findTop10ByPetIdOrderByDataConsultaDesc(petId).stream().findFirst().ifPresentOrElse(consulta -> {
-            long dias = Math.abs(Duration.between(consulta.getDataConsulta(), LocalDateTime.now()).toDays());
-            if (dias > 180) {
-                observacao.append("Última consulta há mais de 180 dias. ");
+        // CONTINUIDADE DO CUIDADO — dias desde a última consulta.
+        // Antes isto só gerava texto e não mexia na nota, então o sub-score
+        // "consulta" não media consulta nenhuma.
+        Optional<Consulta> ultimaConsulta = consultaRepository
+                .findTopByPetIdOrderByDataConsultaDesc(petId);
+
+        if (ultimaConsulta.isEmpty()) {
+            score -= PESO_CONSULTA;
+            scoreConsulta = 0;
+            observacao.append("Pet ainda sem consulta registrada. ");
+        } else {
+            // Sem Math.abs: consulta com data futura é agendamento, não
+            // atraso — e mascarar o sinal esconderia dado inconsistente.
+            long dias = Duration.between(ultimaConsulta.get().getDataConsulta(), LocalDateTime.now()).toDays();
+            if (dias > DIAS_CONSULTA_LIMITE) {
+                long excedente = dias - DIAS_CONSULTA_LIMITE;
+                int penalidade = (int) Math.min(PESO_CONSULTA,
+                        excedente * PESO_CONSULTA / DIAS_CONSULTA_LIMITE);
+                score -= penalidade;
+                scoreConsulta = 100 - (penalidade * 100 / PESO_CONSULTA);
+                observacao.append("Última consulta há ").append(dias).append(" dias. ");
             }
-        }, () -> observacao.append("Pet ainda sem consulta registrada. "));
+        }
 
         long alertasGraves = alertaSaudeRepository.countByPetIdAndResolvidoFalseAndNivelIn(petId, java.util.List.of(NivelAlerta.ALTO, NivelAlerta.CRITICO));
         if (alertasGraves > 0) {
+            // Alerta grave é consequência dos sensores, não falta de consulta:
+            // desconta do total sem contaminar o sub-score de consulta.
             score -= 10;
-            scoreConsulta -= 10;
-            observacao.append("Existem alertas graves ativos. ");
+            observacao.append("Existem ").append(alertasGraves).append(" alerta(s) grave(s) ativo(s). ");
         }
 
         score = Math.max(0, Math.min(100, score));
@@ -168,6 +243,29 @@ public class ScoreSaudeService {
         if (score >= 80) return CategoriaScore.VERDE;
         if (score >= 50) return CategoriaScore.AMARELO;
         return CategoriaScore.VERMELHO;
+    }
+
+    /**
+     * Média do score no período, calculada pela function {@code FN_SCORE_MEDIO_PET}
+     * do Oracle — a mesma que a disciplina de Database entregou.
+     *
+     * <p>O cálculo fica no banco de propósito: é agregação sobre o histórico, e
+     * trazer todas as linhas para somar em Java seria desperdício de rede para
+     * chegar ao mesmo número. Devolve também a idade do pet em meses, de
+     * {@code FN_CALCULAR_IDADE_PET}, porque é o contexto que dá sentido à média
+     * (um filhote e um pet idoso não se comparam pelo mesmo padrão).</p>
+     */
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> mediaPeriodo(Long petId, int dias) {
+        petService.findEntityByIdAutorizado(petId);
+
+        java.util.Map<String, Object> resposta = new java.util.LinkedHashMap<>();
+        resposta.put("petId", petId);
+        resposta.put("periodoDias", dias);
+        resposta.put("scoreMedio", plSqlRepository.scoreMedio(petId, dias));
+        resposta.put("idadeMeses", plSqlRepository.idadeEmMeses(petId));
+        resposta.put("calculadoPor", "FN_SCORE_MEDIO_PET / FN_CALCULAR_IDADE_PET (Oracle PL/SQL)");
+        return resposta;
     }
 
     @Transactional(readOnly = true)

@@ -7,8 +7,10 @@ import fiap.com.br.petcarehub.enums.NivelAlerta;
 import fiap.com.br.petcarehub.enums.TipoAlerta;
 import fiap.com.br.petcarehub.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -24,17 +26,38 @@ public class LeituraIotService {
     private final LeituraColeiraRepository leituraColeiraRepository;
     private final LeituraComedouroRepository leituraComedouroRepository;
     private final LeituraAmbienteRepository leituraAmbienteRepository;
+    private final PlSqlRepository plSqlRepository;
 
+    /**
+     * A gravação da leitura da coleira passa pela procedure
+     * {@code PRC_INS_LEITURA_COLEIRA} do Oracle, e não por um save do JPA.
+     *
+     * <p>Não é cerimônia: a procedure carrega regra própria — valida o pet, usa a
+     * sequence e dispara o alerta de ATIVIDADE_BAIXA quando o status é SEDENTARIO,
+     * chamando {@code PRC_INS_ALERTA_SAUDE}. É a regra "dormindo demais = risco"
+     * morando no banco, junto do dado.</p>
+     *
+     * <p>Como a procedure trata exceção com {@code WHEN OTHERS} e só registra em
+     * LOG_ERROS, ela retorna normalmente mesmo quando falha. Por isso relemos a
+     * leitura depois de inserir: se não vier nada, a gravação não aconteceu e a
+     * requisição falha, em vez de responder sucesso para um dado que não existe.</p>
+     */
     @Transactional
     public LeituraColeiraResponse registrarColeira(LeituraColeiraRequest request) {
-        Pet pet = petService.findEntityByIdAutorizado(request.petId());
-        LeituraColeira leitura = LeituraColeira.builder()
-                .pet(pet)
-                .statusAtividade(request.statusAtividade())
-                .nivelBateria(request.nivelBateria())
-                .timestampLeitura(request.timestampLeitura() == null ? LocalDateTime.now() : request.timestampLeitura())
-                .build();
-        LeituraColeira salva = leituraColeiraRepository.save(leitura);
+        petService.findEntityByIdAutorizado(request.petId());
+
+        LocalDateTime momento = request.timestampLeitura() == null
+                ? LocalDateTime.now()
+                : request.timestampLeitura();
+
+        plSqlRepository.inserirLeituraColeira(
+                request.petId(), request.statusAtividade(), request.nivelBateria(), momento);
+
+        LeituraColeira salva = leituraColeiraRepository
+                .findTopByPetIdOrderByTimestampLeituraDesc(request.petId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "A leitura da coleira não foi gravada. Verifique a tabela LOG_ERROS."));
 
         if (request.nivelBateria() < 20) {
             alertaSaudeService.criarInterno(

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/pets")
@@ -98,6 +99,15 @@ public class PetController {
     @Operation(summary = "Histórico de score do pet")
     public List<ScoreSaudeResponse> historicoScore(@PathVariable Long id) {
         return scoreSaudeService.historico(id);
+    }
+
+    @GetMapping("/{id}/score-saude/media")
+    @Operation(summary = "Média do score no período",
+            description = "Calculada pela function FN_SCORE_MEDIO_PET, que roda no Oracle.")
+    public Map<String, Object> mediaScore(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "30") int dias) {
+        return scoreSaudeService.mediaPeriodo(id, dias);
     }
 
     @GetMapping("/{id}/alertas/ativos")
