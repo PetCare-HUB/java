@@ -61,14 +61,23 @@ public class PlSqlRepository {
 
     /** Média dos scores do pet no período, calculada por FN_SCORE_MEDIO_PET. */
     public Double scoreMedio(Long petId, int dias) {
-        return scoreMedioPet.executeFunction(Double.class, Map.of(
+        return paraDouble(scoreMedioPet.executeFunction(Number.class, Map.of(
                 "P_ID_PET", petId,
                 "P_DIAS", dias
-        ));
+        )));
     }
 
     /** Idade do pet em meses, calculada por FN_CALCULAR_IDADE_PET. */
     public Double idadeEmMeses(Long petId) {
-        return idadePet.executeFunction(Double.class, Map.of("P_ID_PET", petId));
+        return paraDouble(idadePet.executeFunction(Number.class, Map.of("P_ID_PET", petId)));
+    }
+
+    /**
+     * NUMBER do Oracle chega como BigDecimal, não como Double: pedir Double
+     * direto ao executeFunction estoura ClassCastException. Converter pelo
+     * Number cobre qualquer tipo numérico que o driver resolva devolver.
+     */
+    private static Double paraDouble(Number valor) {
+        return valor == null ? null : valor.doubleValue();
     }
 }
