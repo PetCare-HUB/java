@@ -529,7 +529,7 @@ src/main/java/fiap/com/br/petcarehub
 
 src/main/resources
 ├── Keys                    # Diretório local para chaves RSA (não versionado - as chaves devem ser geradas localmente conforme instruções acima para o projeto funcionar)
-├── db/migration            # Migrações Flyway (V1 a V10 em SQL)
+├── db/migration            # Migrações Flyway (V1 a V11 em SQL)
 ├── application.properties  # Configurações do Spring Boot, Cache e Flyway
 └── logback-spring.xml      # Configuração de logs estruturados
 ```
@@ -549,6 +549,40 @@ src/main/resources
 - **Vídeo:** (A ser adicionado)
 
 ---
+
+## Cadastro e acesso de clínicas
+
+Nenhuma clínica entra na rede sozinha: quem decide é um **admin da PetCare Hub**. Existem dois caminhos de entrada, e os dois passam por esse portão.
+
+### Caminho 1 — auto-cadastro (público)
+
+`POST /auth/cadastro-clinica` cria a clínica já com a senha dela, protegida por BCrypt. Se o e-mail ou CNPJ já estiver cadastrado, a API retorna `409` e não cria outro registro.
+
+O registro nasce com `statusAcesso: PRE_CADASTRADO` e **não autentica**: até ser aprovado, o login responde `403`. É por isso que o endpoint pode ser público — a solicitação criada não dá acesso a nada.
+
+### Caminho 2 — pré-cadastro pelo .NET
+
+Clínicas criadas pela API .NET nascem sem senha. Elas definem a senha em `POST /auth/ativar-clinica`, informando e-mail, CNPJ e o código de credenciamento. Configure `CLINIC_ACTIVATION_CODE` no ambiente com um valor aleatório de pelo menos 16 caracteres; sem essa variável a ativação fica desabilitada. Mantenha o código fora do repositório e não o envie em mensagens.
+
+Aqui não há aprovação posterior: possuir o código **já é** a autorização do admin, e exigir as duas coisas seriam dois portões para a mesma decisão. A ativação retorna o JWT direto.
+
+### Aprovação pelo admin
+
+| Rota | O que faz |
+|---|---|
+| `GET /admin/clinicas?status=PRE_CADASTRADO` | fila de quem aguarda aprovação |
+| `PUT /admin/clinicas/{id}/ativar` | libera o acesso da clínica |
+| `PUT /admin/clinicas/{id}/bloquear` | revoga o acesso sem apagar o cadastro nem o histórico |
+
+Todas exigem `role: ADMIN`.
+
+O primeiro admin é criado no boot a partir de `ADMIN_EMAIL` e `ADMIN_PASSWORD`. **Não existe senha padrão**: sem essas variáveis nenhum admin é criado e o `/admin/**` fica indisponível — uma credencial default versionada seria a conta mais privilegiada do sistema com senha pública.
+
+### Login
+
+Depois de aprovada, use `POST /auth/login` com o e-mail e a senha escolhida. A resposta de uma conta de clínica inclui `role: CLINICA` e `clinicaId` preenchido; a de um admin inclui `role: ADMIN` com `tutorId` e `clinicaId` nulos.
+
+Uma clínica autenticada só enxerga os próprios dados: `/clinicas/{id}` compara o `{id}` da URL com o `clinicaId` do token e responde `403` se forem diferentes. O admin passa por esse filtro, porque administrar a rede é justamente enxergar todas.
 
 ## 👥 Integrantes da Equipe
 

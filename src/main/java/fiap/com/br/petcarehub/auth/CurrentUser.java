@@ -28,6 +28,11 @@ public final class CurrentUser {
         return "CLINICA".equals(role());
     }
 
+    /** Admin da PetCare Hub: nao tem tutorId nem clinicaId, enxerga a rede toda. */
+    public static boolean isAdmin() {
+        return "ADMIN".equals(role());
+    }
+
     public static Long tutorId() {
         Object valor = jwt().getClaim("tutorId");
         return valor == null ? null : ((Number) valor).longValue();

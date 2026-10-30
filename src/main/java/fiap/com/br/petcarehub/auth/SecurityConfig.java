@@ -38,13 +38,28 @@ public class SecurityConfig {
         return http
                 .authorizeHttpRequests(auth -> auth
 
-                        // Rotas públicas
+                        // Rotas públicas.
+                        // /auth/cadastro-clinica fica aqui de propósito: ele só
+                        // cria uma solicitação PRE_CADASTRADO, que não autentica
+                        // em lugar nenhum até um admin aprovar (ver AuthService).
                         .requestMatchers(
                                 "/auth/**",
+                                // "/swagger-ui/**" NAO cobre "/swagger-ui.html":
+                                // sao caminhos diferentes, e e justamente esse que
+                                // springdoc.swagger-ui.path configura e o README manda
+                                // abrir. Sem a entrada abaixo ele responde 401 e a
+                                // pagina carrega em branco.
+                                "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/keepalive"
                         ).permitAll()
+
+                        // Apenas ADMIN da PetCare Hub (credenciamento da rede).
+                        // Vem antes de /clinicas/** porque é um prefixo próprio:
+                        // quem administra a plataforma não é uma clínica.
+                        .requestMatchers("/admin/**")
+                        .hasRole("ADMIN")
 
                         // Apenas CLINICA
                         .requestMatchers(HttpMethod.POST, "/tutor")

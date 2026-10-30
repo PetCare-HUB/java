@@ -1,5 +1,6 @@
 package fiap.com.br.petcarehub.entity;
 
+import fiap.com.br.petcarehub.enums.StatusAcesso;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -38,13 +39,23 @@ public class Clinica {
     @Column(name = "EMAIL", nullable = false, length = 150)
     private String email;
 
-    @NotBlank
     @Column(name = "senha_hash", length = 255)
     private String senha;
 
+    // Se a clinica pode autenticar. PRE_CADASTRADO = o registro existe
+    // (auto-cadastro ou pre-cadastro vindo do .NET) mas ainda nao foi
+    // aprovado por um admin da PetCare Hub. Separado de 'ativo', que e
+    // a flag operacional de negocio usada tambem pelo .NET.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_acesso", nullable = false)
+    private StatusAcesso statusAcesso;
+
+    // Guardado sempre normalizado (so digitos). A coluna no Oracle e
+    // VARCHAR2(14), entao CNPJ formatado estouraria ORA-12899 - quem
+    // recebe do cliente normaliza antes de montar a entidade.
     @NotBlank
-    @Size(max = 18)
-    @Column(name = "CNPJ", nullable = false, length = 18)
+    @Size(max = 14)
+    @Column(name = "CNPJ", nullable = false, length = 14)
     private String cnpj;
 
     @NotBlank

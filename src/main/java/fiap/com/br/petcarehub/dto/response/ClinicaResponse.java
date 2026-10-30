@@ -1,5 +1,7 @@
 package fiap.com.br.petcarehub.dto.response;
 
+import fiap.com.br.petcarehub.enums.StatusAcesso;
+
 public record ClinicaResponse(
         Long id,
         String nome,
@@ -7,5 +9,6 @@ public record ClinicaResponse(
         String cnpj,
         String endereco,
         String telefone,
-        char ativo
+        char ativo,
+        StatusAcesso statusAcesso
 ) {}

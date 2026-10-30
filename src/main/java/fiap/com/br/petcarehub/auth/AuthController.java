@@ -1,8 +1,11 @@
 package fiap.com.br.petcarehub.auth;
 
 import fiap.com.br.petcarehub.dto.request.AtivarContaRequest;
+import fiap.com.br.petcarehub.dto.request.AtivarClinicaRequest;
+import fiap.com.br.petcarehub.dto.request.CadastroClinicaRequest;
 import fiap.com.br.petcarehub.dto.request.LoginRequest;
 import fiap.com.br.petcarehub.dto.response.LoginResponse;
+import fiap.com.br.petcarehub.dto.response.ClinicaResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +21,18 @@ public class AuthController {
     public final AuthenticationManager authenticationManager;
     public final TokenService tokenService;
     private final AuthService authService;
+
+    @PostMapping("/cadastro-clinica")
+    public ResponseEntity<ClinicaResponse> cadastrarClinica(
+            @Valid @RequestBody CadastroClinicaRequest request
+    ) {
+        return ResponseEntity.status(201).body(authService.cadastrarClinica(request));
+    }
+
+    @PostMapping("/ativar-clinica")
+    public LoginResponse ativarClinica(@Valid @RequestBody AtivarClinicaRequest request) {
+        return authService.ativarClinica(request);
+    }
 
 
     @PostMapping("/ativar-conta")
