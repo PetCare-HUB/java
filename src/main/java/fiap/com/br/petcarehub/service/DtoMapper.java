@@ -3,6 +3,7 @@ package fiap.com.br.petcarehub.service;
 import fiap.com.br.petcarehub.dto.request.ClinicaRequest;
 import fiap.com.br.petcarehub.dto.response.*;
 import fiap.com.br.petcarehub.entity.*;
+import fiap.com.br.petcarehub.enums.StatusAcesso;
 
 public final class DtoMapper {
 
@@ -37,7 +38,8 @@ public final class DtoMapper {
                 clinica.getCnpj(),
                 clinica.getEndereco(),
                 clinica.getTelefone(),
-                clinica.getAtivo()
+                clinica.getAtivo(),
+                clinica.getStatusAcesso()
         );
     }
 
@@ -179,19 +181,33 @@ public final class DtoMapper {
         return Clinica.builder()
                 .nome(request.nome())
                 .email(request.email())
+                // A senha e sobrescrita com o hash pelo ClinicaService.criar.
                 .senha(request.senha())
-                .cnpj(request.cnpj())
+                .cnpj(normalizarCnpj(request.cnpj()))
                 .endereco(request.endereco())
                 .telefone(request.telefone())
+                // 'ativo' e NOT NULL com CHECK IN ('S','N'): sem isso o char
+                // fica em '\u0000' e o INSERT viola ck_clinica_ativo.
+                .ativo('S')
+                // Nenhuma clinica entra na rede sem passar pelo admin, venha
+                // de onde vier.
+                .statusAcesso(StatusAcesso.PRE_CADASTRADO)
                 .build();
     }
 
     public static void updateClinica(Clinica clinica, ClinicaRequest request) {
         if (request.nome() != null) {clinica.setNome(request.nome());}
         if (request.email() != null) {clinica.setEmail(request.email());}
-        if (request.senha() != null) {clinica.setSenha(request.senha());}
-        if (request.cnpj() != null) {clinica.setCnpj(request.cnpj());}
+        // Senha NAO entra aqui: o update generico gravava o valor em texto
+        // puro (sem passwordEncoder), o que corrompia o hash e derrubava o
+        // login da clinica. Troca de senha precisa de fluxo proprio.
+        if (request.cnpj() != null) {clinica.setCnpj(normalizarCnpj(request.cnpj()));}
         if (request.endereco() != null) {clinica.setEndereco(request.endereco());}
         if (request.telefone() != null) {clinica.setTelefone(request.telefone());}
+    }
+
+    /** A coluna CNPJ e VARCHAR2(14): formatado estoura ORA-12899. */
+    private static String normalizarCnpj(String cnpj) {
+        return cnpj == null ? null : cnpj.replaceAll("\\D", "");
     }
 }
