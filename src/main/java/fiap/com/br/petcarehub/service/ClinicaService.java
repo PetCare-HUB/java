@@ -4,6 +4,7 @@ import fiap.com.br.petcarehub.dto.request.ClinicaRequest;
 import fiap.com.br.petcarehub.dto.response.AlertaSaudeResponse;
 import fiap.com.br.petcarehub.dto.response.ClinicaResponse;
 import fiap.com.br.petcarehub.dto.response.PetResponse;
+import fiap.com.br.petcarehub.auth.CurrentUser;
 import fiap.com.br.petcarehub.entity.Clinica;
 import fiap.com.br.petcarehub.entity.ScoreSaude;
 import fiap.com.br.petcarehub.repository.*;
@@ -42,6 +43,7 @@ public class ClinicaService {
 
     public ClinicaResponse buscarPorId(Long id) {
         log.debug("Buscando clínica ID: {}", id);
+        garantirAcesso(id);
         Clinica clinica = findEntityById(id);
         return DtoMapper.toResponse(clinica);
     }
@@ -68,6 +70,7 @@ public class ClinicaService {
     @Transactional
     public ClinicaResponse atualizar(Long id, ClinicaRequest request) {
         log.info("Atualizando clínica ID: {}", id);
+        garantirAcesso(id);
         try {
             Clinica clinica = findEntityById(id);
             DtoMapper.updateClinica(clinica, request);
@@ -83,6 +86,7 @@ public class ClinicaService {
     @Transactional
     public void deletar(Long id) {
         log.info("Deletando clínica ID: {}", id);
+        garantirAcesso(id);
         try {
             findEntityById(id);
             repository.deleteById(id);
@@ -96,6 +100,7 @@ public class ClinicaService {
     public List<PetResponse> petEmRisco(Long clinicaId, String nivel) {
         log.info("Buscando pets da clínica {} - Nível: {}", clinicaId, nivel);
 
+        garantirAcesso(clinicaId);
         findEntityById(clinicaId);
 
         List<ScoreSaude> scores;
@@ -130,6 +135,7 @@ public class ClinicaService {
 
     public Map<String, Object> metricas(Long clinicaId, String periodo) {
         log.info("Calculando métricas da clínica ID: {} - Período: {}", clinicaId, periodo);
+        garantirAcesso(clinicaId);
         try {
             findEntityById(clinicaId);
 
@@ -173,6 +179,7 @@ public class ClinicaService {
 
     public List<?> agendaProximos30Dias(Long clinicaId) {
         log.info("Buscando agenda dos próximos 30 dias da clínica {}", clinicaId);
+        garantirAcesso(clinicaId);
         try {
             findEntityById(clinicaId);
 
@@ -193,6 +200,7 @@ public class ClinicaService {
 
     public List<AlertaSaudeResponse> alertasIotHoje(Long clinicaId) {
         log.info("Buscando alertas IoT de hoje da clínica {}", clinicaId);
+        garantirAcesso(clinicaId);
         try {
             findEntityById(clinicaId);
 
@@ -219,5 +227,26 @@ public class ClinicaService {
                     log.warn("Clínica não encontrada. ID: {}", id);
                     return new ResponseStatusException(HttpStatus.NOT_FOUND, "Clínica não encontrada");
                 });
+    }
+
+    /**
+     * Uma clinica so enxerga a si mesma. Sem isso, qualquer clinica
+     * autenticada lia metricas, carteira de pets e agenda de todas as
+     * outras so trocando o {id} da URL - o papel ROLE_CLINICA sozinho
+     * nao diz DE QUAL clinica o token e.
+     *
+     * O admin da PetCare Hub passa direto: administrar a rede e
+     * justamente enxergar todas.
+     */
+    private void garantirAcesso(Long clinicaId) {
+        if (CurrentUser.isAdmin()) {
+            return;
+        }
+        Long clinicaDoToken = CurrentUser.clinicaId();
+        if (clinicaDoToken == null || !clinicaDoToken.equals(clinicaId)) {
+            log.warn("Clínica {} tentou acessar dados da clínica {}", clinicaDoToken, clinicaId);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Você só tem acesso aos dados da sua própria clínica.");
+        }
     }
 }
