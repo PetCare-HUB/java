@@ -56,7 +56,7 @@ O aplicativo mobile foi desenvolvido utilizando React Native/Expo e realiza comu
 O banco **não é só o lugar onde esta API guarda linhas**: parte da regra de negócio roda em
 PL/SQL e é **chamada por esta aplicação** em tempo de requisição — uma procedure e duas functions
 entregues pela disciplina de Database. Os detalhes, com os endpoints que as acionam, estão em
-[Integração com o Banco — PL/SQL chamado pela aplicação](#-integração-com-o-banco--plsql-chamado-pela-aplicação).
+[Integração com o Banco — PL/SQL chamado pela aplicação](#️-integração-com-o-banco--plsql-chamado-pela-aplicação).
 
 - Banco Oracle 19c, schema compartilhado com a API .NET
 - Modelagem relacional (MER/DER) e evolução via Flyway
