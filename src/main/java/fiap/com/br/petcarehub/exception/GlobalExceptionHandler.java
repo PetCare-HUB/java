@@ -7,11 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -66,6 +69,30 @@ public class GlobalExceptionHandler {
             return handleResponseStatus(causa, request);
         }
         return handleGeneric(ex, request);
+    }
+
+    /**
+     * URL que não casa com nenhuma rota. Sem este handler caía no handleGeneric
+     * e virava 500 "Ocorreu um erro inesperado" — um simples erro de digitação
+     * na URL fazia a API parecer quebrada, e o log registrava como falha nossa.
+     */
+    @ExceptionHandler({NoResourceFoundException.class, NoHandlerFoundException.class})
+    public ResponseEntity<ErroResponse> handleRotaInexistente(Exception ex, HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, "Not Found",
+                "Rota não encontrada: " + request.getMethod() + " " + request.getRequestURI(),
+                request.getRequestURI(), List.of());
+    }
+
+    /** Rota existe, mas não aceita esse verbo. Também caía como 500. */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErroResponse> handleMetodoNaoSuportado(
+            HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+        String suportados = ex.getSupportedHttpMethods() == null
+                ? ""
+                : " Métodos aceitos: " + ex.getSupportedHttpMethods() + ".";
+        return build(HttpStatus.METHOD_NOT_ALLOWED, "Method Not Allowed",
+                "O método " + ex.getMethod() + " não é aceito nesta rota." + suportados,
+                request.getRequestURI(), List.of());
     }
 
     @ExceptionHandler(Exception.class)
