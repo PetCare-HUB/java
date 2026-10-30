@@ -53,13 +53,18 @@ A camada de visualização do ecossistema PetCare Hub é composta por uma aplica
 O aplicativo mobile foi desenvolvido utilizando React Native/Expo e realiza comunicação HTTP com a API Java.
 
 ### Mastering Relational and Non-Relational Database
-- Banco Oracle
-- Modelagem relacional
-- Procedures
-- Functions
-- Trigger de auditoria
+O banco **não é só o lugar onde esta API guarda linhas**: parte da regra de negócio roda em
+PL/SQL e é **chamada por esta aplicação** em tempo de requisição — uma procedure e duas functions
+entregues pela disciplina de Database. Os detalhes, com os endpoints que as acionam, estão em
+[Integração com o Banco — PL/SQL chamado pela aplicação](#-integração-com-o-banco--plsql-chamado-pela-aplicação).
+
+- Banco Oracle 19c, schema compartilhado com a API .NET
+- Modelagem relacional (MER/DER) e evolução via Flyway
+- **`PRC_INS_LEITURA_COLEIRA`** — chamada em `POST /leituras/coleira`
+- **`FN_SCORE_MEDIO_PET`** e **`FN_CALCULAR_IDADE_PET`** — chamadas em `GET /pets/{id}/score-saude/media`
+- Trigger de auditoria de tutor
 - Geração de dados JSON
-- Integração com MongoDB
+- Integração com MongoDB (feita pela API .NET)
 
 ### DevOps Tools & Cloud Computing
 - GitHub
@@ -187,8 +192,56 @@ O versionamento do banco é gerenciado de forma incremental e idempotente pelo F
 | **V8** | `V8__split_leitura_sensor.sql` | Especialização e segregação das leituras IoT em tabelas dedicadas: coleira, comedouro e ambiente para escalabilidade. |
 | **V9** | `V9__add_tutor_clinica.sql` | Adiciona `TUTOR.id_clinica` (FK pra `CLINICA`), preenchido no pré-cadastro. |
 | **V10** | `V10__add_medicamento_tipo_evento.sql` | Atualiza constraints de CHECK em EVENTO_PREVENTIVO e PROTOCOLO_PREVENTIVO para aceitar MEDICAMENTO. |
+| **V11** | `V11__add_admin_e_status_clinica.sql` | Cria a tabela `ADMIN_CLYVO` (quem aprova as clínicas da rede) e adiciona `CLINICA.status_acesso` com CHECK (`PRE_CADASTRADO`, `ATIVO`, `BLOQUEADO`, `INATIVO`). Também torna o e-mail da clínica único, já que ele é a credencial de login. |
 
 > Os nomes seguem a convenção padrão do Flyway (`V<versão>__descricao.sql`, com `V` maiúsculo e underscore duplo) — só assim o Flyway reconhece e aplica as migrações automaticamente.
+
+---
+
+## 🗄️ Integração com o Banco — PL/SQL chamado pela aplicação
+
+A disciplina de Database entregou procedures e functions no Oracle. **Esta API chama três delas
+em tempo de requisição**, via `SimpleJdbcCall` do Spring, concentradas em
+[`PlSqlRepository`](src/main/java/fiap/com/br/petcarehub/repository/PlSqlRepository.java).
+
+A escolha de o que roda onde não é arbitrária: fica no banco o que o banco faz melhor.
+
+| Rotina PL/SQL | Chamada por | Por que no banco |
+|---|---|---|
+| `PRC_INS_LEITURA_COLEIRA` (procedure) | `POST /leituras/coleira` → `LeituraIotService` | Ela não é um `INSERT` disfarçado: valida o pet, usa a sequence e **dispara o alerta de atividade baixa** via `PRC_INS_ALERTA_SAUDE`. A regra "dormindo demais = risco" está implementada no banco, e duplicá-la em Java criaria duas versões da mesma regra para divergirem. |
+| `FN_SCORE_MEDIO_PET` (function) | `GET /pets/{id}/score-saude/media` | É agregação sobre o histórico. Trazer todas as linhas para somar em Java seria gastar rede para chegar ao mesmo número. |
+| `FN_CALCULAR_IDADE_PET` (function) | `GET /pets/{id}/score-saude/media` | É o contexto que dá sentido à média — um filhote e um pet idoso não se comparam pelo mesmo padrão. |
+
+### Como verificar que a chamada é real
+
+O endpoint da média declara a origem do cálculo na própria resposta:
+
+```json
+{
+  "petId": 1,
+  "periodoDias": 30,
+  "scoreMedio": 72.5,
+  "idadeMeses": 38,
+  "calculadoPor": "FN_SCORE_MEDIO_PET / FN_CALCULAR_IDADE_PET (Oracle PL/SQL)"
+}
+```
+
+Para a procedure, o caminho é um `POST /leituras/coleira` com `statusAtividade: "SEDENTARIO"`:
+a leitura aparece em `LEITURA_COLEIRA` e **um alerta `ATIVIDADE_BAIXA` aparece em
+`ALERTA_SAUDE` sem o Java ter criado alerta nenhum** — quem criou foi o PL/SQL.
+
+### Duas armadilhas que isso trouxe
+
+Vale registrar, porque mudaram o código de quem chama:
+
+- **As procedures de carga terminam com `COMMIT` e tratam exceção com `WHEN OTHERS` gravando em
+  `LOG_ERROS`, sem relançar.** Ou seja: elas **retornam normalmente mesmo quando falham**. Por
+  isso o `LeituraIotService` relê a leitura depois de inserir, em vez de confiar no retorno — se
+  a releitura não achar nada, a resposta é `500` apontando para a `LOG_ERROS`, não um `201`
+  mentindo que gravou.
+- **`NUMBER` do Oracle chega como `BigDecimal`, não `Double`.** Pedir `Double` direto ao
+  `executeFunction` estoura `ClassCastException` em tempo de execução. A conversão passa por
+  `Number`, que cobre qualquer tipo numérico que o driver decida devolver.
 
 ---
 
