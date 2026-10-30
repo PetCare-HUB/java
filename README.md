@@ -552,7 +552,7 @@ src/main/resources
 
 ## Cadastro e acesso de clínicas
 
-Nenhuma clínica entra na rede sozinha: quem decide é um **admin da PetCare Hub**. Existem dois caminhos de entrada, e os dois passam por esse portão.
+Nenhuma clínica entra na rede sozinha: quem decide é um **admin da PetCare Hub**. Existem dois caminhos de entrada, e os dois exigem senha.
 
 ### Caminho 1 — auto-cadastro (público)
 
@@ -560,11 +560,19 @@ Nenhuma clínica entra na rede sozinha: quem decide é um **admin da PetCare Hub
 
 O registro nasce com `statusAcesso: PRE_CADASTRADO` e **não autentica**: até ser aprovado, o login responde `403`. É por isso que o endpoint pode ser público — a solicitação criada não dá acesso a nada.
 
-### Caminho 2 — pré-cadastro pelo .NET
+### Caminho 2 — pré-cadastro pelo admin
 
-Clínicas criadas pela API .NET nascem sem senha. Elas definem a senha em `POST /auth/ativar-clinica`, informando e-mail, CNPJ e o código de credenciamento. Configure `CLINIC_ACTIVATION_CODE` no ambiente com um valor aleatório de pelo menos 16 caracteres; sem essa variável a ativação fica desabilitada. Mantenha o código fora do repositório e não o envie em mensagens.
+`POST /clinicas` exige `role: ADMIN` e também exige senha. A clínica nasce `ATIVO`, porque quem cria já é quem aprova — pedir aprovação depois seriam dois portões para a mesma decisão.
 
-Aqui não há aprovação posterior: possuir o código **já é** a autorização do admin, e exigir as duas coisas seriam dois portões para a mesma decisão. A ativação retorna o JWT direto.
+`DELETE /clinicas/{id}` também é restrito ao admin. É a opção mais agressiva: apagar leva junto o vínculo dos pets. Para suspender o acesso preservando o histórico longitudinal, use `PUT /admin/clinicas/{id}/bloquear`.
+
+### Nenhuma clínica existe sem senha
+
+Essa é uma invariante do sistema, não um detalhe de implementação. Os dois caminhos acima exigem senha, e a API .NET não cadastra clínica.
+
+Existiu um terceiro caminho, `POST /auth/ativar-clinica`, para clínicas pré-cadastradas sem senha definirem uma. Ele foi **removido**: a prova de identidade era e-mail + CNPJ + um código de credenciamento que era o **mesmo para toda a rede**. CNPJ é público e e-mail é semi-público, então quem tivesse esse código assumia qualquer clínica sem senha e passava a ver a carteira de pets dela. Um segredo compartilhado protegendo N contas é uma chave mestra, e basta vazar uma vez.
+
+A variável `CLINIC_ACTIVATION_CODE` deixou de ser usada e pode ser removida do ambiente.
 
 ### Aprovação pelo admin
 

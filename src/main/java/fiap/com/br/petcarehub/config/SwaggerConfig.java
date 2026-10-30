@@ -36,7 +36,7 @@ public class SwaggerConfig {
                                 .bearerFormat("JWT")
                                 .in(SecurityScheme.In.HEADER)
                                 .name("Authorization")
-                                .description("Token devolvido por /auth/login, /auth/ativar-conta ou /auth/ativar-clinica.")))
+                                .description("Token devolvido por /auth/login ou /auth/ativar-conta.")))
                 // Aplicado globalmente: as rotas publicas de /auth ignoram o header,
                 // entao nao atrapalha quem ainda nao tem token.
                 .addSecurityItem(new SecurityRequirement().addList(ESQUEMA_JWT));

@@ -74,6 +74,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/alertas/*/resolver")
                         .hasRole("CLINICA")
 
+                        // Credenciar e descredenciar quem está na rede é do admin.
+                        // Uma clínica criar outra contornaria todo o fluxo de
+                        // cadastro + aprovação. Vem ANTES do matcher genérico de
+                        // /clinicas/** porque o Spring usa o primeiro que casar.
+                        .requestMatchers(HttpMethod.POST, "/clinicas")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.DELETE, "/clinicas/*")
+                        .hasRole("ADMIN")
+
                         .requestMatchers("/clinicas/**")
                         .hasRole("CLINICA")
 

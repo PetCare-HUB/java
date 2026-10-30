@@ -189,9 +189,11 @@ public final class DtoMapper {
                 // 'ativo' e NOT NULL com CHECK IN ('S','N'): sem isso o char
                 // fica em '\u0000' e o INSERT viola ck_clinica_ativo.
                 .ativo('S')
-                // Nenhuma clinica entra na rede sem passar pelo admin, venha
-                // de onde vier.
-                .statusAcesso(StatusAcesso.PRE_CADASTRADO)
+                // Este caminho e o POST /clinicas, restrito ao admin. Quem
+                // cria ja e quem aprova, entao nasce ATIVO - exigir aprovacao
+                // depois seriam dois portoes para a mesma decisao. O cadastro
+                // publico (/auth/cadastro-clinica) e que nasce PRE_CADASTRADO.
+                .statusAcesso(StatusAcesso.ATIVO)
                 .build();
     }
 

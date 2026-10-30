@@ -1,7 +1,6 @@
 package fiap.com.br.petcarehub.auth;
 
 import fiap.com.br.petcarehub.dto.request.AtivarContaRequest;
-import fiap.com.br.petcarehub.dto.request.AtivarClinicaRequest;
 import fiap.com.br.petcarehub.dto.request.CadastroClinicaRequest;
 import fiap.com.br.petcarehub.dto.response.LoginResponse;
 import fiap.com.br.petcarehub.dto.response.ClinicaResponse;
@@ -25,10 +24,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.server.ResponseStatusException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.Locale;
 
 
@@ -40,9 +36,6 @@ public class AuthService implements UserDetailsService {
     private final ClinicaRepository clinicaRepository;
     private final AdminRepository adminRepository;
     private final TokenService tokenService;
-
-    @Value("${app.auth.clinic-activation-code:}")
-    private String clinicActivationCode;
 
     /**
      * Solicitacao publica de credenciamento. A clinica ja escolhe a senha
@@ -72,48 +65,6 @@ public class AuthService implements UserDetailsService {
                 .statusAcesso(StatusAcesso.PRE_CADASTRADO)
                 .build();
         return DtoMapper.toResponse(clinicaRepository.save(clinica));
-    }
-
-    /**
-     * Caminho das clinicas pre-cadastradas pelo .NET (que nascem sem senha):
-     * a clinica define a senha provando posse do codigo de credenciamento
-     * que a PetCare Hub entregou a ela.
-     *
-     * Aqui nao ha aprovacao posterior do admin de proposito - ter o codigo
-     * JA e a autorizacao do admin. Seriam dois portoes para a mesma decisao.
-     */
-    @Transactional
-    public LoginResponse ativarClinica(AtivarClinicaRequest request) {
-        if (clinicActivationCode == null || clinicActivationCode.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
-                    "A ativação de clínicas existentes não está habilitada neste ambiente.");
-        }
-        if (!MessageDigest.isEqual(clinicActivationCode.getBytes(StandardCharsets.UTF_8),
-                request.codigoAtivacao().getBytes(StandardCharsets.UTF_8))) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Código de ativação inválido.");
-        }
-
-        String email = request.email().trim().toLowerCase(Locale.ROOT);
-        String cnpj = normalizarCnpj(request.cnpj());
-        Clinica clinica = clinicaRepository.findByEmail(email)
-                .filter(c -> normalizarCnpj(c.getCnpj()).equals(cnpj))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Clínica não encontrada com esses dados."));
-        if (clinica.getSenha() != null && !clinica.getSenha().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Esta clínica já possui acesso ativo.");
-        }
-        if (clinica.getAtivo() != 'S') {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Esta clínica está inativa.");
-        }
-
-        clinica.setSenha(passwordEncoder.encode(request.senha()));
-        clinica.setStatusAcesso(StatusAcesso.ATIVO);
-        clinicaRepository.save(clinica);
-        UserDetails userDetails = User.withUsername(clinica.getEmail())
-                .password(clinica.getSenha()).roles("CLINICA").build();
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities());
-        return tokenService.generateToken(authentication);
     }
 
     private static String normalizarCnpj(String cnpj) {
@@ -186,9 +137,13 @@ public class AuthService implements UserDetailsService {
         if (clinica.isPresent()) {
             var clinicaEncontrada = clinica.get();
 
+            // Nenhum caminho de cadastro cria clinica sem senha. Se aparecer
+            // uma, e registro legado ou escrita direta no banco: nao deve
+            // autenticar, e a mensagem manda falar com quem administra em vez
+            // de sugerir um fluxo de auto-recuperacao que seria exploravel.
             if (clinicaEncontrada.getSenha() == null || clinicaEncontrada.getSenha().isBlank()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Clínica sem senha cadastrada. Use /auth/ativar-clinica.");
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "Esta clínica não tem acesso configurado. Entre em contato com a PetCare Hub.");
             }
 
             // Este e o portao do credenciamento: a clinica ja tem senha, mas

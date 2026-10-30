@@ -1,7 +1,6 @@
 package fiap.com.br.petcarehub.auth;
 
 import fiap.com.br.petcarehub.dto.request.AtivarContaRequest;
-import fiap.com.br.petcarehub.dto.request.AtivarClinicaRequest;
 import fiap.com.br.petcarehub.dto.request.CadastroClinicaRequest;
 import fiap.com.br.petcarehub.dto.request.LoginRequest;
 import fiap.com.br.petcarehub.dto.response.LoginResponse;
@@ -29,11 +28,14 @@ public class AuthController {
         return ResponseEntity.status(201).body(authService.cadastrarClinica(request));
     }
 
-    @PostMapping("/ativar-clinica")
-    public LoginResponse ativarClinica(@Valid @RequestBody AtivarClinicaRequest request) {
-        return authService.ativarClinica(request);
-    }
-
+    // Sem /ativar-clinica: ele existia para as clínicas pré-cadastradas sem
+    // senha definirem uma, provando posse de um código de credenciamento que
+    // era o MESMO para toda a rede. Quem tivesse esse código assumia qualquer
+    // clínica sem senha — e o CNPJ, que é metade da prova, é público.
+    //
+    // Nenhuma clínica nasce mais sem senha (nem pelo cadastro público, nem
+    // pelo POST /clinicas do admin, nem pelo .NET, que não cadastra mais),
+    // então o endpoint ficou sem uso legítimo e só restava o risco.
 
     @PostMapping("/ativar-conta")
     public ResponseEntity<LoginResponse> ativarConta(

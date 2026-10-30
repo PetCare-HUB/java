@@ -45,12 +45,13 @@ public class AdminService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Esta clínica já está aprovada.");
         }
 
-        // Sem senha a clinica nao teria como logar nem depois de aprovada:
-        // ela veio do pre-cadastro do .NET e ainda precisa passar pelo
-        // /auth/ativar-clinica para definir a senha.
+        // Sem senha a clinica nao logaria nem depois de aprovada. Nenhum
+        // caminho de cadastro produz esse estado hoje, entao aqui so chega
+        // registro legado ou escrita direta no banco - e aprovar nao e o
+        // conserto, porque nao ha senha para aprovar.
         if (clinica.getSenha() == null || clinica.getSenha().isBlank()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Esta clínica ainda não definiu uma senha. Ela precisa concluir a ativação em /auth/ativar-clinica.");
+                    "Esta clínica não tem senha definida e por isso não pode ser aprovada.");
         }
 
         clinica.setStatusAcesso(StatusAcesso.ATIVO);
