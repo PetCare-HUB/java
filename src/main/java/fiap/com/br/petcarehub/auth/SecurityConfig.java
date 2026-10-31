@@ -38,103 +38,102 @@ public class SecurityConfig {
         return http
                 .authorizeHttpRequests(auth -> auth
 
-//                        // Rotas públicas.
-//                        // /auth/cadastro-clinica fica aqui de propósito: ele só
-//                        // cria uma solicitação PRE_CADASTRADO, que não autentica
-//                        // em lugar nenhum até um admin aprovar (ver AuthService).
-//                        .requestMatchers(
-//                                "/auth/**",
-//                                // "/swagger-ui/**" NAO cobre "/swagger-ui.html":
-//                                // sao caminhos diferentes, e e justamente esse que
-//                                // springdoc.swagger-ui.path configura e o README manda
-//                                // abrir. Sem a entrada abaixo ele responde 401 e a
-//                                // pagina carrega em branco.
-//                                "/swagger-ui.html",
-//                                "/swagger-ui/**",
-//                                "/v3/api-docs/**",
-//                                "/keepalive"
-//                        ).permitAll()
-//
-//                        // Apenas ADMIN da PetCare Hub (credenciamento da rede).
-//                        // Vem antes de /clinicas/** porque é um prefixo próprio:
-//                        // quem administra a plataforma não é uma clínica.
-//                        .requestMatchers("/admin/**")
-//                        .hasRole("ADMIN")
-//
-//                        // Apenas CLINICA
-//                        .requestMatchers(HttpMethod.POST, "/tutor")
-//                        .hasRole("CLINICA")
-//
-//                        // Listar/buscar tutores é coisa de clínica (ver os próprios
-//                        // pacientes) - um tutor não tem porque navegar pelo cadastro
-//                        // de outros tutores. Ver o próprio perfil é só via /tutor/me.
-//                        .requestMatchers(HttpMethod.GET, "/tutor", "/tutor/nome", "/tutor/email", "/tutor/cpf")
-//                        .hasRole("CLINICA")
-//
-//                        .requestMatchers(HttpMethod.PUT, "/alertas/*/resolver")
-//                        .hasRole("CLINICA")
-//
-//                        // Credenciar e descredenciar quem está na rede é do admin.
-//                        // Uma clínica criar outra contornaria todo o fluxo de
-//                        // cadastro + aprovação. Vem ANTES do matcher genérico de
-//                        // /clinicas/** porque o Spring usa o primeiro que casar.
-//                        .requestMatchers(HttpMethod.POST, "/clinicas")
-//                        .hasRole("ADMIN")
-//
-//                        .requestMatchers(HttpMethod.DELETE, "/clinicas/*")
-//                        .hasRole("ADMIN")
-//
-//                        .requestMatchers("/clinicas/**")
-//                        .hasRole("CLINICA")
-//
-//                        .requestMatchers(HttpMethod.POST, "/protocolos-preventivos")
-//                        .hasRole("CLINICA")
-//
-//                        // Consultas sao agendadas/gerenciadas pela clinica. Listar
-//                        // tudo (/consultas) ou buscar por id sem dono (/consultas/{id})
-//                        // tambem fica so pra clinica; um tutor ve as proprias consultas
-//                        // via /pets/{id}/timeline (ja filtrado pelo dono do pet) ou
-//                        // /consultas/pet/{petId} (que confere o dono do pet).
-//                        .requestMatchers(HttpMethod.GET, "/consultas", "/consultas/*")
-//                        .hasRole("CLINICA")
-//
-//                        .requestMatchers(HttpMethod.POST, "/consultas/**")
-//                        .hasRole("CLINICA")
-//
-//                        .requestMatchers(HttpMethod.PUT, "/consultas/**")
-//                        .hasRole("CLINICA")
-//
-//                        .requestMatchers(HttpMethod.DELETE, "/consultas/**")
-//                        .hasRole("CLINICA")
-//
-//                        // Apenas TUTOR
-//                        .requestMatchers(
-//                                HttpMethod.POST,
-//                                "/pets",
-//                                "/leituras/**",
-//                                "/eventos-preventivos"
-//                        ).hasRole("TUTOR")
-//
-//                        .requestMatchers(
-//                                HttpMethod.PUT,
-//                                "/pets/*",
-//                                "/eventos-preventivos/*",
-//                                "/eventos-preventivos/*/realizar"
-//                        ).hasRole("TUTOR")
-//
-//                        .requestMatchers(
-//                                HttpMethod.DELETE,
-//                                "/pets/*",
-//                                "/eventos-preventivos/*"
-//                        ).hasRole("TUTOR")
-//
-//                        // TUTOR e CLINICA
-//                        .requestMatchers("/pets/*/**")
-//                        .hasAnyRole("TUTOR", "CLINICA")
-//
-//                        // Qualquer usuário autenticado
-//                        .anyRequest().authenticated()
-                        .anyRequest().permitAll()
+                        // Rotas públicas.
+                        // /auth/cadastro-clinica fica aqui de propósito: ele só
+                        // cria uma solicitação PRE_CADASTRADO, que não autentica
+                        // em lugar nenhum até um admin aprovar (ver AuthService).
+                        .requestMatchers(
+                                "/auth/**",
+                                // "/swagger-ui/**" NAO cobre "/swagger-ui.html":
+                                // sao caminhos diferentes, e e justamente esse que
+                                // springdoc.swagger-ui.path configura e o README manda
+                                // abrir. Sem a entrada abaixo ele responde 401 e a
+                                // pagina carrega em branco.
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/keepalive"
+                        ).permitAll()
+
+                        // Apenas ADMIN da PetCare Hub (credenciamento da rede).
+                        // Vem antes de /clinicas/** porque é um prefixo próprio:
+                        // quem administra a plataforma não é uma clínica.
+                        .requestMatchers("/admin/**")
+                        .hasRole("ADMIN")
+
+                        // Apenas CLINICA
+                        .requestMatchers(HttpMethod.POST, "/tutor")
+                        .hasRole("CLINICA")
+
+                        // Listar/buscar tutores é coisa de clínica (ver os próprios
+                        // pacientes) - um tutor não tem porque navegar pelo cadastro
+                        // de outros tutores. Ver o próprio perfil é só via /tutor/me.
+                        .requestMatchers(HttpMethod.GET, "/tutor", "/tutor/nome", "/tutor/email", "/tutor/cpf")
+                        .hasRole("CLINICA")
+
+                        .requestMatchers(HttpMethod.PUT, "/alertas/*/resolver")
+                        .hasRole("CLINICA")
+
+                        // Credenciar e descredenciar quem está na rede é do admin.
+                        // Uma clínica criar outra contornaria todo o fluxo de
+                        // cadastro + aprovação. Vem ANTES do matcher genérico de
+                        // /clinicas/** porque o Spring usa o primeiro que casar.
+                        .requestMatchers(HttpMethod.POST, "/clinicas")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.DELETE, "/clinicas/*")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers("/clinicas/**")
+                        .hasRole("CLINICA")
+
+                        .requestMatchers(HttpMethod.POST, "/protocolos-preventivos")
+                        .hasRole("CLINICA")
+
+                        // Consultas sao agendadas/gerenciadas pela clinica. Listar
+                        // tudo (/consultas) ou buscar por id sem dono (/consultas/{id})
+                        // tambem fica so pra clinica; um tutor ve as proprias consultas
+                        // via /pets/{id}/timeline (ja filtrado pelo dono do pet) ou
+                        // /consultas/pet/{petId} (que confere o dono do pet).
+                        .requestMatchers(HttpMethod.GET, "/consultas", "/consultas/*")
+                        .hasRole("CLINICA")
+
+                        .requestMatchers(HttpMethod.POST, "/consultas/**")
+                        .hasRole("CLINICA")
+
+                        .requestMatchers(HttpMethod.PUT, "/consultas/**")
+                        .hasRole("CLINICA")
+
+                        .requestMatchers(HttpMethod.DELETE, "/consultas/**")
+                        .hasRole("CLINICA")
+
+                        // Apenas TUTOR
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/pets",
+                                "/leituras/**",
+                                "/eventos-preventivos"
+                        ).hasRole("TUTOR")
+
+                        .requestMatchers(
+                                HttpMethod.PUT,
+                                "/pets/*",
+                                "/eventos-preventivos/*",
+                                "/eventos-preventivos/*/realizar"
+                        ).hasRole("TUTOR")
+
+                        .requestMatchers(
+                                HttpMethod.DELETE,
+                                "/pets/*",
+                                "/eventos-preventivos/*"
+                        ).hasRole("TUTOR")
+
+                        // TUTOR e CLINICA
+                        .requestMatchers("/pets/*/**")
+                        .hasAnyRole("TUTOR", "CLINICA")
+
+                        // Qualquer usuário autenticado
+                        .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
