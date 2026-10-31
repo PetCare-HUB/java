@@ -77,6 +77,14 @@ public class ContextoSaudePetService {
         LocalDateTime agora = LocalDateTime.now();
         StringBuilder sb = new StringBuilder();
 
+        // Sem esta linha o modelo so ve carimbos absolutos e supoe que a leitura
+        // mais recente e de hoje -- chegou a descrever alertas de tres dias atras
+        // como "registrados hoje". Dizer que dia e hoje deixa ele calcular ha
+        // quanto tempo cada registro aconteceu.
+        sb.append("Data e hora de agora: ").append(agora.format(FORMATO_DATA_HORA))
+                .append(". Use esta referencia para dizer ha quanto tempo cada registro ")
+                .append("aconteceu; nao presuma que a leitura mais recente e de hoje.\n\n");
+
         secaoPet(sb, pet);
         secaoColeira(sb, petId, agora);
         secaoComedouro(sb, petId);
