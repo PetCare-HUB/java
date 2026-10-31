@@ -15,5 +15,6 @@ public record ScoreSaudeResponse(
         Integer scoreConsulta,
         Integer scorePreventivo,
         CategoriaScore categoria,
-        LocalDateTime dataCalculo
+        LocalDateTime dataCalculo,
+        String observacao
 ) {}

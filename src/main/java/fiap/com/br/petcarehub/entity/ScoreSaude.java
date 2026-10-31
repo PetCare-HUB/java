@@ -62,6 +62,10 @@ public class ScoreSaude {
     @Column(name = "CATEGORIA", nullable = false, length = 20)
     private CategoriaScore categoria;
 
+    @Size(max = 1000)
+    @Column(name = "OBSERVACAO", length = 1000)
+    private String observacao;
+
     @CreationTimestamp
     @Column(name = "DATA_CALCULO", nullable = false)
     private LocalDateTime dataCalculo;

@@ -2,7 +2,8 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk" alt="Java 17" />
-  <img src="https://img.shields.io/badge/Spring%20Boot-3.3.5-brightgreen?style=for-the-badge&logo=springboot" alt="Spring Boot 3.3.5" />
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.5.16-brightgreen?style=for-the-badge&logo=springboot" alt="Spring Boot 3.5.16" />
+  <img src="https://img.shields.io/badge/Spring%20AI-1.1.8-6DB33F?style=for-the-badge&logo=spring" alt="Spring AI 1.1.8" />
   <img src="https://img.shields.io/badge/Spring%20Security-JWT%20RSA-blue?style=for-the-badge&logo=springsecurity" alt="Spring Security" />
   <img src="https://img.shields.io/badge/Flyway-Migrations-red?style=for-the-badge&logo=flyway" alt="Flyway" />
   <img src="https://img.shields.io/badge/Database-Oracle-red?style=for-the-badge&logo=oracle" alt="Database" />
@@ -79,7 +80,7 @@ entregues pela disciplina de Database. Os detalhes, com os endpoints que as acio
 - Processamento das leituras
 - Score de Saúde
 - Alertas
-- Componente de Inteligência Artificial
+- Componente de Inteligência Artificial — assistente de saúde animal (Spring AI + Google Gemini + RAG) que interpreta os dados reais da coleira, do comedouro, do ambiente, dos alertas e do histórico do Score, e explica tudo isso ao tutor em linguagem simples. Detalhes em [Inteligência Artificial](#-inteligência-artificial-assistente-de-saúde-do-pet).
 
 ---
 
@@ -95,7 +96,8 @@ Dispositivos IoT enviam leituras → API recebe e armazena os dados → Sistema 
 
 ## 🏛️ Arquitetura e Tecnologias
 
-- **Linguagem & Framework**: Java 17, Spring Boot 3.3.5
+- **Linguagem & Framework**: Java 17, Spring Boot 3.5.16
+- **Inteligência Artificial**: Spring AI 1.1.8 — chat e embeddings com Google Gemini (`gemini-2.5-flash` e `gemini-embedding-001`), RAG com `QuestionAnswerAdvisor` sobre uma base de conhecimento veterinária persistida no Oracle (ver [Inteligência Artificial](#-inteligência-artificial-assistente-de-saúde-do-pet))
 - **Segurança**: Spring Security, Spring OAuth2 Resource Server, Nimbus Jose JWT, BCrypt Password Encoder, Par de Chaves Assimétricas RSA (2048-bit)
 - **Persistência & Migração**: Spring Data JPA, Hibernate, Flyway Migration (`flyway-core`, `flyway-database-oracle`), JPA Criteria API / Specifications
 - **Bancos de Dados**: Oracle Database 23c / 19c
@@ -172,6 +174,8 @@ sequenceDiagram
 | `/eventos-preventivos/{id}` | `PUT`, `DELETE` | `ROLE_TUTOR` + dono | Edita (tipo/descrição/data) ou exclui um lembrete ainda não realizado. |
 | `/eventos-preventivos/{id}/realizar` | `PUT` | `ROLE_TUTOR` + dono | Confirmação de realização de vacina/check-up. |
 | `/pets/{id}/**` | `GET` | `ROLE_TUTOR`, `ROLE_CLINICA` | Consulta de timeline, scores, alertas e telemetria. |
+| `/pets/{id}/ia/**` | `POST`, `GET` | `ROLE_TUTOR` (dono), `ROLE_CLINICA` | Análise, perguntas e explicação de alertas pela IA; o service confere o dono do pet. |
+| `/admin/ia/**` | `POST`, `GET` | `ROLE_ADMIN` | Reindexação e consulta da base de conhecimento do RAG. |
 | Demais rotas | `*` | Autenticado | Exige token JWT válido. |
 
 ---
@@ -193,6 +197,9 @@ O versionamento do banco é gerenciado de forma incremental e idempotente pelo F
 | **V9** | `V9__add_tutor_clinica.sql` | Adiciona `TUTOR.id_clinica` (FK pra `CLINICA`), preenchido no pré-cadastro. |
 | **V10** | `V10__add_medicamento_tipo_evento.sql` | Atualiza constraints de CHECK em EVENTO_PREVENTIVO e PROTOCOLO_PREVENTIVO para aceitar MEDICAMENTO. |
 | **V11** | `V11__add_admin_e_status_clinica.sql` | Cria a tabela `ADMIN_CLYVO` (quem aprova as clínicas da rede) e adiciona `CLINICA.status_acesso` com CHECK (`PRE_CADASTRADO`, `ATIVO`, `BLOQUEADO`, `INATIVO`). Também torna o e-mail da clínica único, já que ele é a credencial de login. |
+| **V12** | `V12__add_observacao_score_saude.sql` | Adiciona `SCORE_SAUDE.OBSERVACAO VARCHAR2(1000)`: a explicação, montada pelo Java no momento do cálculo, de por que o score subiu, caiu ou ficou estável. Transforma o histórico do score numa linha do tempo explicativa. Registros anteriores ficam com `NULL` de propósito (não inventamos explicação retroativa). |
+| **V13** | `V13__create_documento_conhecimento.sql` | Cria `DOCUMENTO_CONHECIMENTO` na forma da primeira versão do RAG (trechos da base veterinária com embedding em CLOB/JSON e `hash_fonte`). Já aplicada no Oracle da disciplina: o arquivo não pode ser alterado, senão o Flyway acusa checksum divergente. |
+| **V14** | `V14__ajusta_base_conhecimento_e_cria_analise_ia.sql` | Troca `SCORE_SAUDE.OBSERVACAO` para `VARCHAR2(1000 CHAR)` (o Java limita em caracteres, e com acentos 1000 bytes estourariam), evolui `DOCUMENTO_CONHECIMENTO` para a forma atual (`doc_id`, `modelo_embedding`, `dimensoes`; remove `hash_fonte`; apaga os trechos antigos, gerados por outro modelo de embedding, para reindexação) e cria `ANALISE_IA` (análises, perguntas e explicações de alerta geradas pela IA, com as fontes usadas), sequence e índice. |
 
 > Os nomes seguem a convenção padrão do Flyway (`V<versão>__descricao.sql`, com `V` maiúsculo e underscore duplo) — só assim o Flyway reconhece e aplica as migrações automaticamente.
 
@@ -322,6 +329,72 @@ Esse é o fluxo completo de onboarding: a clínica pré-cadastra o tutor (sem el
 
 ---
 
+## 🧠 Inteligência Artificial — assistente de saúde do pet
+
+A IA do PetCare Hub é um **assistente de saúde animal** que lê os dados reais do pet e os traduz para o tutor. Ela **não substitui o médico-veterinário** e não calcula nada: o Java continua dono das regras determinísticas (score, limiares, alertas); a IA interpreta, contextualiza e explica.
+
+### Divisão de responsabilidades
+
+| Java (determinístico) | IA (interpretação) |
+|---|---|
+| Calcula o Score de Saúde e seus sub-scores (`ScoreSaudeService`). | Explica por que o score está assim e como evoluiu, usando as observações persistidas. |
+| Aplica limiares e gera alertas (`LeituraIotService`, `AlertaSaudeService`, PL/SQL). | Explica o que cada alerta significa e o que o tutor pode fazer. |
+| Grava a `OBSERVACAO` de cada cálculo do score (V12). | Só lê a observação; nunca a altera retroativamente. |
+| Monta o contexto com os dados do pet (`ContextoSaudePetService`). | Responde perguntas do tutor com base nesse contexto e na base veterinária. |
+
+### Como funciona uma chamada
+
+```mermaid
+flowchart LR
+    A[Tutor / Clínica] -->|POST /pets/{id}/ia/analise ou /perguntar| B[IaController]
+    B --> C[AnaliseSaudeService]
+    C --> D[ContextoSaudePetService<br/>dados reais: pet, coleira 7d, comedouro,<br/>ambiente, alertas, consultas, histórico do score]
+    C --> E[ChatClient Spring AI]
+    E --> F[QuestionAnswerAdvisor<br/>busca trechos em DOCUMENTO_CONHECIMENTO]
+    F --> G[(Oracle: embeddings em CLOB,<br/>cosseno em Java)]
+    E --> H[Google Gemini]
+    C --> I[(ANALISE_IA: resposta + fontes)]
+```
+
+1. O service confere que o pet pertence ao usuário autenticado (`PetService.findEntityByIdAutorizado`) — a mesma checagem dos demais endpoints.
+2. `ContextoSaudePetService` monta um texto "DADOS DO PET" só com o que existe no banco (e diz "sem registros" quando não existe). Dados pessoais do tutor não entram no prompt.
+3. O `ChatClient` (configurado em `IaConfig`) tem um prompt de sistema fixo e o `QuestionAnswerAdvisor`, que recupera os trechos mais parecidos da base veterinária e os anexa ao prompt — o mesmo padrão RAG dos projetos de referência da disciplina, trocando o pgvector por uma tabela Oracle.
+4. A resposta volta do Google Gemini, é limpa e persistida em `ANALISE_IA` com as fontes usadas, para o histórico em `GET /pets/{id}/ia/analises`.
+
+A IA é instruída a separar explicitamente **Dados do pet**, **Base veterinária**, **Interpretação** e **Não verificado**, a nunca apresentar hipótese como diagnóstico, a declarar quando faltam dados e a recomendar atendimento imediato diante de sinais de emergência. Pergunta do tutor e trechos recuperados são tratados como texto, não como instrução.
+
+### Provedores
+
+| Papel | Provedor | Configuração |
+|---|---|---|
+| Chat | **Google Gemini**, modelo `gemini-2.5-flash`, via `spring-ai-starter-model-google-genai` | `spring.ai.model.chat=google-genai` |
+| Embeddings | **Google Gemini**, modelo `gemini-embedding-001` (3072 dimensões), via `spring-ai-starter-model-google-genai-embedding` | `spring.ai.model.embedding.text=google-genai` |
+| Vetores | Tabela `DOCUMENTO_CONHECIMENTO` (Oracle), embedding em CLOB/JSON, similaridade por cosseno em Java (`ConhecimentoVectorStore` implementa `VectorStore`). O CLOB/JSON comporta os 3072 floats sem migration, e as colunas `MODELO_EMBEDDING`/`DIMENSOES` evitam misturar vetores de modelos diferentes. | — |
+
+A escolha do Gemini dá uma única chave e um único provedor para chat e embeddings, sem cliente HTTP genérico nem modelo local para manter.
+
+Por que não o `spring-ai-starter-vector-store-oracle`: ele exige o tipo `VECTOR` do Oracle 23ai, e o banco da disciplina é 19c. A base é pequena (dezenas a centenas de trechos), então o cosseno em memória resolve sem uma segunda estrutura de banco.
+
+### Base de conhecimento (RAG)
+
+Os documentos ficam em `src/main/resources/conhecimento/*.md` (score, alertas do sistema, atividade, alimentação, ambiente, emergências, limites do assistente). `POST /admin/ia/reindexar` lê cada arquivo com `MarkdownDocumentReader`, divide com `TokenTextSplitter`, gera os embeddings e regrava a tabela. Para atualizar a base basta editar/adicionar um `.md` e reindexar. O conteúdo foi escrito para a Sprint 4 e **deve ser validado por um médico-veterinário** antes de uso real.
+
+### Histórico longitudinal do Score (opção B)
+
+Cada linha de `SCORE_SAUDE` agora carrega `OBSERVACAO` (V12), montada pelo Java no momento do cálculo: a variação em relação ao score anterior ("Score diminuiu de 82 para 67 (-15 pontos)") seguida dos indicadores reais daquele cálculo ("Pet sedentário em 68% das leituras dos últimos 7 dias"). Quando a nota muda sem que um indicador atual explique, a limitação é registrada em vez de uma causa inventada. `GET /pets/{id}/score-saude/historico` devolve essa linha do tempo; registros anteriores à V12 vêm com o aviso "Sem observação registrada".
+
+### Indisponibilidade e limites
+
+Falha de rede ou do provedor (Gemini) vira `503 Serviço de IA indisponível`, no mesmo formato de erro do resto da API, com retry feito pelo próprio SDK do Google (`app.ia.tentativas`, padrão 2, em 429/5xx/falha de rede) dentro do timeout do Client (`app.ia.timeout-ms`, padrão 60 s); as propriedades `spring.ai.retry.*` do Spring AI não agem sobre o SDK do Google e por isso não são usadas. Falhas que o Spring AI embrulha em `RuntimeException` são inspecionadas pela causa para continuarem virando 503. A chamada ao modelo roda fora de transação, para não segurar conexão do banco enquanto o modelo responde. Com a base de conhecimento vazia, a IA responde só com os dados do pet, sem chamar o modelo de embedding.
+
+Perguntas têm limite de 500 caracteres e passam por sanitização; a memória de conversa é curta (10 mensagens), fica em memória da JVM (se perde no restart e não é compartilhada entre instâncias) e é isolada por usuário e pet. O log do Spring AI fica em `INFO`: em `DEBUG` o `SimpleLoggerAdvisor` grava o prompt inteiro, com os dados do pet, em `logs/petcarehub.log`.
+
+Em produção (Render) basta definir a `GEMINI_API_KEY`. A variável é obrigatória: sem ela a aplicação não sobe, porque o `Client` do Gemini é criado na inicialização.
+
+Clínicas enxergam qualquer pet, como no resto da API, e por isso também podem gerar análises e ler o histórico de perguntas de qualquer pet; restringir à própria clínica é uma decisão de produto ainda em aberto.
+
+---
+
 ## 🔍 Validações de Formulários e Dados
 
 A API utiliza validação estrita em todas as requisições de entrada:
@@ -400,7 +473,24 @@ No Windows (PowerShell / CMD):
 mvnw.cmd clean spring-boot:run
 ```
 
-O Flyway executará automaticamente as migrações `V1` a `V10` no banco Oracle.
+### 3. Variáveis da Inteligência Artificial
+
+O chat e os embeddings do RAG rodam no **Google Gemini**, com uma única chave. Gere a `GEMINI_API_KEY` no [Google AI Studio](https://aistudio.google.com/apikey); não há nada para instalar localmente.
+
+```bash
+# Linux/macOS
+export GEMINI_API_KEY="..."                         # obrigatória: chave do Google AI Studio
+export GEMINI_CHAT_MODEL="gemini-2.5-flash"         # opcional (default)
+export GEMINI_EMBEDDING_MODEL="gemini-embedding-001" # opcional (default)
+export GEMINI_EMBEDDING_DIMENSIONS=3072             # opcional (default)
+
+# Windows (PowerShell)
+$env:GEMINI_API_KEY="..."
+```
+
+A aplicação **não** indexa a base ao subir (`app.ia.indexar-ao-iniciar=false`). A indexação é feita pelo admin em `POST /admin/ia/reindexar` (ou ligando a propriedade acima). Depois de trocar o modelo ou a dimensão de embedding, é **obrigatório reindexar**, porque vetores de modelos ou dimensões diferentes não são comparáveis.
+
+O Flyway executará automaticamente as migrações `V1` a `V14` no banco Oracle.
 
 - **API Base**: `http://localhost:8080`
 - **Swagger UI (Frontend Interativo)**: `http://localhost:8080/swagger-ui.html`
@@ -445,10 +535,22 @@ O Flyway executará automaticamente as migrações `V1` a `V10` no banco Oracle.
 | `DELETE` | `/pets/{id}` | `ROLE_TUTOR` | Remove o pet. Só o tutor dono pode. |
 | `GET` | `/pets/{id}/score-saude` | Autenticado | Retorna o score de saúde atual e categoria. |
 | `POST` | `/pets/{id}/score-saude/calcular` | Autenticado | Força recálculo algorítmico do score. |
-| `GET` | `/pets/{id}/score-saude/historico` | Autenticado | Histórico de evolução do score do pet. |
+| `GET` | `/pets/{id}/score-saude/historico` | Autenticado | Histórico longitudinal do score: cada registro traz data, score, sub-scores, categoria e a **observação explicativa** da variação (ver [Inteligência Artificial](#-inteligência-artificial-assistente-de-saúde-do-pet)). |
 | `GET` | `/pets/{id}/timeline` | Autenticado | Timeline longitudinal consolidada do animal. |
 | `GET` | `/pets/{id}/plano-preventivo` | Autenticado | Lista os eventos preventivos já cadastrados pro pet (sem geração automática). |
 | `GET` | `/pets/{id}/alertas/ativos` | Autenticado | Lista alertas clínicos pendentes de resolução. |
+
+### 🧠 Inteligência Artificial (`/pets/{petId}/ia` e `/admin/ia`)
+
+| Método | Endpoint | Acesso | Descrição |
+|---|---|---|---|
+| `POST` | `/pets/{petId}/ia/analise` | `ROLE_TUTOR` (dono), `ROLE_CLINICA` | Gera e persiste uma análise de saúde do pet a partir dos dados reais (coleira, comedouro, ambiente, alertas, consultas, histórico do score) e da base veterinária. |
+| `GET` | `/pets/{petId}/ia/analises` | `ROLE_TUTOR` (dono), `ROLE_CLINICA` | Histórico das análises, perguntas e explicações já geradas para o pet (20 mais recentes). |
+| `POST` | `/pets/{petId}/ia/perguntar` | `ROLE_TUTOR` (dono), `ROLE_CLINICA` | Pergunta livre sobre saúde/comportamento do pet (`{"pergunta": "..."}`, até 500 caracteres). Mantém memória curta da conversa por usuário e pet. |
+| `POST` | `/pets/{petId}/ia/alertas/{alertaId}/explicar` | `ROLE_TUTOR` (dono), `ROLE_CLINICA` | Explica um alerta do pet: o que significa, qual regra o gerou, relação com os outros dados e quando procurar o veterinário. |
+| `POST` | `/admin/ia/reindexar` | `ROLE_ADMIN` | Relê os documentos de `src/main/resources/conhecimento/*.md`, divide em trechos, gera embeddings (Gemini) e regrava `DOCUMENTO_CONHECIMENTO`. |
+| `GET` | `/admin/ia/conhecimento/status` | `ROLE_ADMIN` | Total de trechos indexados, fontes, última indexação e modelo de embedding. |
+| `GET` | `/admin/ia/conhecimento?q={texto}&topK=4` | `ROLE_ADMIN` | Busca semântica direta na base (útil para conferir o que o RAG recupera para uma pergunta). |
 
 ### 📡 Telemetria IoT (`/leituras`)
 

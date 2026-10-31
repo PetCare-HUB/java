@@ -89,7 +89,12 @@ public class ScoreSaudeService {
         int scoreConsulta = 100;
         int scorePreventivo = 100; // sem lógica própria ainda — fica neutro até termos regra de vacina/preventivo
 
-        StringBuilder observacao = new StringBuilder("Score calculado com base em leituras IoT, consultas e alertas. ");
+        // A observação é a linha do tempo explicativa do score (opção B: persistida na
+        // própria SCORE_SAUDE). Compara com o cálculo anterior e lista só indicadores
+        // reais. A IA apenas lê esse texto; nunca o altera.
+        Optional<ScoreSaude> anterior = repository.findTopByPetIdOrderByDataCalculoDesc(petId);
+        StringBuilder observacao = new StringBuilder(); // indicadores que penalizaram
+        String ressalva = ""; // limitação de dado, não penaliza
 
         // ATIVIDADE FÍSICA — sensor MPU6050 da coleira.
         //
@@ -103,9 +108,8 @@ public class ScoreSaudeService {
                 .countByPetIdAndTimestampLeituraAfter(petId, inicioJanela);
 
         if (leiturasNaJanela < MINIMO_LEITURAS_JANELA) {
-            observacao.append("Poucas leituras da coleira nos últimos ")
-                    .append(DIAS_JANELA_ATIVIDADE)
-                    .append(" dias para avaliar a atividade. ");
+            ressalva = "Poucas leituras da coleira nos últimos " + DIAS_JANELA_ATIVIDADE
+                    + " dias para avaliar a atividade. ";
         } else {
             long sedentarias = leituraColeiraRepository
                     .countByPetIdAndStatusAtividadeAndTimestampLeituraAfter(
@@ -221,6 +225,7 @@ public class ScoreSaudeService {
                 .scoreConsulta(scoreConsulta)
                 .scorePreventivo(scorePreventivo)
                 .categoria(categoria)
+                .observacao(limitar((montarObservacao(anterior, score, observacao) + (ressalva.isEmpty() ? "" : " " + ressalva)).trim()))
                 .build();
 
         ScoreSaude salvo = repository.save(scoreSaude);
@@ -237,6 +242,49 @@ public class ScoreSaudeService {
         }
 
         return DtoMapper.toResponse(salvo);
+    }
+
+    /**
+     * Frase de variação (dados reais do score anterior) + indicadores do cálculo atual.
+     * Quando a nota mudou mas nenhum indicador atual a explica, registra a limitação
+     * em vez de inventar uma causa.
+     */
+    private String montarObservacao(Optional<ScoreSaude> anterior, int scoreNovo, StringBuilder indicadores) {
+        StringBuilder texto = new StringBuilder();
+        int diferenca = 0;
+        if (anterior.isEmpty()) {
+            texto.append("Primeiro cálculo do score registrado para o pet. ");
+        } else {
+            int antes = anterior.get().getScoreTotal();
+            diferenca = scoreNovo - antes;
+            if (diferenca == 0) {
+                texto.append("Score permaneceu estável em ").append(scoreNovo).append(" pontos. ");
+            } else if (diferenca < 0) {
+                texto.append("Score diminuiu de ").append(antes).append(" para ").append(scoreNovo)
+                        .append(" (").append(diferenca).append(" pontos). ");
+            } else {
+                texto.append("Score aumentou de ").append(antes).append(" para ").append(scoreNovo)
+                        .append(" (+").append(diferenca).append(" pontos). ");
+            }
+        }
+
+        texto.append("Indicadores do período: ");
+        if (indicadores.length() == 0) {
+            texto.append("sem alterações relevantes nos indicadores disponíveis. ");
+            if (diferenca != 0) {
+                texto.append("A variação não pôde ser atribuída a um indicador específico do cálculo atual. ");
+            }
+        } else {
+            texto.append(indicadores);
+        }
+        return texto.toString().trim();
+    }
+
+    private String limitar(String texto) {
+        if (texto.length() <= 1000) {
+            return texto;
+        }
+        return texto.substring(0, 997) + "...";
     }
 
     private CategoriaScore categoria(int score) {

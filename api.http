@@ -196,3 +196,49 @@ GET {{baseUrl}}/alertas?petId=70&tipo=SCORE_CRITICO&resolvido=false
 
 ### Alertas do pet, paginados
 GET {{baseUrl}}/alertas?petId=70&page=0&size=10
+
+### =====================================================
+### INTELIGÊNCIA ARTIFICIAL (tutor dono do pet ou clínica)
+### =====================================================
+
+### Gerar análise de saúde do pet (persistida em ANALISE_IA)
+POST {{baseUrl}}/pets/70/ia/analise
+Authorization: Bearer {token}
+
+### Histórico de análises, perguntas e explicações do pet
+GET {{baseUrl}}/pets/70/ia/analises
+Authorization: Bearer {token}
+
+### Perguntar sobre o pet (até 500 caracteres; memória curta por usuário + pet)
+POST {{baseUrl}}/pets/10/ia/perguntar
+Content-Type: application/json
+Authorization: Bearer {token}
+
+{
+  "pergunta": "Meu pet está comendo menos esta semana. Devo me preocupar?"
+}
+
+### Explicar um alerta do pet
+POST {{baseUrl}}/pets/70/ia/alertas/15/explicar
+Authorization: Bearer {token}
+
+### Histórico longitudinal do score com observação explicativa
+GET {{baseUrl}}/pets/70/score-saude/historico
+Authorization: Bearer {token}
+
+
+### =====================================================
+### IA - ADMINISTRAÇÃO DA BASE DE CONHECIMENTO (ROLE_ADMIN)
+### =====================================================
+
+### Reindexar os documentos de src/main/resources/conhecimento/*.md (exige GEMINI_API_KEY válida)
+POST {{baseUrl}}/admin/ia/reindexar
+Authorization: Bearer {tokenAdmin}
+
+### Status da base (total de trechos, fontes, última indexação)
+GET {{baseUrl}}/admin/ia/conhecimento/status
+Authorization: Bearer {tokenAdmin}
+
+### Busca semântica direta na base
+GET {{baseUrl}}/admin/ia/conhecimento?q=pet sedentario na ultima semana&topK=4
+Authorization: Bearer {tokenAdmin}

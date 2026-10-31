@@ -7,6 +7,13 @@ import fiap.com.br.petcarehub.enums.StatusAcesso;
 
 public final class DtoMapper {
 
+    /**
+     * Devolvida no lugar da observação dos scores calculados antes da V12. É pública
+     * para a IA reconhecer o registro histórico e não tratar a frase como explicação.
+     */
+    public static final String SEM_OBSERVACAO_HISTORICA =
+            "Sem observação registrada: score calculado antes da versão que passou a explicar as variações.";
+
     private DtoMapper() {}
 
     public static TutorResponse toResponse(Tutor tutor) {
@@ -100,6 +107,28 @@ public final class DtoMapper {
         );
     }
 
+    /** Separador usado por AnaliseSaudeService ao gravar as fontes em uma única coluna. */
+    public static final String SEPARADOR_FONTES = ";";
+
+    public static AnaliseIaResponse toResponse(AnaliseIa analise) {
+        java.util.List<String> fontes = analise.getFontes() == null || analise.getFontes().isBlank()
+                ? java.util.List.of()
+                : java.util.Arrays.asList(analise.getFontes().split(SEPARADOR_FONTES));
+        return new AnaliseIaResponse(
+                analise.getId(),
+                analise.getPet().getId(),
+                analise.getPet().getNome(),
+                analise.getTipo(),
+                analise.getPergunta(),
+                analise.getResposta(),
+                analise.getScore() != null ? analise.getScore().getId() : null,
+                analise.getAlerta() != null ? analise.getAlerta().getId() : null,
+                analise.getModelo(),
+                fontes,
+                analise.getDataAnalise()
+        );
+    }
+
     public static ScoreSaudeResponse toResponse(ScoreSaude score) {
         return new ScoreSaudeResponse(
                 score.getId(),
@@ -112,7 +141,10 @@ public final class DtoMapper {
                 score.getScoreConsulta(),
                 score.getScorePreventivo(),
                 score.getCategoria(),
-                score.getDataCalculo()
+                score.getDataCalculo(),
+                score.getObservacao() == null || score.getObservacao().isBlank()
+                        ? SEM_OBSERVACAO_HISTORICA
+                        : score.getObservacao()
         );
     }
 
