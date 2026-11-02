@@ -131,7 +131,7 @@ public class ContextoSaudePetService {
         StringBuilder sb = new StringBuilder();
         sb.append("ALERTA EM QUESTÃO (fonte: tabela ALERTA_SAUDE, gerado pelas regras do PetCare Hub)\n");
         sb.append("- Id: ").append(alerta.getId()).append('\n');
-        sb.append("- Tipo: ").append(alerta.getTipo()).append('\n');
+        sb.append("- Tipo: ").append(alerta.getTipo().getDescricao()).append('\n');
         sb.append("- Nível: ").append(alerta.getNivel()).append('\n');
         sb.append("- Mensagem: ").append(texto(alerta.getMensagem())).append('\n');
         sb.append("- Valor detectado: ").append(numero(alerta.getValorDetectado()))
@@ -259,7 +259,7 @@ public class ContextoSaudePetService {
     }
 
     private String linhaAlerta(AlertaSaude a) {
-        return "- " + a.getTipo() + " (nível " + a.getNivel() + "): " + texto(a.getMensagem())
+        return "- " + a.getTipo().getDescricao() + " (nível " + a.getNivel() + "): " + texto(a.getMensagem())
                 + " | valor " + numero(a.getValorDetectado()) + " x limite " + numero(a.getLimiteReferencia())
                 + " | em " + dataHora(a.getDataAlerta()) + '\n';
     }

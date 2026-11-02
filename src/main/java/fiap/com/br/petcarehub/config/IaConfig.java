@@ -90,7 +90,8 @@ public class IaConfig {
             esses sinais aparecem crus na tela do tutor. Vale inclusive quando a mensagem \
             trouxer mais de uma pergunta: responda tudo em texto corrido, sem criar um \
             titulo para cada uma. Rótulos simples das seções e listas curtas com hífen são \
-            permitidos.
+            permitidos. Nunca escreva identificador tecnico do sistema, como \
+            BAIXA_ALIMENTACAO ou SCORE_CRITICO: diga o nome em portugues.
             9. Não escreva blocos de raciocínio, rascunhos ou marcações de pensamento: \
             entregue apenas a resposta final.
             """;
