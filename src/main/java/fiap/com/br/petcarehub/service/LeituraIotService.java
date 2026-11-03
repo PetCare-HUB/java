@@ -30,12 +30,13 @@ public class LeituraIotService {
 
     /**
      * A gravação da leitura da coleira passa pela procedure
-     * {@code PRC_INS_LEITURA_COLEIRA} do Oracle, e não por um save do JPA.
+     * {@code PKG_CARGA.PRC_INS_LEITURA_COLEIRA} do Oracle, e não por um save
+     * do JPA.
      *
      * <p>Não é cerimônia: a procedure carrega regra própria — valida o pet, usa a
      * sequence e dispara o alerta de ATIVIDADE_BAIXA quando o status é SEDENTARIO,
-     * chamando {@code PRC_INS_ALERTA_SAUDE}. É a regra "dormindo demais = risco"
-     * morando no banco, junto do dado.</p>
+     * chamando {@code PKG_CARGA.PRC_INS_ALERTA_SAUDE}. É a regra "dormindo demais
+     * = risco" morando no banco, junto do dado.</p>
      *
      * <p>Como a procedure trata exceção com {@code WHEN OTHERS} e só registra em
      * LOG_ERROS, ela retorna normalmente mesmo quando falha. Por isso relemos a

@@ -14,10 +14,10 @@ import java.util.Map;
  * Chamadas ao código PL/SQL que vive no Oracle (disciplina de Database).
  *
  * <p>Estas rotinas não são um espelho do que o Java já faz: elas carregam
- * regra de negócio própria. A {@code PRC_INS_LEITURA_COLEIRA}, por exemplo,
- * valida o pet, insere usando a sequence e dispara o alerta de atividade
- * baixa via {@code PRC_INS_ALERTA_SAUDE} — a regra "dormindo demais = risco"
- * implementada no banco.</p>
+ * regra de negócio própria. A {@code PKG_CARGA.PRC_INS_LEITURA_COLEIRA}, por
+ * exemplo, valida o pet, insere usando a sequence e dispara o alerta de
+ * atividade baixa via {@code PKG_CARGA.PRC_INS_ALERTA_SAUDE} — a regra
+ * "dormindo demais = risco" implementada no banco.</p>
  *
  * <p><b>Cuidado ao usar:</b> as procedures de carga terminam com
  * {@code COMMIT} e tratam exceção com {@code WHEN OTHERS} gravando em
@@ -33,14 +33,24 @@ public class PlSqlRepository {
     private final SimpleJdbcCall scoreMedioPet;
     private final SimpleJdbcCall idadePet;
 
+    /**
+     * Os tres objetos vivem dentro de packages desde a Sprint 4, e o nome do
+     * package entra como <i>catalog</i>: e nessa posicao dos metadados JDBC
+     * que o driver Oracle devolve o package. Sem isso o SimpleJdbcCall
+     * procuraria o objeto solto de mesmo nome, que ainda existe no schema em
+     * paralelo -- a chamada funcionaria e nao passaria pelo package.
+     */
     public PlSqlRepository(DataSource dataSource) {
         this.inserirLeituraColeira = new SimpleJdbcCall(dataSource)
+                .withCatalogName("PKG_CARGA")
                 .withProcedureName("PRC_INS_LEITURA_COLEIRA");
 
         this.scoreMedioPet = new SimpleJdbcCall(dataSource)
+                .withCatalogName("PKG_UTIL")
                 .withFunctionName("FN_SCORE_MEDIO_PET");
 
         this.idadePet = new SimpleJdbcCall(dataSource)
+                .withCatalogName("PKG_UTIL")
                 .withFunctionName("FN_CALCULAR_IDADE_PET");
     }
 
@@ -50,7 +60,7 @@ public class PlSqlRepository {
      */
     public void inserirLeituraColeira(Long petId, StatusAtividade statusAtividade,
                                       Integer nivelBateria, LocalDateTime timestampLeitura) {
-        log.debug("Chamando PRC_INS_LEITURA_COLEIRA para o pet {}", petId);
+        log.debug("Chamando PKG_CARGA.PRC_INS_LEITURA_COLEIRA para o pet {}", petId);
         inserirLeituraColeira.execute(Map.of(
                 "P_ID_PET", petId,
                 "P_STATUS_ATIVIDADE", statusAtividade.name(),
@@ -59,7 +69,7 @@ public class PlSqlRepository {
         ));
     }
 
-    /** Média dos scores do pet no período, calculada por FN_SCORE_MEDIO_PET. */
+    /** Média dos scores do pet no período, por PKG_UTIL.FN_SCORE_MEDIO_PET. */
     public Double scoreMedio(Long petId, int dias) {
         return paraDouble(scoreMedioPet.executeFunction(Number.class, Map.of(
                 "P_ID_PET", petId,
@@ -67,7 +77,7 @@ public class PlSqlRepository {
         )));
     }
 
-    /** Idade do pet em meses, calculada por FN_CALCULAR_IDADE_PET. */
+    /** Idade do pet em meses, por PKG_UTIL.FN_CALCULAR_IDADE_PET. */
     public Double idadeEmMeses(Long petId) {
         return paraDouble(idadePet.executeFunction(Number.class, Map.of("P_ID_PET", petId)));
     }
