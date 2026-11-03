@@ -103,7 +103,7 @@ public class PetController {
 
     @GetMapping("/{id}/score-saude/media")
     @Operation(summary = "Média do score no período",
-            description = "Calculada pela function FN_SCORE_MEDIO_PET, que roda no Oracle.")
+            description = "Calculada pela function PKG_UTIL.FN_SCORE_MEDIO_PET, que roda no Oracle.")
     public Map<String, Object> mediaScore(
             @PathVariable Long id,
             @RequestParam(defaultValue = "30") int dias) {

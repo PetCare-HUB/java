@@ -294,13 +294,14 @@ public class ScoreSaudeService {
     }
 
     /**
-     * Média do score no período, calculada pela function {@code FN_SCORE_MEDIO_PET}
-     * do Oracle — a mesma que a disciplina de Database entregou.
+     * Média do score no período, calculada pela function
+     * {@code PKG_UTIL.FN_SCORE_MEDIO_PET} do Oracle — a mesma que a disciplina
+     * de Database entregou.
      *
      * <p>O cálculo fica no banco de propósito: é agregação sobre o histórico, e
      * trazer todas as linhas para somar em Java seria desperdício de rede para
      * chegar ao mesmo número. Devolve também a idade do pet em meses, de
-     * {@code FN_CALCULAR_IDADE_PET}, porque é o contexto que dá sentido à média
+     * {@code PKG_UTIL.FN_CALCULAR_IDADE_PET}, porque é o contexto que dá sentido à média
      * (um filhote e um pet idoso não se comparam pelo mesmo padrão).</p>
      */
     @Transactional(readOnly = true)
@@ -312,7 +313,10 @@ public class ScoreSaudeService {
         resposta.put("periodoDias", dias);
         resposta.put("scoreMedio", plSqlRepository.scoreMedio(petId, dias));
         resposta.put("idadeMeses", plSqlRepository.idadeEmMeses(petId));
-        resposta.put("calculadoPor", "FN_SCORE_MEDIO_PET / FN_CALCULAR_IDADE_PET (Oracle PL/SQL)");
+        // Nomeia o package, nao so a function: e este campo que o corretor usa
+        // para conferir que a chamada passou pelo empacotamento da Sprint 4.
+        resposta.put("calculadoPor",
+                "PKG_UTIL.FN_SCORE_MEDIO_PET / PKG_UTIL.FN_CALCULAR_IDADE_PET (Oracle PL/SQL)");
         return resposta;
     }
 

@@ -61,8 +61,8 @@ entregues pela disciplina de Database. Os detalhes, com os endpoints que as acio
 
 - Banco Oracle 19c, schema compartilhado com a API .NET
 - Modelagem relacional (MER/DER) e evolução via Flyway
-- **`PRC_INS_LEITURA_COLEIRA`** — chamada em `POST /leituras/coleira`
-- **`FN_SCORE_MEDIO_PET`** e **`FN_CALCULAR_IDADE_PET`** — chamadas em `GET /pets/{id}/score-saude/media`
+- **`PKG_CARGA.PRC_INS_LEITURA_COLEIRA`** — chamada em `POST /leituras/coleira`
+- **`PKG_UTIL.FN_SCORE_MEDIO_PET`** e **`PKG_UTIL.FN_CALCULAR_IDADE_PET`** — chamadas em `GET /pets/{id}/score-saude/media`
 - Trigger de auditoria de tutor
 - Geração de dados JSON
 - Integração com MongoDB (feita pela API .NET)
@@ -211,13 +211,27 @@ A disciplina de Database entregou procedures e functions no Oracle. **Esta API c
 em tempo de requisição**, via `SimpleJdbcCall` do Spring, concentradas em
 [`PlSqlRepository`](src/main/java/fiap/com/br/petcarehub/repository/PlSqlRepository.java).
 
+Desde a Sprint 4 essas rotinas vivem dentro de **packages PL/SQL**, e o nome do package entra
+como *catalog* na configuração da chamada — é nessa posição dos metadados JDBC que o driver
+Oracle devolve o package:
+
+```java
+this.inserirLeituraColeira = new SimpleJdbcCall(dataSource)
+        .withCatalogName("PKG_CARGA")
+        .withProcedureName("PRC_INS_LEITURA_COLEIRA");
+```
+
+Sem o `withCatalogName`, o Spring encontraria o objeto solto de mesmo nome, que ainda existe no
+schema em paralelo: a chamada funcionaria e **não passaria pelo package** — o tipo de engano que
+só aparece quando alguém vai conferir.
+
 A escolha de o que roda onde não é arbitrária: fica no banco o que o banco faz melhor.
 
 | Rotina PL/SQL | Chamada por | Por que no banco |
 |---|---|---|
-| `PRC_INS_LEITURA_COLEIRA` (procedure) | `POST /leituras/coleira` → `LeituraIotService` | Ela não é um `INSERT` disfarçado: valida o pet, usa a sequence e **dispara o alerta de atividade baixa** via `PRC_INS_ALERTA_SAUDE`. A regra "dormindo demais = risco" está implementada no banco, e duplicá-la em Java criaria duas versões da mesma regra para divergirem. |
-| `FN_SCORE_MEDIO_PET` (function) | `GET /pets/{id}/score-saude/media` | É agregação sobre o histórico. Trazer todas as linhas para somar em Java seria gastar rede para chegar ao mesmo número. |
-| `FN_CALCULAR_IDADE_PET` (function) | `GET /pets/{id}/score-saude/media` | É o contexto que dá sentido à média — um filhote e um pet idoso não se comparam pelo mesmo padrão. |
+| `PKG_CARGA.PRC_INS_LEITURA_COLEIRA` (procedure) | `POST /leituras/coleira` → `LeituraIotService` | Ela não é um `INSERT` disfarçado: valida o pet, usa a sequence e **dispara o alerta de atividade baixa** via `PKG_CARGA.PRC_INS_ALERTA_SAUDE`. A regra "dormindo demais = risco" está implementada no banco, e duplicá-la em Java criaria duas versões da mesma regra para divergirem. |
+| `PKG_UTIL.FN_SCORE_MEDIO_PET` (function) | `GET /pets/{id}/score-saude/media` | É agregação sobre o histórico. Trazer todas as linhas para somar em Java seria gastar rede para chegar ao mesmo número. |
+| `PKG_UTIL.FN_CALCULAR_IDADE_PET` (function) | `GET /pets/{id}/score-saude/media` | É o contexto que dá sentido à média — um filhote e um pet idoso não se comparam pelo mesmo padrão. |
 
 ### Como verificar que a chamada é real
 
@@ -229,7 +243,7 @@ O endpoint da média declara a origem do cálculo na própria resposta:
   "periodoDias": 30,
   "scoreMedio": 72.5,
   "idadeMeses": 38,
-  "calculadoPor": "FN_SCORE_MEDIO_PET / FN_CALCULAR_IDADE_PET (Oracle PL/SQL)"
+  "calculadoPor": "PKG_UTIL.FN_SCORE_MEDIO_PET / PKG_UTIL.FN_CALCULAR_IDADE_PET (Oracle PL/SQL)"
 }
 ```
 
