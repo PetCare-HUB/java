@@ -72,6 +72,24 @@ A camada de visualização do ecossistema PetCare Hub é composta por uma aplica
 - Tratamento global de exceções
 - Integração com banco Oracle
 
+### Advanced Business Development with .NET
+A API .NET ([PetCare-HUB/.NET](https://github.com/PetCare-HUB/.NET), publicada em
+https://petcarehub-dotnet.onrender.com) é o **dashboard B2B da clínica**: pets em risco, alertas
+abertos, consultas, scores e indicadores por clínica. Ela não duplica esta API — as duas dividem o
+mesmo banco, e cada uma cuida de uma parte do produto.
+
+- **Mesmo banco:** EF Core sobre o schema Oracle compartilhado. O que esta API grava — leituras,
+  score, alertas — é o que o dashboard lê.
+- **Mesmo token:** o .NET não autentica ninguém. Ele valida a assinatura dos JWT emitidos por esta
+  API com a mesma chave pública RSA (RS256) e lê `role` e `clinicaId` das claims. O token da clínica
+  obtido em `POST /auth/login` abre o Swagger dos dois lados.
+- **O cadastro de clínica mora aqui:** o .NET deixou de cadastrar clínica e não mapeia `SENHA_HASH`,
+  então credenciamento e senha ficam só no Java.
+- **MongoDB:** o .NET guarda na coleção `resumos_pet_ia` os resumos de contexto da camada de IA.
+- **Saúde do conjunto:** o readiness do .NET verifica esta API (`/keepalive`) como serviço externo,
+  ao lado do Oracle e do MongoDB.
+- Clean Architecture, paginação, ordenação e filtros, HATEOAS, Serilog e OpenTelemetry.
+
 ### Mobile Application Development
 O aplicativo mobile foi desenvolvido utilizando React Native/Expo e realiza comunicação HTTP com a API Java.
 
@@ -737,6 +755,8 @@ src/main/resources
 - **API:** https://petcare-hub-gokt.onrender.com
 - **Swagger:** https://petcare-hub-gokt.onrender.com/swagger-ui/index.html
 - **GitHub:** https://github.com/PetCare-HUB/java
+- **API .NET (dashboard da clínica):** https://petcarehub-dotnet.onrender.com
+- **GitHub da API .NET:** https://github.com/PetCare-HUB/.NET
 - **Vídeo:** (A ser adicionado)
 
 ---
