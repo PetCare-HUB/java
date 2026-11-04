@@ -757,7 +757,7 @@ src/main/resources
 - **GitHub:** https://github.com/PetCare-HUB/java
 - **API .NET (dashboard da clínica):** https://petcarehub-dotnet.onrender.com
 - **GitHub da API .NET:** https://github.com/PetCare-HUB/.NET
-- **Vídeo:** (A ser adicionado)
+- **Vídeo:** https://www.youtube.com/watch?v=GXNMW1V1uRM
 
 ---
 
