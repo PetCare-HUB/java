@@ -17,6 +17,28 @@ A API do PetCare Hub está disponível em ambiente de produção:
 - **Aplicação:** https://petcare-hub-gokt.onrender.com
 - **Swagger:** https://petcare-hub-gokt.onrender.com/swagger-ui/index.html
 
+### 🔑 Contas de demonstração
+
+Para avaliar sem precisar criar cadastro. Chame [`POST /auth/login`][login] — o link já abre na
+operação certa — e cole o `token` da resposta no botão **Authorize** do Swagger.
+
+| Perfil | E-mail | Senha | Serve para |
+|---|---|---|---|
+| Clínica | `contato@vidapet.com` | `12345678` | Rotas da clínica; é a clínica `10`, com 2 pets e 5 alertas |
+| Tutor | `ana.souza@email.com` | `12345678` | Login do app mobile; é a tutora do Rex |
+| Admin | `admin@petcarehub.com` | `Asus@1907` | Credenciamento de clínicas (`/admin/**`) |
+
+> No corpo do login o campo é **`password`**, não `senha` — é o único endpoint que foge do
+> padrão. O token vale **30 minutos**: se as rotas passarem a devolver `401`, basta repetir o
+> login. E a primeira requisição pode levar até ~1 minuto, porque o serviço hiberna no plano
+> gratuito do Render.
+
+O mesmo token da clínica também autentica a **[API .NET](https://petcarehub-dotnet.onrender.com)**,
+o dashboard B2B da rede: ela não emite token nenhum, só valida a assinatura com a mesma chave
+pública RSA. O roteiro de teste dela está no README daquele repositório.
+
+[login]: https://petcare-hub-gokt.onrender.com/swagger-ui/index.html#/auth-controller/login
+
 ---
 
 ## 📌 Sumário Executivo
